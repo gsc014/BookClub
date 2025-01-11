@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .search-bar-container {
+            top: 100%;
+            margin: 0 auto;
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .search-bar input {
+            padding: 0.5rem;
+            flex-grow: 1;
+            border: none;
+            border-radius: 4px;
+        }
+        /* .search-bar button {
+            
+        } */
+
+        .button {
+            padding: 0.5rem;
+            background-color: white;
+            color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        main {
+            padding: 2rem;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .book-card {
+            opacity: 1;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            text-align: center;
+            width: 150px;
+            
+            animation: fadeInAnimation ease 1s;
+            animation-fill-mode: forwards;
+        }
+        
+        .book-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+
+            /* animation: fadeInAnimation ease 2s;
+            animation-fill-mode: forwards; */
+        }
+
+        @keyframes fadeInAnimation {
+                0% {
+                    opacity: 0;
+                }
+
+                100% {
+                    opacity: 1;
+                }
+            }
+        
+
+        ul.horizontal-list {
+            width: 70%;
+            margin: 0 auto;
+            margin-top: 15%; /* Push the list 20px down */
+            list-style-type: none;
+            gap: 1.5rem;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+
+            /* animation: fadeInAnimation ease 1s;
+            animation-fill-mode: forwards; */
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Book Explorer</div>
+    <div class="search-bar-container">
+        <div class="search-bar">
+            <input type="text" placeholder="Search for books...">
+            <button id="search_button" class="button" >Search</button>
+        </div>
+    </div>
+    <button id = "log_in" class="button">Log in</button>
+</header>
+
+<!-- main body, it has a list where a book will be added using addBookToList -->
+<main>
+    <section id="recommended">
+        <h2>Recommended Books</h2>
+        <ul id="bookList" class="horizontal-list"></ul>
+    </section>
+</main>
+
+<script>
+    window.onload = function () {
+        console.log('Page loaded');
+        for (let i = 0; i < 6; i++) {
+            addBookToList();
+        }
+    }
+
+    const search_button = document.getElementById('search_button');
+    const bookList = document.getElementById('bookList');
+
+    // Function to add a book card to the book list, book card is determined in here
+    function addBookToList() {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <div class="book-card">
+                <img src="https://via.placeholder.com/150" alt="Book Cover">
+                <h3>Book Title</h3>
+                <p>Author Name</p>
+            </div>
+        `;
+
+        bookList.appendChild(li);
+    }
+
+    // temporary event listener to add a book card to the list
+    search_button.addEventListener('click', function () {
+        addBookToList();
+    });
+</script>
+
+</body>
+</html>
