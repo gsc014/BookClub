@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Explorer</title>
+    <title>Book Club</title>
     <style>
+
+        @keyframes fadeInAnimation {
+                0% {
+                    opacity: 0;
+                }
+
+                100% {
+                    opacity: 1;
+                }
+            }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -82,6 +93,8 @@
             text-align: center;
             width: 150px;
             transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+            animation: fadeInAnimation ease 1s;
+            animation-fill-mode: forwards;
         }
         
         .book-card img {
@@ -93,16 +106,6 @@
             animation-fill-mode: forwards; */
         }
 
-        @keyframes fadeInAnimation {
-                0% {
-                    opacity: 0;
-                }
-
-                100% {
-                    opacity: 1;
-                }
-            }
-        
 
         ul.horizontal-list {
             width: 70%;
@@ -128,14 +131,7 @@
 <body>
 
 <header id = "header">
-    <div class="logo">Book Explorer</div>
-    <!-- <div class="search-bar-container">
-        <div class="search-bar">
-            <input type="text" placeholder="Search for books...">
-            <button id="search_button" class="button" >Search</button>
-        </div>
-    </div> -->
-    <!-- <div id="moon" class="moon"></div> -->
+    <div class="logo">Book Club</div>
     <button id = "dark_mode" class = "button">Eyes hurting?</button>
     <button id = "log_in" class="button">Log in</button>
 </header>
@@ -179,14 +175,20 @@
                 <img src="https://covers.openlibrary.org/b/id/14833301-L.jpg" alt="Book Cover">
                 <h3>Book Title</h3>
                 <p>Author Name</p>
+                <button id = "" class="button">⭐</button>
+                <button id = "log_in" class="button"></button>
+                <button id = "log_in" class="button"></button>
+                <button id = "log_in" class="button">Review</button>
             </div>
         `;
+        
+        
 
         bookList.appendChild(li);
 
         if (dark) {
             const newBookCard = li.querySelector('.book-card');
-            newBookCard.style.backgroundColor = '#353535';
+            newBookCard.style.backgroundColor = '#454545';
             newBookCard.style.color = 'white';
             newBookCard.style.borderColor = '#272727';
         }
@@ -196,7 +198,6 @@
     search_button.addEventListener('click', function () {
         addBookToList();
     });
-
 
 
     // dark mode button
@@ -250,6 +251,7 @@
         }
     });
 </script>
-
 </body>
 </html>
+
+<!-- settings, nav bar, user picture, make logo home button -->
