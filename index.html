@@ -1,257 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylesheet.css">
     <title>Book Club</title>
-    <style>
-
-        @keyframes fadeInAnimation {
-                0% {
-                    opacity: 0;
-                }
-
-                100% {
-                    opacity: 1;
-                }
-            }
-        
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #edebd7;
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        }
-        header {
-            background-color: #423e37;
-            color: #FFF;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .search-bar-container {
-            top: 100%;
-            margin: 0 auto;
-            width: 50%;
-            display: flex;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-        .search-bar {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-        }
-
-        .search-bar input {
-            padding: 0.5rem;
-            flex-grow: 1;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-        /* .search-bar button {
-            
-        } */
-
-        .button {
-            padding: 0.5rem;
-            background-color: #d1a641;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
-        
-        main {
-            padding: 2rem;
-            /* color: #d1a641; */
-        }
-        
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .book-card {
-            opacity: 1;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            text-align: center;
-            width: 150px;
-            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
-            animation: fadeInAnimation ease 1s;
-            animation-fill-mode: forwards;
-        }
-        
-        .book-card img {
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-
-            /* animation: fadeInAnimation ease 2s;
-            animation-fill-mode: forwards; */
-        }
-
-
-        ul.horizontal-list {
-            width: 70%;
-            margin: 0 auto;
-            margin-top: 15%; /* Push the list 20px down */
-            list-style-type: none;
-            gap: 1.5rem;
-            padding: 0;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-
-            /* animation: fadeInAnimation ease 1s;
-            animation-fill-mode: forwards; */
-        }
-
-        /* .recommended{
-            color: #d1a641
-        } */
-
-    </style>
 </head>
+
 <body>
 
-<header id = "header">
-    <div class="logo">Book Club</div>
-    <button id = "dark_mode" class = "button">Eyes hurting?</button>
-    <button id = "log_in" class="button">Log in</button>
-</header>
-
-<!-- main body, it has a list where a book will be added using addBookToList -->
-<main>
-    <div class="search-bar-container">
-        <div class="search-bar">
-            <input type="text" placeholder="Search for books...">
-            <button id="search_button" class="button" >Search</button>
+    <header id="header">
+        <div class="logo">
+            <a href="index.html" style="color: #ffffff; text-decoration: none;">Book Club</a>
         </div>
-    </div>
-    <section id="recommended">
-        <h2>Recommended Books</h2>
-        <ul id="bookList" class="horizontal-list"></ul>
-    </section>
-</main>
-
-<script>
-    window.onload = function () {
-        console.log('Page loaded');
-        for (let i = 0; i < 5; i++) {
-            addBookToList();
-        }
-    }
+        <div id="useful_buttons">
+            <!-- <button id="dark_mode" class="button">Eyes hurting?</button> -->
+            <img src="user.png" id="dark_mode" class="icon jump">
+            <img src="user.png" id="User" class="icon jump">
+            <img src="settings_icon.png" id="Settings" class="icon spin">
+        </div>
+    </header>
     
-    let dark = false;
 
-    const search_button = document.getElementById('search_button');
-    const dark_mode = document.getElementById('dark_mode');
 
-    const bookList = document.getElementById('bookList');
+    <!-- main body, it has a list where a book will be added using addBookToList -->
+    <main>
+        <div class="search-bar-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Search for books...">
+                <button id="search_button" class="button">Search</button>
+            </div>
+        </div>
+        <section id="recommended">
+            <h2>Recommended Books</h2>
+            <ul id="bookList" class="horizontal-list"></ul>
+        </section>
+    </main>
 
-    // const book_element = document.getElementsByClassName('book-card');
+    <script>
+        window.onload = function () {
+            console.log('Page loaded');
+            for (let i = 0; i < 5; i++) {
+                addBookToList();
+            }
+        }
 
-    // Function to add a book card to the book list, book card is determined in here
-    function addBookToList() {
-        const li = document.createElement('li');
-        li.innerHTML = `
+        const settings_button = document.getElementById('Settings');
+        settings_button.addEventListener('click', function () {
+            openNav()
+        });
+
+
+        let dark = false;
+
+        const search_button = document.getElementById('search_button');
+        const dark_mode = document.getElementById('dark_mode');
+
+        const bookList = document.getElementById('bookList');
+
+        // const book_element = document.getElementsByClassName('book-card');
+
+        // Function to add a book card to the book list, book card is determined in here
+        function addBookToList() {
+            const li = document.createElement('li');
+            var picture = "https://covers.openlibrary.org/b/id/14833301-L.jpg";
+            const save_icon = "💾";
+            li.innerHTML = `
             <div class="book-card">
-                <img src="https://covers.openlibrary.org/b/id/14833301-L.jpg" alt="Book Cover">
+                <img src="${picture}" alt="Book Cover">
                 <h3>Book Title</h3>
                 <p>Author Name</p>
-                <button id = "" class="button">⭐</button>
                 <button id = "log_in" class="button"></button>
                 <button id = "log_in" class="button"></button>
                 <button id = "log_in" class="button">Review</button>
             </div>
         `;
-        
-        
 
-        bookList.appendChild(li);
 
-        if (dark) {
-            const newBookCard = li.querySelector('.book-card');
-            newBookCard.style.backgroundColor = '#454545';
-            newBookCard.style.color = 'white';
-            newBookCard.style.borderColor = '#272727';
+
+            bookList.appendChild(li);
+
+            if (dark) {
+                const newBookCard = li.querySelector('.book-card');
+                newBookCard.style.backgroundColor = '#454545';
+                newBookCard.style.color = 'white';
+                newBookCard.style.borderColor = '#272727';
+            }
         }
-    }
 
-    // temporary event listener to add a book card to the list
-    search_button.addEventListener('click', function () {
-        addBookToList();
-    });
+        // temporary event listener to add a book card to the list
+        search_button.addEventListener('click', function () {
+            addBookToList();
+        });
 
 
-    // dark mode button
-    document.getElementById('dark_mode').addEventListener('click', function () {
-        const buttons = document.querySelectorAll('.button'); // Select all buttons
-        const book_cards = document.querySelectorAll('.book-card'); // Select all book cards
-        const header = document.getElementById('header');
-        const searchInput = document.querySelector('.search-bar input'); // Get the search input field
-    
-        
-        if (dark) {
-            // Light mode
-            document.getElementById("dark_mode").innerText= "Too bright?";
-            document.body.style.backgroundColor = '#edebd7';
-            header.style.backgroundColor = '#423e37';
+        // dark mode button
+        document.getElementById('dark_mode').addEventListener('click', function () {
+            const buttons = document.querySelectorAll('.button'); // Select all buttons
+            const book_cards = document.querySelectorAll('.book-card'); // Select all book cards
+            const header = document.getElementById('header');
+            const searchInput = document.querySelector('.search-bar input'); // Get the search input field
 
-            searchInput.style.backgroundColor = '#fff';
-            searchInput.style.color = '#000';
-            searchInput.style.borderColor = '#ccc';
 
-            buttons.forEach(button => {
-                button.style.backgroundColor = '#d1a641';
-                button.style.color = '#ffffff';
-            });
-            book_cards.forEach(book_card => {
-                book_card.style.backgroundColor = '#FFFFFF';
-                book_card.style.color = 'black';
-                book_card.style.borderColor = '#ddd';
-            });
-            dark = false;
-        } else {
-            // Dark mode
-            document.getElementById("dark_mode").innerText= "Too dark?";
-            document.body.style.backgroundColor = '#252525';
-            header.style.backgroundColor = '#353535';
+            if (dark) {
+                // Light mode
+                document.getElementById("dark_mode").innerText = "Too bright?";
+                document.body.style.backgroundColor = '#edebd7';
+                header.style.backgroundColor = '#423e37';
 
-            searchInput.style.backgroundColor = '#353535';
-            searchInput.style.color = '#fff';
-            searchInput.style.borderColor = '#555';
+                searchInput.style.backgroundColor = '#fff';
+                searchInput.style.color = '#000';
+                searchInput.style.borderColor = '#ccc';
 
-            buttons.forEach(button => {
-                button.style.backgroundColor = '#4464ad';
-                button.style.color = '#fff';
-            });
-            book_cards.forEach(book_card => {
-                book_card.style.backgroundColor = '#454545';
-                book_card.style.color = 'white';
-                book_card.style.borderColor = '#272727';
-            });
-            dark = true;
-        }
-    });
-</script>
+                buttons.forEach(button => {
+                    button.style.backgroundColor = '#d1a641';
+                    button.style.color = '#ffffff';
+                });
+                book_cards.forEach(book_card => {
+                    book_card.style.backgroundColor = '#FFFFFF';
+                    book_card.style.color = 'black';
+                    book_card.style.borderColor = '#ddd';
+                });
+                dark = false;
+            } else {
+                // Dark mode
+                document.getElementById("dark_mode").innerText = "Too dark?";
+                document.body.style.backgroundColor = '#252525';
+                header.style.backgroundColor = '#353535';
+
+                searchInput.style.backgroundColor = '#353535';
+                searchInput.style.color = '#fff';
+                searchInput.style.borderColor = '#555';
+
+                buttons.forEach(button => {
+                    button.style.backgroundColor = '#4464ad';
+                    button.style.color = '#fff';
+                });
+                book_cards.forEach(book_card => {
+                    book_card.style.backgroundColor = '#454545';
+                    book_card.style.color = 'white';
+                    book_card.style.borderColor = '#272727';
+                });
+                dark = true;
+            }
+        });
+    </script>
 </body>
+
 </html>
 
-<!-- settings, nav bar, user picture, make logo home button -->
+<!-- settings, nav bar, user picture, sortere bøker basert på språk -->
