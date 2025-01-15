@@ -145,7 +145,7 @@ ul.horizontal-list {
 
 /* Specific spinning effect for the 'spin' class */
 .spin:hover {
-    transform: translateY(-2px) rotate(60deg); /* Full rotation on hover */
+    transform: translateY(-2px) rotate(70deg); /* Full rotation on hover */
 }
 
 /* Jumping effect for the 'User' icon */
