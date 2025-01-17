@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="stylesheet.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+    
     <title>Book Club</title>
 </head>
 
@@ -12,13 +14,13 @@
 
     <header id="header">
         <div class="logo">
-            <a href="index.html" style="color: #ffffff; text-decoration: none;">Book Club</a>
+            <a href="" style="color: #ffffff; text-decoration: none;">Book Club</a>
         </div>
         <div id="useful_buttons">
             <!-- <button id="dark_mode" class="button">Eyes hurting?</button> -->
-            <img src="pictures/user.png" id="dark_mode" class="icon jump">
-            <img src="pictures/user.png" id="User" class="icon jump">
-            <img src="pictures/settings_icon.png" id="Settings" class="icon spin">
+            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump">
+            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
+            <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
         </div>
     </header>
     
@@ -32,6 +34,11 @@
                 <button id="search_button" class="button">Search</button>
             </div>
         </div>
+        <!-- <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }} Django will generate the form -->
+            <!-- <button type="submit">Login</button>
+        </form> -->
         <section id="recommended">
             <h2>Recommended Books</h2>
             <ul id="bookList" class="horizontal-list"></ul>
@@ -101,10 +108,11 @@
             const book_cards = document.querySelectorAll('.book-card'); // Select all book cards
             const header = document.getElementById('header');
             const searchInput = document.querySelector('.search-bar input'); // Get the search input field
-
+            const img = document.getElementById('dark_mode');
 
             if (dark) {
                 // Light mode
+                img.setAttribute("src", "{% static 'pictures/bright-mode.png' %}");
                 document.getElementById("dark_mode").innerText = "Too bright?";
                 document.body.style.backgroundColor = '#edebd7';
                 header.style.backgroundColor = '#423e37';
@@ -125,6 +133,7 @@
                 dark = false;
             } else {
                 // Dark mode
+                img.setAttribute("src", "{% static 'pictures/night-mode.png' %}");
                 document.getElementById("dark_mode").innerText = "Too dark?";
                 document.body.style.backgroundColor = '#252525';
                 header.style.backgroundColor = '#353535';
