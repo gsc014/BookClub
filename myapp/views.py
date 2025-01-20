@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
+from django.contrib.auth.forms import AuthenticationForm
 
-# Create your views here.
 def home(request):
-    return render(request, 'index.html')
+    form = AuthenticationForm()  # Create an instance of the login form
+    return render(request, 'index.html', {'form': form})  # Pass the form to the template
