@@ -50,7 +50,7 @@ Follow these steps to get a local copy of the project up and running:
 
 5. **run the development server** 
     ```bash
-    python manage.py migrate
+    python manage.py runserver
 
 6. **open browser**
     ```bash
