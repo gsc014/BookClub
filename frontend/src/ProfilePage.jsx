@@ -13,13 +13,10 @@ const ProfilePage = () => {
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div>
-      <h1>Profile</h1>
-      <p>Username: {profile.username}</p>
-      <p>Email: {profile.email}</p>
-      <p>Bio: {profile.bio}</p>
-    </div>
+  <Header />
+  
   );
+
 };
 
 export default ProfilePage;
