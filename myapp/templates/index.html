@@ -22,7 +22,9 @@
             <a href="{% url 'profile' %}">
                 <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
             </a>
-            <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
+            <a href="{% url 'settings' %}">
+                <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
+            </a>
         </div>
     </header>
 
