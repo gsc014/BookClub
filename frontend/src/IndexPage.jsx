@@ -5,7 +5,7 @@ const IndexPage = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/home/')
+    axios.get('http://127.0.0.1:8000')
       .then(response => setData(response.data))
       .catch(error => console.error('Error fetching home data:', error));
   }, []);
