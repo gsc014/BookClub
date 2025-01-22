@@ -18,7 +18,10 @@
         <div id="useful_buttons">
             <!-- <button id="dark_mode" class="button">Eyes hurting?</button> -->
             <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump">
-            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
+            <!-- <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump"> -->
+            <a href="{% url 'profile' %}">
+                <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
+            </a>
             <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
         </div>
     </header>
@@ -135,33 +138,36 @@
         //     }
         // });
 
-        let showForm = false;
 
-        user.addEventListener('click', function (event) {
-            const form = document.getElementById('form');
-            if (showForm) {
-                form.style.opacity = 0;
-                form.style.pointerEvents = 'none';
-                showForm = false;
-                // Remove background blur if added
-            } else {
-                form.style.opacity = 1;
-                form.style.pointerEvents = 'all';
-                showForm = true;
-                // Add background blur if needed
-            }
-            event.stopPropagation(); // Prevent event from bubbling up
-        });
+        // profile button
 
-        document.addEventListener('click', function (event) {
-            const form = document.getElementById('form');
-            if (showForm && !form.contains(event.target)) {
-                form.style.opacity = 0;
-                form.style.pointerEvents = 'none';
-                showForm = false;
-                // Remove background blur if added
-            }
-        });
+        // let showForm = false;
+
+        // user.addEventListener('click', function (event) {
+        //     const form = document.getElementById('form');
+        //     if (showForm) {
+        //         form.style.opacity = 0;
+        //         form.style.pointerEvents = 'none';
+        //         showForm = false;
+        //         // Remove background blur if added
+        //     } else {
+        //         form.style.opacity = 1;
+        //         form.style.pointerEvents = 'all';
+        //         showForm = true;
+        //         // Add background blur if needed
+        //     }
+        //     event.stopPropagation(); // Prevent event from bubbling up
+        // });
+
+        // document.addEventListener('click', function (event) {
+        //     const form = document.getElementById('form');
+        //     if (showForm && !form.contains(event.target)) {
+        //         form.style.opacity = 0;
+        //         form.style.pointerEvents = 'none';
+        //         showForm = false;
+        //         // Remove background blur if added
+        //     }
+        // });
 
 
 
