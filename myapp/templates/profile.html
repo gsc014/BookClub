@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+    <title>Profile</title>
+</head>
+
+<body>
+
+    <header id="header">
+        <div class="logo">
+            <a href="{% url 'home' %}" style="color: #ffffff; text-decoration: none;">Book Club</a>
+        </div>
+        <div id="useful_buttons">
+            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
+            </a>
+            <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
+        </div>
+    </header>
+
+    <main>
+        <section class="profile-info">
+            <h2>Username</h2>
+            <p>Email: </p>
+            <p>Member since: </p>
+        </section>
+        <section class="profile-details">
+            <h3>About me</h3>
+            <p>Sample text</p>
+        </section>
+    </main>
+</body>
+</html>
