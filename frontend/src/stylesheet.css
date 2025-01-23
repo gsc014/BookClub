@@ -7,7 +7,7 @@ body {
 }
 
 header {
-    width: 150%;
+    /* width: 100%; */
     background-color: #423e37;
     color: #FFF;
     padding: 1rem 2rem;
@@ -92,9 +92,6 @@ main {
     width: 100%;
     height: auto;
     border-radius: 4px;
-
-    /* animation: fadeInAnimation ease 2s;
-    animation-fill-mode: forwards; */
 }
 
 
@@ -102,22 +99,16 @@ ul.horizontal-list {
     width: 70%;
     margin: 0 auto;
     margin-top: 15%;
-    /* Push the list 20px down */
     list-style-type: none;
     gap: 1.5rem;
     padding: 0;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-
-    /* animation: fadeInAnimation ease 1s;
-    animation-fill-mode: forwards; */
 }
 
 .icon {
     opacity: 0.5;
-    width: 32px;
-    height: 32px;
     display: inline-block;
     vertical-align: middle;
     transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transformations */
@@ -143,6 +134,16 @@ ul.horizontal-list {
     cursor: pointer;
 }
 
+.top_bar_icon {
+    width: 32px;
+    height: 32px;
+}
+
+.exit {
+    width: 16px;
+    height: 16px;
+}
+
 /* Specific spinning effect for the 'spin' class */
 .spin:hover {
     transform: translateY(-2px) rotate(70deg); /* Full rotation on hover */
@@ -154,13 +155,18 @@ ul.horizontal-list {
 }
 
 .form {
-    background-color: #15172b;
+    /* display: none; */
+    background-color: #423e37;
     border-radius: 20px;
     box-sizing: border-box;
     /* height: auto; */
     padding: 20px;
     width: 320px;
   }
+
+/* .form:target {
+    display: block;
+} */
   
   .input-container {
     height: 50px;
@@ -175,9 +181,13 @@ ul.horizontal-list {
   .ic2 {
     margin-top: 30px;
   }
+
+  .ic3 {
+    margin-top: 20px;
+  }
   
   .input {
-    background-color: #303245;
+    background-color: #ddd;
     border-radius: 12px;
     border: 0;
     box-sizing: border-box;
@@ -190,7 +200,7 @@ ul.horizontal-list {
   }
   
   .cut {
-    background-color: #15172b;
+    background-color: #423e37;
     border-radius: 10px;
     height: 20px;
     left: 20px;
@@ -236,11 +246,6 @@ ul.horizontal-list {
   }
   
   .submit {
-    background-color: #08d;
-    border-radius: 12px;
-    border: 0;
-    box-sizing: border-box;
-    color: #eee;
     cursor: pointer;
     font-size: 18px;
     height: 50px;
@@ -249,20 +254,20 @@ ul.horizontal-list {
     text-align: center;
     width: 100%;
   }
-  
-  .submit:active {
-    background-color: #06b;
-  }
 
-  #form
+  #auth-section
     {
         pointer-events: none;
-        opacity: 0;
+        opacity: 1;
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         transition: opacity 0.2s;
+    }
+  
+    #auth-section {
+        transition: opacity 0.3s ease;
     }
   
 
