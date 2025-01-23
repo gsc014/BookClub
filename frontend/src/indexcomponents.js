@@ -10,15 +10,12 @@ settings_button.addEventListener('click', function () {
     console.log('Settings button clicked');
 });
 
-
 let dark = false;
 
 const search_button = document.getElementById('search_button');
 const dark_mode = document.getElementById('dark_mode');
 const user = document.getElementById('User');
 const bookList = document.getElementById('bookList');
-
-// const book_element = document.getElementsByClassName('book-card');
 
 // Function to add a book card to the book list, book card is determined in here
 export function addBookToList() {
