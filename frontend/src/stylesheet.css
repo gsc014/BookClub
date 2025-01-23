@@ -6,9 +6,9 @@ body {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-header {
+/* header {
     /* width: 100%; */
-    background-color: #423e37;
+    /* background-color: #423e37;
     color: #FFF;
     padding: 1rem 2rem;
     display: flex;
@@ -16,27 +16,27 @@ header {
     align-items: center;
     position: relative;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
+} */
 
 /* Logo Styling */
-.logo {
+/* .logo {
     font-size: 1.5rem;
     font-weight: bold;
-}
+} */
 
 /* Buttons Container */
-#useful_buttons {
+/* #useful_buttons {
     display: flex; /* Use flexbox for the buttons */
-    align-items: center; /* Center the buttons vertically */
-    gap: 0.5rem; /* Add spacing between the buttons */
-}
+    /* align-items: center; /* Center the buttons vertically */
+    /* gap: 0.5rem; Add spacing between the buttons */
+/* } */ 
 
-main {
+/* main {
     padding: 2rem;
     /* color: #d1a641; */
-}
+/* } */
 
-.search-bar-container {
+/* .search-bar-container {
     top: 100%;
     margin: 0 auto;
     width: 50%;
@@ -57,7 +57,7 @@ main {
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
-}
+} */
 
 .button {
     padding: 0.5rem;
@@ -69,7 +69,7 @@ main {
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-.book-card:hover {
+/* .book-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -105,31 +105,31 @@ ul.horizontal-list {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-}
+} */
 
-.icon {
+/* .icon {
     opacity: 0.5;
     display: inline-block;
     vertical-align: middle;
     transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transformations */
-    padding: 5px;
+    /* padding: 5px;
 
     filter: grayscale(1) brightness(0) invert(1); /* Turns the image into a solid white */
-}
+/* } */
 
-.icon_bookcard {
+/* .icon_bookcard {
     width: 10px; /* Adjusted to a more reasonable size */
-    height: 4px; /* Matches the width for consistency */
-    padding: 0; /* Ensure no extra space */
-    box-sizing: border-box; /* Includes padding and border in width/height */
-    display: inline-block; /* Keeps it inline with other elements */
-    object-fit: contain; /* Ensures the image scales without distortion */
-    filter: grayscale(1) brightness(0) invert(0); /* Optional, removes the solid white filter */
-}
+    /* height: 4px; /* Matches the width for consistency */
+    /* padding: 0; /* Ensure no extra space */
+    /* box-sizing: border-box; Includes padding and border in width/height */
+    /* display: inline-block; Keeps it inline with other elements */
+    /* object-fit: contain; Ensures the image scales without distortion */
+    /* filter: grayscale(1) brightness(0) invert(0); Optional, removes the solid white filter */
+/* }  */
 
 
 /* Hover effect for all icons */
-.icon:hover {
+/* .icon:hover {
     opacity: 1;
     cursor: pointer;
 }
@@ -145,24 +145,24 @@ ul.horizontal-list {
 }
 
 /* Specific spinning effect for the 'spin' class */
-.spin:hover {
+/* .spin:hover {
     transform: translateY(-2px) rotate(70deg); /* Full rotation on hover */
-}
+/* } */
 
 /* Jumping effect for the 'User' icon */
-.jump:hover {
+/* .jump:hover {
     transform: translateY(-2px); /* Move up by 10px */
-}
+/* } */
 
-.form {
+/* .form {
     /* display: none; */
-    background-color: #423e37;
+    /* background-color: #423e37;
     border-radius: 20px;
     box-sizing: border-box;
     /* height: auto; */
-    padding: 20px;
+    /* padding: 20px;
     width: 320px;
-  }
+  } */
 
 /* .form:target {
     display: block;
@@ -245,15 +245,15 @@ ul.horizontal-list {
     color: #ffffff;
   }
   
-  .submit {
+  /* .submit {
     cursor: pointer;
     font-size: 18px;
     height: 50px;
     margin-top: 38px;
     outline: 0;
     text-align: center;
-    width: 100%;
-  }
+    width: 100%; */
+  /* } */
 
   #auth-section
     {
