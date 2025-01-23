@@ -19,6 +19,7 @@ def home(request):
     # return render(request, 'index.html')
     # Replace with actual data if neededwhat 
     return Response({
+        "img":"{% static 'pictures/bright-mode.png' %}",
         "message": "Welcome to the home page!",
         "login_form": {
             "username": "Enter your username",
