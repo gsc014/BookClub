@@ -4,6 +4,8 @@ import './login.css';
 
 import close from './pictures/close.png';
 
+import { showSignInTab } from './header.jsx';
+
 const Login = () => {
 
     return (
@@ -52,7 +54,7 @@ const Login = () => {
             </form>
             <p className="switch-form">
                 Already have an account?
-                <button className="button" id="show-signup" onclick="show_sign_in()">
+                <button className="button" id="show-signup" onClick={showSignInTab}>
                     Sign Up
                 </button>
             </p>

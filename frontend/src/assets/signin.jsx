@@ -4,10 +4,13 @@ import './login.css';
 
 import close from './pictures/close.png';
 
+import { showLogInTab } from './header.jsx';
+
+
 const Signin = () => {
 
     return (
-        <div className="form" id="login-form">
+        <div className="form" id="signin-form">
                     <h2>
                         Sign In
                         <img
@@ -68,7 +71,7 @@ const Signin = () => {
                     </form>
                     <p className="switch-form">
                         Don't have an account?
-                        <button className="button" id="show-signup" onclick="show_sign_in()">
+                        <button className="button" id="show-signup" onClick={showLogInTab}>
                             Sign Up
                         </button>
                     </p>
