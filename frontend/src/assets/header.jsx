@@ -5,9 +5,49 @@ import axios from 'axios';
 // import css
 import './header_style.css';
 
-import dark_mode from './pictures/bright-mode.png'; // Relative path to the image
-import userImage from './pictures/user.png'; // Relative path to the image
-import settingsIcon from './pictures/settings_icon.png'; // Relative path to the image
+import light_mode from './pictures/bright-mode.png';
+import dark_mode from './pictures/night-mode.png';
+import userImage from './pictures/user.png';
+import settingsIcon from './pictures/settings_icon.png';
+
+
+function closeTabs() {
+
+    document.getElementById("login-form").style.display = "none";
+    document.getElementById("login-form").style.opacity = "0";
+    // document.getElementById("signin-form").style.opacity = "0";
+    showLogIn = false;
+    // showSignIn = false;
+}
+
+function showLogInTab() {
+    document.getElementById("login-form").style.display = "block";
+    document.getElementById("login-form").style.opacity = "1";
+    showLogIn = true;
+}
+
+var showLogIn = false;
+var showSignIn = false;
+function handleAccount() {
+    if(showLogIn || showSignIn) {
+        closeTabs();
+    } else {
+        showLogInTab();
+    }
+}
+
+function changeMode() {
+    var element = document.body;
+    element.classList.toggle("dark-mode");
+    var modeImage = document.getElementById("dark_mode");
+    if (element.classList.contains("dark-mode")) {
+        modeImage.src = dark_mode;
+        // change physical colors to light mode
+    } else {
+        modeImage.src = light_mode;
+        // change physical colors to dark mode
+    }
+}
 
 const Header = () => {
     const [data, setData] = useState(null);
@@ -20,6 +60,7 @@ const Header = () => {
 
     if (!data) return <div>Loading...</div>;
 
+    var modeImage = light_mode;
     return (
         <header id="header">
             <div id="logo">
@@ -27,25 +68,22 @@ const Header = () => {
             </div>
             <div id="useful_buttons">
                 <img
-                    src={dark_mode}
+                    src={modeImage}
                     id="dark_mode"
                     className="icon jump"
-                    alt="Dark Mode"
+                    onClick={changeMode}
                 />
-                <a href="/profile">
-                    <img
-                        src={userImage}
-                        id="User"
-                        className="icon jump"
-                        alt="User"
-                    />
-                </a>
+                <img
+                    src={userImage}
+                    id="User"
+                    className="icon jump"
+                    onClick={handleAccount}
+                />
                 <a href="/settings">
                     <img
                         src={settingsIcon}
                         id="Settings"
                         className="icon spin"
-                        alt="Settings"
                     />
                 </a>
             </div>

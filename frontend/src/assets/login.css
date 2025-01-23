@@ -6,6 +6,9 @@
   /* height: auto; */
   padding: 20px;
   width: 320px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  /* pointer-events: none; */
 }
 
 .input-container {
