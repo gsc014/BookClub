@@ -16,19 +16,13 @@
             <a href="" style="color: #ffffff; text-decoration: none;">Book Club</a>
         </div>
         <div id="useful_buttons">
-            <!-- <button id="dark_mode" class="button">Eyes hurting?</button> -->
-            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump">
-            <!-- <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump"> -->
-            <a href="{% url 'profile' %}">
-                <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
-            </a>
-            <a href="{% url 'settings' %}">
-                <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
-            </a>
+            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump top_bar_icon"
+                onclick="toggle_dark_mode()">
+            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump top_bar_icon" onclick="handle_account()">
+            <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin top_bar_icon">
         </div>
     </header>
 
-    <!-- main body, it has a list where a book will be added using addBookToList -->
     <main>
         <div class="search-bar-container">
             <div class="search-bar">
@@ -42,72 +36,102 @@
             <ul id="bookList" class="horizontal-list"></ul>
         </section>
 
-        <!-- <div id="login_form">
-            <form method="post" class="login_form">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Login</button>
-            </form>
-        </div> -->
+        <section id="auth-section" style="opacity: 0; pointer-events: none;">
+            <div class="form" id="login-form">
+                <h2>Log In <img src="{% static 'pictures/close.png' %}" class = "icon jump exit" alt="" onclick="closeTabs()"></h2>
+                {% if messages %}
+                <div id="messages">
+                    {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'login_user' %}">
+                    {% csrf_token %}
+                    <div class="input-container ic1">
+                        <input class="input" id="username" name="username" type="text" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="username" class="placeholder">Username</label>
+                    </div>
 
-        <div id="form" class="form">
-            <div class="input-container ic1">
-                <input id="firstname" class="input" type="text" placeholder=" " />
-                <div class="cut"></div>
-                <label for="firstname" class="placeholder">First name</label>
-            </div>
-            <div class="input-container ic2">
-                <input id="lastname" class="input" type="text" placeholder=" " />
-                <div class="cut"></div>
-                <label for="lastname" class="placeholder">Last name</label>
-            </div>
-            <button type="text" class="submit">Login</button>
-        </div>
+                    <div class="input-container ic2">
+                        <input class="input" id="password" name="password" type="password" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="password" class="placeholder">Password</label>
+                    </div>
 
+                    <button class="submit button" type="submit">Log In</button>
+                </form>
+                <p class="switch-form">
+                    Don't have an account? <button class="button" id="show-signup"
+                        onclick="show_sign_in()">Sign
+                        Up</button>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="form" id="signup-form" style="display: none;">
+                <h2>Sign Up <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt="" onclick="closeTabs()"></h2>
+                {% if messages %}
+                <div id="messages">
+                    {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'signup_user' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="signup">
+                    <div class="input-container ic1">
+                        <input class="input" id="signup-username" name="username" type="text" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="signup-username" class="placeholder">Username</label>
+                    </div>
+                    <div class="input-container ic2">
+                        <input class="input" id="signup-password1" name="password1" type="password" placeholder=" "
+                            required>
+                        <div class="cut"></div>
+                        <label for="signup-password1" class="placeholder">Password</label>
+                    </div>
+                    <div class="input-container ic3">
+                        <input class="input" id="signup-password2" name="password2" type="password" placeholder=" "
+                            required>
+                        <div class="cut"></div>
+                        <label for="signup-password2" class="placeholder">Confirm Password</label>
+                    </div>
+                    <button class="submit button" type="submit">Sign Up</button>
+                </form>
+
+                <p class="switch-form">
+                    Already have an account? <button class="button" id="show-login" onclick="show_log_in()">Log
+                        In</button>
+                </p>
+            </div>
+        </section>
 
     </main>
 
     <script>
-        window.onload = function () {
-            console.log('Page loaded');
-            for (let i = 0; i < 5; i++) {
-                addBookToList();
-            }
-        }
-
-        const settings_button = document.getElementById('Settings');
-        settings_button.addEventListener('click', function () {
-            console.log('Settings button clicked');
-        });
-
 
         let dark = false;
-
         const search_button = document.getElementById('search_button');
         const dark_mode = document.getElementById('dark_mode');
         const user = document.getElementById('User');
         const bookList = document.getElementById('bookList');
 
-        // const book_element = document.getElementsByClassName('book-card');
-
-        // Function to add a book card to the book list, book card is determined in here
         function addBookToList() {
             const li = document.createElement('li');
             var picture = "https://covers.openlibrary.org/b/id/14833301-L.jpg";
-            const save_icon = "💾";
             li.innerHTML = `
             <div class="book-card">
                 <img src="${picture}" alt="Book Cover">
                 <h3>Book Title</h3>
                 <p>Author Name</p>
-                <button id = "log_in" class="button"></button>
-                <button id = "log_in" class="button"></button>
-                <button id = "log_in" class="button">Review</button>
-            </div>
-        `;
-
-
-
+                <button class="button">Save</button>
+                <button class="button">Details</button>
+                <button class="button">Review</button>
+                </div>
+                `;
             bookList.appendChild(li);
 
             if (dark) {
@@ -118,118 +142,109 @@
             }
         }
 
-        // temporary event listener to add a book card to the list
-        search_button.addEventListener('click', function () {
-            addBookToList();
-        });
+        function closeTabs() {
+            // document.getElementById('login-form').style.display = 'none';
+            // document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('auth-section').style.opacity = 0;
+            document.getElementById('auth-section').style.pointerEvents = 'none';
+            log_in = false;
+            sign_in = false;
+        }
 
-        // let showForm = false;
-        // user.addEventListener('click', function () {
-        //     const form = document.getElementById('form');
-        //     if (showForm) {
-        //         form.style.opacity = 0;
-        //         form.style.pointerEvents = 'none';
-        //         showForm = false;
-        //         // add blur effect to the background
+        function show_log_in() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('signup-form').style.display = 'none';
+            log_in = true;
+        }
 
-        //     }
-        //     else {
-        //         form.style.opacity = 1;
-        //         form.style.pointerEvents = 'all';
-        //         showForm = true;
-        //     }
-        // });
+        function show_sign_in() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+            sign_in = true;
+        }
 
+        var log_in = false;
+        var sign_in = false;
+        function handle_account() {
+            if (log_in == false && sign_in == false) {
+                document.getElementById('auth-section').style.opacity = 1;
+                document.getElementById('auth-section').style.pointerEvents = 'all';
+                show_log_in();
+            } else {
+                closeTabs();
+            }
+        }
 
-        // profile button
-
-        // let showForm = false;
-
-        // user.addEventListener('click', function (event) {
-        //     const form = document.getElementById('form');
-        //     if (showForm) {
-        //         form.style.opacity = 0;
-        //         form.style.pointerEvents = 'none';
-        //         showForm = false;
-        //         // Remove background blur if added
-        //     } else {
-        //         form.style.opacity = 1;
-        //         form.style.pointerEvents = 'all';
-        //         showForm = true;
-        //         // Add background blur if needed
-        //     }
-        //     event.stopPropagation(); // Prevent event from bubbling up
-        // });
-
-        // document.addEventListener('click', function (event) {
-        //     const form = document.getElementById('form');
-        //     if (showForm && !form.contains(event.target)) {
-        //         form.style.opacity = 0;
-        //         form.style.pointerEvents = 'none';
-        //         showForm = false;
-        //         // Remove background blur if added
-        //     }
-        // });
-
-
-
-
-
-        // dark mode button
-        document.getElementById('dark_mode').addEventListener('click', function () {
-            const buttons = document.querySelectorAll('.button'); // Select all buttons
-            const book_cards = document.querySelectorAll('.book-card'); // Select all book cards
+        function toggle_dark_mode() {
+            const buttons = document.querySelectorAll('.button');
+            const book_cards = document.querySelectorAll('.book-card');
             const header = document.getElementById('header');
-            const searchInput = document.querySelector('.search-bar input'); // Get the search input field
+            const searchInput = document.querySelector('.search-bar input');
             const img = document.getElementById('dark_mode');
 
             if (dark) {
-                // Light mode
                 img.setAttribute("src", "{% static 'pictures/bright-mode.png' %}");
-                document.getElementById("dark_mode").innerText = "Too bright?";
                 document.body.style.backgroundColor = '#edebd7';
                 header.style.backgroundColor = '#423e37';
-
                 searchInput.style.backgroundColor = '#fff';
                 searchInput.style.color = '#000';
-                searchInput.style.borderColor = '#ccc';
 
-                buttons.forEach(button => {
-                    button.style.backgroundColor = '#d1a641';
-                    button.style.color = '#ffffff';
-                });
-                book_cards.forEach(book_card => {
-                    book_card.style.backgroundColor = '#FFFFFF';
-                    book_card.style.color = 'black';
-                    book_card.style.borderColor = '#ddd';
-                });
+                buttons.forEach(button => button.style.backgroundColor = '#d1a641');
+                book_cards.forEach(card => card.style.backgroundColor = '#fff');
                 dark = false;
             } else {
-                // Dark mode
                 img.setAttribute("src", "{% static 'pictures/night-mode.png' %}");
-                document.getElementById("dark_mode").innerText = "Too dark?";
                 document.body.style.backgroundColor = '#252525';
                 header.style.backgroundColor = '#353535';
-
                 searchInput.style.backgroundColor = '#353535';
                 searchInput.style.color = '#fff';
-                searchInput.style.borderColor = '#555';
 
-                buttons.forEach(button => {
-                    button.style.backgroundColor = '#4464ad';
-                    button.style.color = '#fff';
-                });
-                book_cards.forEach(book_card => {
-                    book_card.style.backgroundColor = '#454545';
-                    book_card.style.color = 'white';
-                    book_card.style.borderColor = '#272727';
-                });
+                buttons.forEach(button => button.style.backgroundColor = '#4464ad');
+                book_cards.forEach(card => card.style.backgroundColor = '#454545');
                 dark = true;
             }
-        });
+        };
+
+        
+        function page_loaded() {
+            console.log('Page loaded');
+        }
+        
+        // will make sure that the login/signin form is displayed if it was unsucsessful
+        const showLogin = "{{ show_login|default:'false' }}";  // 'true' or 'false'
+        const showSignup = "{{ show_signup|default:'false' }}";  // 'true' or 'false'
+        
+        const authSection = document.getElementById('auth-section');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+
+        // Temporarily disable transitions to make changes instant
+        authSection.style.transition = 'none';
+
+        // Check if showLogin or showSignup is 'true' and show the respective form
+        if (showLogin === "true" || showSignup === "true") {
+            authSection.style.display = 'block';  // Show auth section
+            authSection.style.opacity = 1;  // Make it visible instantly
+            authSection.style.pointerEvents = 'all';
+            logged_in = true;
+        }
+
+        if (showLogin === "true") {
+            // loginForm.style.display = 'block';  // Show login form
+            // signupForm.style.display = 'none';  // Hide signup form
+            show_log_in();
+        } else if (showSignup === "true") {
+            // loginForm.style.display = 'none';  // Hide login form
+            // signupForm.style.display = 'block';  // Show signup form
+            show_sign_in();
+        }
+
+        // Re-enable transitions after a small delay
+        setTimeout(function () {
+            authSection.style.transition = '';  // Restore original transition
+        }, 50);  // Delay in ms, ensure it's long enough to complete the change
+        window.onload = page_loaded;
     </script>
 </body>
 
 </html>
-
-<!-- settings, nav bar, user picture, sortere bøker basert på språk -->

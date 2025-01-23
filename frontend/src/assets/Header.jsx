@@ -3,6 +3,8 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+import userImage from './assets/pictures/user.png'; // Relative path to the image
+
 const Header = () => {
     const [data, setData] = useState(null);
 
@@ -28,7 +30,7 @@ const Header = () => {
                 />
                 <a href="/profile">
                     <img
-                        src="/static/pictures/user.png"
+                        src={userImage}
                         id="User"
                         className="icon jump"
                         alt="User"
