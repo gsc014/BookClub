@@ -47,3 +47,37 @@ def settings(request):
         "notifications": True
     })
 
+
+# def home(request):
+#     return render(request, 'index.html')
+
+# def login_user(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+#         user = authenticate(request, username=username, password=password)
+#         if user is not None:
+#             login(request, user)
+#             messages.success(request, 'You have successfully logged in.')
+#             return redirect('home')
+#         else:
+#             messages.error(request, 'Invalid username or password.')
+#             return render(request, 'index.html', {'show_login': 'true'})  # Show login form on error
+
+# def signup_user(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password1 = request.POST.get('password1')
+#         password2 = request.POST.get('password2')
+
+#         if password1 != password2:
+#             messages.error(request, 'Passwords do not match.')
+#             return render(request, 'index.html', {'show_signup': 'true'})  # Show signup form on error
+#         else:
+#             try:
+#                 User.objects.create_user(username=username, password=password1)
+#                 messages.success(request, 'Account created successfully. Please log in.')
+#                 return redirect('home')
+#             except Exception as e:
+#                 messages.error(request, f'Error creating account: {e}')
+#                 return render(request, 'index.html', {'show_signup': 'true'})  # Show signup form on error

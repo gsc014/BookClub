@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+    <title>Book Club</title>
+</head>
+
+<body>
+
+    <header id="header">
+        <div class="logo">
+            <a href="" style="color: #ffffff; text-decoration: none;">Book Club</a>
+        </div>
+        <div id="useful_buttons">
+            <!-- <button id="dark_mode" class="button">Eyes hurting?</button> -->
+            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump">
+            <!-- <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump"> -->
+            <a href="{% url 'profile' %}">
+                <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump">
+            </a>
+            <a href="{% url 'settings' %}">
+                <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin">
+            </a>
+        </div>
+    </header>
+
+    <!-- main body, it has a list where a book will be added using addBookToList -->
+    <main>
+        <div class="search-bar-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Search for books...">
+                <button id="search_button" class="button">Search</button>
+            </div>
+        </div>
+
+        <section id="recommended">
+            <h2>Recommended Books</h2>
+            <ul id="bookList" class="horizontal-list"></ul>
+        </section>
+
+        <!-- <div id="login_form">
+            <form method="post" class="login_form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Login</button>
+            </form>
+        </div> -->
+
+        <div id="form" class="form">
+            <div class="input-container ic1">
+                <input id="firstname" class="input" type="text" placeholder=" " />
+                <div class="cut"></div>
+                <label for="firstname" class="placeholder">First name</label>
+            </div>
+            <div class="input-container ic2">
+                <input id="lastname" class="input" type="text" placeholder=" " />
+                <div class="cut"></div>
+                <label for="lastname" class="placeholder">Last name</label>
+            </div>
+            <button type="text" class="submit">Login</button>
+        </div>
+
+
+    </main>
+
+    <script>
+        window.onload = function () {
+            console.log('Page loaded');
+            for (let i = 0; i < 5; i++) {
+                addBookToList();
+            }
+        }
+
+        const settings_button = document.getElementById('Settings');
+        settings_button.addEventListener('click', function () {
+            console.log('Settings button clicked');
+        });
+
+
+        let dark = false;
+
+        const search_button = document.getElementById('search_button');
+        const dark_mode = document.getElementById('dark_mode');
+        const user = document.getElementById('User');
+        const bookList = document.getElementById('bookList');
+
+        // const book_element = document.getElementsByClassName('book-card');
+
+        // Function to add a book card to the book list, book card is determined in here
+        function addBookToList() {
+            const li = document.createElement('li');
+            var picture = "https://covers.openlibrary.org/b/id/14833301-L.jpg";
+            const save_icon = "💾";
+            li.innerHTML = `
+            <div class="book-card">
+                <img src="${picture}" alt="Book Cover">
+                <h3>Book Title</h3>
+                <p>Author Name</p>
+                <button id = "log_in" class="button"></button>
+                <button id = "log_in" class="button"></button>
+                <button id = "log_in" class="button">Review</button>
+            </div>
+        `;
+
+
+
+            bookList.appendChild(li);
+
+            if (dark) {
+                const newBookCard = li.querySelector('.book-card');
+                newBookCard.style.backgroundColor = '#454545';
+                newBookCard.style.color = 'white';
+                newBookCard.style.borderColor = '#272727';
+            }
+        }
+
+        // temporary event listener to add a book card to the list
+        search_button.addEventListener('click', function () {
+            addBookToList();
+        });
+
+        // let showForm = false;
+        // user.addEventListener('click', function () {
+        //     const form = document.getElementById('form');
+        //     if (showForm) {
+        //         form.style.opacity = 0;
+        //         form.style.pointerEvents = 'none';
+        //         showForm = false;
+        //         // add blur effect to the background
+
+        //     }
+        //     else {
+        //         form.style.opacity = 1;
+        //         form.style.pointerEvents = 'all';
+        //         showForm = true;
+        //     }
+        // });
+
+
+        // profile button
+
+        // let showForm = false;
+
+        // user.addEventListener('click', function (event) {
+        //     const form = document.getElementById('form');
+        //     if (showForm) {
+        //         form.style.opacity = 0;
+        //         form.style.pointerEvents = 'none';
+        //         showForm = false;
+        //         // Remove background blur if added
+        //     } else {
+        //         form.style.opacity = 1;
+        //         form.style.pointerEvents = 'all';
+        //         showForm = true;
+        //         // Add background blur if needed
+        //     }
+        //     event.stopPropagation(); // Prevent event from bubbling up
+        // });
+
+        // document.addEventListener('click', function (event) {
+        //     const form = document.getElementById('form');
+        //     if (showForm && !form.contains(event.target)) {
+        //         form.style.opacity = 0;
+        //         form.style.pointerEvents = 'none';
+        //         showForm = false;
+        //         // Remove background blur if added
+        //     }
+        // });
+
+
+
+
+
+        // dark mode button
+        document.getElementById('dark_mode').addEventListener('click', function () {
+            const buttons = document.querySelectorAll('.button'); // Select all buttons
+            const book_cards = document.querySelectorAll('.book-card'); // Select all book cards
+            const header = document.getElementById('header');
+            const searchInput = document.querySelector('.search-bar input'); // Get the search input field
+            const img = document.getElementById('dark_mode');
+
+            if (dark) {
+                // Light mode
+                img.setAttribute("src", "{% static 'pictures/bright-mode.png' %}");
+                document.getElementById("dark_mode").innerText = "Too bright?";
+                document.body.style.backgroundColor = '#edebd7';
+                header.style.backgroundColor = '#423e37';
+
+                searchInput.style.backgroundColor = '#fff';
+                searchInput.style.color = '#000';
+                searchInput.style.borderColor = '#ccc';
+
+                buttons.forEach(button => {
+                    button.style.backgroundColor = '#d1a641';
+                    button.style.color = '#ffffff';
+                });
+                book_cards.forEach(book_card => {
+                    book_card.style.backgroundColor = '#FFFFFF';
+                    book_card.style.color = 'black';
+                    book_card.style.borderColor = '#ddd';
+                });
+                dark = false;
+            } else {
+                // Dark mode
+                img.setAttribute("src", "{% static 'pictures/night-mode.png' %}");
+                document.getElementById("dark_mode").innerText = "Too dark?";
+                document.body.style.backgroundColor = '#252525';
+                header.style.backgroundColor = '#353535';
+
+                searchInput.style.backgroundColor = '#353535';
+                searchInput.style.color = '#fff';
+                searchInput.style.borderColor = '#555';
+
+                buttons.forEach(button => {
+                    button.style.backgroundColor = '#4464ad';
+                    button.style.color = '#fff';
+                });
+                book_cards.forEach(book_card => {
+                    book_card.style.backgroundColor = '#454545';
+                    book_card.style.color = 'white';
+                    book_card.style.borderColor = '#272727';
+                });
+                dark = true;
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+<!-- settings, nav bar, user picture, sortere bøker basert på språk -->
