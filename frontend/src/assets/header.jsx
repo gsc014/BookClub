@@ -12,45 +12,57 @@ import settingsIcon from './pictures/settings_icon.png';
 
 
 function closeTabs() {
-
-    document.getElementById("login-form").style.display = "none";
     document.getElementById("login-form").style.opacity = "0";
-    // document.getElementById("signin-form").style.opacity = "0";
+    document.getElementById('login-form').style.pointerEvents = 'none';
+    document.getElementById("signin-form").style.display = "0";
+    document.getElementById("signin-form").style.pointerEvents = "none";
     showLogIn = false;
-    // showSignIn = false;
+    showSignIn = false;
 }
 
-function showLogInTab() {
-    document.getElementById("login-form").style.display = "block";
+export function showSignInTab() {
+    // close login tab
+    document.getElementById("login-form").style.opacity = "0";
+    document.getElementById('login-form').style.pointerEvents = 'none';
+    showLogIn = false;
+
+    document.getElementById("signin-form").style.opacity = "1";
+    document.getElementById('signin-form').style.pointerEvents = 'all';
+    showSignIn = true;
+}
+
+export function showLogInTab() {
+    // close signin tab
+    document.getElementById("signin-form").style.opacity = "0";
+    document.getElementById('signin-form').style.pointerEvents = 'none';
+    showSignIn = false;
+
     document.getElementById("login-form").style.opacity = "1";
+    document.getElementById('login-form').style.pointerEvents = 'all';
     showLogIn = true;
 }
 
 var showLogIn = false;
 var showSignIn = false;
 function handleAccount() {
-    if(showLogIn || showSignIn) {
+    if(showLogIn == true || showSignIn == true) {
         closeTabs();
     } else {
         showLogInTab();
     }
 }
 
-function changeMode() {
-    var element = document.body;
-    element.classList.toggle("dark-mode");
-    var modeImage = document.getElementById("dark_mode");
-    if (element.classList.contains("dark-mode")) {
-        modeImage.src = dark_mode;
-        // change physical colors to light mode
+function changeColor(isLightmode) {
+    if(isLightmode) {
+        // console.log('light mode');
     } else {
-        modeImage.src = light_mode;
-        // change physical colors to dark mode
+        // console.log('dark mode');
     }
 }
 
 const Header = () => {
     const [data, setData] = useState(null);
+    const [isLightmode, setDarkmode] = useState(false);
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/')
@@ -58,9 +70,13 @@ const Header = () => {
             .catch(error => console.error('Error fetching home data:', error));
     }, []);
 
+    const toggleMode = () => {
+        changeColor(isLightmode);
+        setDarkmode((prev) => !prev);
+    };
+
     if (!data) return <div>Loading...</div>;
 
-    var modeImage = light_mode;
     return (
         <header id="header">
             <div id="logo">
@@ -68,10 +84,10 @@ const Header = () => {
             </div>
             <div id="useful_buttons">
                 <img
-                    src={modeImage}
+                    src={isLightmode ? dark_mode : light_mode}
                     id="dark_mode"
                     className="icon jump"
-                    onClick={changeMode}
+                    onClick={toggleMode}
                 />
                 <img
                     src={userImage}

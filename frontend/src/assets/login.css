@@ -1,14 +1,19 @@
 .form {
-  /* display: none; */
   background-color: #423e37;
   border-radius: 20px;
   box-sizing: border-box;
-  /* height: auto; */
   padding: 20px;
   width: 320px;
   opacity: 0;
   transition: opacity 0.2s;
-  /* pointer-events: none; */
+  /* position, centre*/
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* transition: top 0.2s; */
+  pointer-events: none;
 }
 
 .input-container {
