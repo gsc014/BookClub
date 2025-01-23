@@ -46,3 +46,4 @@ def settings(request):
         "theme": "dark",
         "notifications": True
     })
+
