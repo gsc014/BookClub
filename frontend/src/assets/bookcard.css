@@ -33,6 +33,12 @@
     border-radius: 4px;
 }
 
+.row {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+}
+
 ul.horizontal-list {
     width: 70%;
     margin: 0 auto;
