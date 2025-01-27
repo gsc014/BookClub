@@ -2,13 +2,18 @@ import React from 'react';
 
 import './bookcard.css';
 
-const Bookcard = () => {
+const Bookcard = ({picture,title, author}) => {
 
     return (
-        <section id="recommended">
-            <h2>Recommended Books</h2>
-            <ul id="bookList" className="horizontal-list" />
-        </section>
+        
+        <div className="book-card">
+            <img src="https://covers.openlibrary.org/b/id/14833301-L.jpg" alt="Book Cover" />
+            <h3>{title}</h3>
+            <p>{author}</p>
+            <button className="button">Save</button>
+            <button className="button">Details</button>
+            <button className="button">Review</button>
+        </div>
     );
 };
 
