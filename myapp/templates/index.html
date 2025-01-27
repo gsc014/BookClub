@@ -18,7 +18,8 @@
         <div id="useful_buttons">
             <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump top_bar_icon"
                 onclick="toggle_dark_mode()">
-            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump top_bar_icon" onclick="handle_account()">
+            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump top_bar_icon"
+                onclick="handle_account()">
             <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin top_bar_icon">
         </div>
     </header>
@@ -38,7 +39,8 @@
 
         <section id="auth-section" style="opacity: 0; pointer-events: none;">
             <div class="form" id="login-form">
-                <h2>Log In <img src="{% static 'pictures/close.png' %}" class = "icon jump exit" alt="" onclick="closeTabs()"></h2>
+                <h2>Log In <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt=""
+                        onclick="closeTabs()"></h2>
                 {% if messages %}
                 <div id="messages">
                     {% for message in messages %}
@@ -63,15 +65,15 @@
                     <button class="submit button" type="submit">Log In</button>
                 </form>
                 <p class="switch-form">
-                    Don't have an account? <button class="button" id="show-signup"
-                        onclick="show_sign_in()">Sign
+                    Don't have an account? <button class="button" id="show-signup" onclick="show_sign_in()">Sign
                         Up</button>
                 </p>
             </div>
 
             <!-- Signup Form -->
             <div class="form" id="signup-form" style="display: none;">
-                <h2>Sign Up <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt="" onclick="closeTabs()"></h2>
+                <h2>Sign Up <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt=""
+                        onclick="closeTabs()"></h2>
                 {% if messages %}
                 <div id="messages">
                     {% for message in messages %}
@@ -205,15 +207,15 @@
             }
         };
 
-        
+
         function page_loaded() {
             console.log('Page loaded');
         }
-        
+
         // will make sure that the login/signin form is displayed if it was unsucsessful
         const showLogin = "{{ show_login|default:'false' }}";  // 'true' or 'false'
         const showSignup = "{{ show_signup|default:'false' }}";  // 'true' or 'false'
-        
+
         const authSection = document.getElementById('auth-section');
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');

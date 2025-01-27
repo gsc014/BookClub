@@ -54,9 +54,9 @@ function handleAccount() {
 
 function changeColor(isLightmode) {
     if(isLightmode) {
-        // console.log('light mode');
+        console.log('light mode');
     } else {
-        // console.log('dark mode');
+        console.log('dark mode');
     }
 }
 
