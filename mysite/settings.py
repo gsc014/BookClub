@@ -135,3 +135,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all domains (for development only)
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies and authentication credentials
+CORS_ALLOW_METHODS = ["GET", "POST", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
