@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './login.css';
 import close from './pictures/close.png';
-import { showSignInTab } from './header.jsx';
-
-
-function successfulLogin() {
-    print('Login successful');
-    alert('Login successful!');
-    // closeTabs();
-    // document.getElementById('login-form').style.opacity = '0';
-}
+// import { showSignInTab , closeTabs} from './header.jsx';
+// import functions from app.jsx
+import {closeTabs, showSignInTab, showLogInTab, successfulLogin} from '../App.jsx';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -33,8 +27,11 @@ const Login = () => {
     
             // Handle successful login
             // console.log('Login successful:', response.data);
+            // document.getElementById('login-form').style.opacity = '0';
+            // document.getElementById('login-form').style.pointerEvents = 'none';
+            // closeTabs();
             // alert('Login successful!');
-            // successfulLogin();
+            successfulLogin(response.data);
 
 
             // Optionally, redirect the user or update the UI here
@@ -46,7 +43,7 @@ const Login = () => {
                 setError(error.response.data.error || 'An error occurred.');
             } else {
                 console.error('Unexpected error:', error);
-                setError('An unexpected error occurred. Please try again later.');
+                setError('An unexpected error occurred. Please try again later. Is the django server running?');
             }
         }
     };
@@ -59,7 +56,8 @@ const Login = () => {
                     src={close}
                     className="icon jump exit"
                     alt=""
-                    onClick={() => document.getElementById('login-form').style.display = 'none'}
+                    // onClick={() => document.getElementById('login-form').style.display = 'none'}
+                    onClick={closeTabs}
                 />
             </h2>
             {error && <p className="error-message">{error}</p>}
