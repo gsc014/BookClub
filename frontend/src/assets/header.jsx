@@ -16,36 +16,28 @@ function closeTabs() {
     document.getElementById('login-form').style.pointerEvents = 'none';
     document.getElementById("signin-form").style.display = "0";
     document.getElementById("signin-form").style.pointerEvents = "none";
-    showLogIn = false;
-    showSignIn = false;
 }
 
 export function showSignInTab() {
     // close login tab
     document.getElementById("login-form").style.opacity = "0";
     document.getElementById('login-form').style.pointerEvents = 'none';
-    showLogIn = false;
 
     document.getElementById("signin-form").style.opacity = "1";
     document.getElementById('signin-form').style.pointerEvents = 'all';
-    showSignIn = true;
 }
 
 export function showLogInTab() {
     // close signin tab
     document.getElementById("signin-form").style.opacity = "0";
     document.getElementById('signin-form').style.pointerEvents = 'none';
-    showSignIn = false;
 
     document.getElementById("login-form").style.opacity = "1";
     document.getElementById('login-form').style.pointerEvents = 'all';
-    showLogIn = true;
 }
 
-var showLogIn = false;
-var showSignIn = false;
-function handleAccount() {
-    if(showLogIn == true || showSignIn == true) {
+function handleLogin(hide) {
+    if(hide) {
         closeTabs();
     } else {
         showLogInTab();
@@ -61,21 +53,19 @@ function changeColor(isLightmode) {
 }
 
 const Header = () => {
-    const [data, setData] = useState(null);
     const [isLightmode, setDarkmode] = useState(false);
-
-    useEffect(() => {
-        axios.get('http://127.0.0.1:8000/')
-            .then(response => setData(response.data))
-            .catch(error => console.error('Error fetching home data:', error));
-    }, []);
 
     const toggleMode = () => {
         changeColor(isLightmode);
         setDarkmode((prev) => !prev);
     };
 
-    if (!data) return <div>Loading...</div>;
+    const [showLogIn, show_form] = useState(false);
+
+    const toggleLogIn = () => {
+        handleLogin(showLogIn);
+        show_form((prev) => !prev);
+    };
 
     return (
         <header id="header">
@@ -93,7 +83,7 @@ const Header = () => {
                     src={userImage}
                     id="User"
                     className="icon jump"
-                    onClick={handleAccount}
+                    onClick={toggleLogIn}
                 />
                 <a href="/settings">
                     <img

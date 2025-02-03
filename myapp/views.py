@@ -81,3 +81,23 @@ def settings(request):
 #             except Exception as e:
 #                 messages.error(request, f'Error creating account: {e}')
 #                 return render(request, 'index.html', {'show_signup': 'true'})  # Show signup form on error
+
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['POST'])
+def login_user(request):
+    # print(request.data)
+    print("heyheyhey")
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    user = authenticate(username=username, password=password)
+    
+    if user is not None:
+        login(request, user)
+        return Response({"message": "Login successful", "username": user.username})
+    else:
+        return Response({"error": "Invalid credentials"}, status=400)
