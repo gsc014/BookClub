@@ -10,39 +10,8 @@ import dark_mode from './pictures/night-mode.png';
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 
+import {closeTabs, showSignInTab, showLogInTab, handleLogin} from '../App.jsx';
 
-function closeTabs() {
-    document.getElementById("login-form").style.opacity = "0";
-    document.getElementById('login-form').style.pointerEvents = 'none';
-    document.getElementById("signin-form").style.display = "0";
-    document.getElementById("signin-form").style.pointerEvents = "none";
-}
-
-export function showSignInTab() {
-    // close login tab
-    document.getElementById("login-form").style.opacity = "0";
-    document.getElementById('login-form').style.pointerEvents = 'none';
-
-    document.getElementById("signin-form").style.opacity = "1";
-    document.getElementById('signin-form').style.pointerEvents = 'all';
-}
-
-export function showLogInTab() {
-    // close signin tab
-    document.getElementById("signin-form").style.opacity = "0";
-    document.getElementById('signin-form').style.pointerEvents = 'none';
-
-    document.getElementById("login-form").style.opacity = "1";
-    document.getElementById('login-form').style.pointerEvents = 'all';
-}
-
-function handleLogin(hide) {
-    if(hide) {
-        closeTabs();
-    } else {
-        showLogInTab();
-    }
-}
 
 function changeColor(isLightmode) {
     if(isLightmode) {
@@ -60,12 +29,12 @@ const Header = () => {
         setDarkmode((prev) => !prev);
     };
 
-    const [showLogIn, show_form] = useState(false);
+    // const [showLogIn, show_form] = useState(false);
 
-    const toggleLogIn = () => {
-        handleLogin(showLogIn);
-        show_form((prev) => !prev);
-    };
+    // const toggleLogIn = () => {
+    //     handleLogin(showLogIn);
+    //     show_form((prev) => !prev);
+    // };
 
     return (
         <header id="header">
@@ -83,7 +52,7 @@ const Header = () => {
                     src={userImage}
                     id="User"
                     className="icon jump"
-                    onClick={toggleLogIn}
+                    onClick={handleLogin}
                 />
                 <a href="/settings">
                     <img
