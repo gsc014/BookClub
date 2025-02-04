@@ -2,7 +2,6 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// import css
 import './header_style.css';
 
 import light_mode from './pictures/bright-mode.png';
@@ -28,13 +27,6 @@ const Header = () => {
         changeColor(isLightmode);
         setDarkmode((prev) => !prev);
     };
-
-    // const [showLogIn, show_form] = useState(false);
-
-    // const toggleLogIn = () => {
-    //     handleLogin(showLogIn);
-    //     show_form((prev) => !prev);
-    // };
 
     return (
         <header id="header">

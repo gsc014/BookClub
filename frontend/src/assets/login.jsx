@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './login.css';
 import close from './pictures/close.png';
-// import { showSignInTab , closeTabs} from './header.jsx';
-// import functions from app.jsx
+
 import {closeTabs, showSignInTab, showLogInTab, successfulLogin} from '../App.jsx';
 
 const Login = () => {
@@ -25,17 +24,7 @@ const Login = () => {
                 }
             );
     
-            // Handle successful login
-            // console.log('Login successful:', response.data);
-            // document.getElementById('login-form').style.opacity = '0';
-            // document.getElementById('login-form').style.pointerEvents = 'none';
-            // closeTabs();
-            // alert('Login successful!');
             successfulLogin(response.data);
-
-
-            // Optionally, redirect the user or update the UI here
-            // window.location.href = "/home"; // Example redirect
         } catch (error) {
             // Handle errors (incorrect credentials)
             if (error.response) {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'; // ✅ Import useEffect
-import axios from 'axios'; // ✅ Import axios
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 import './stylesheet.css';
 import './App.css';
