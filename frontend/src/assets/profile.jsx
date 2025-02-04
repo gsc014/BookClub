@@ -6,7 +6,6 @@ import { closeTabs, showSignInTab, showLogInTab , logout} from '../App.jsx';
 
 const Profile = () => {
 
-    // Add state to track user profile (example)
     const [user, setUser] = useState({
         username: '',
         email: '',

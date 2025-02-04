@@ -4,21 +4,15 @@ import './searchbar.css';
 import Bookcard from './bookcard';
 import './bookcard.css';
 
+// import { addBookCard } from '../App.jsx';
+
 
 export default function Booklist() {
-
-
-    // return (
-    //   <section id="recommended">
-    //     <h2>Recommended Books</h2>
-
-    //    </section> 
-    // );
 
     return (
         <section id="recommended">
             <h2>Recommended Books</h2>
-            {/* <button onClick={handlebookadd}></button> */}
+            {/* <button onClick={addBookCard}>add book</button> */}
             <ul id="bookList" className="horizontal-list" />
 
             <div class='row'>
@@ -28,15 +22,3 @@ export default function Booklist() {
         </section>
     );
 };
-
-
-
-// const Booklist = () => {
-
-
-
-// };
-
-// export default Booklist;
-
-
