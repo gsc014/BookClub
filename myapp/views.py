@@ -48,3 +48,42 @@ def signup_user(request):
     user = User.objects.create_user(username=username, password=password1)
     # return login(request, user)
     return Response({"message": "Signup successful!", "username": user.username})
+
+# @api_view(['GET'])
+# def random_book(request):
+
+#     return
+
+from django.shortcuts import render
+from .models import Work
+
+import random
+from django.http import JsonResponse
+from django.db import connections
+
+@api_view(['GET'])
+def random_book(request):
+    with connections['open_lib'].cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM works")
+        total_books = cursor.fetchone()[0]
+
+        if total_books == 0:
+            return JsonResponse({"error": "No books found"}, status=404)
+
+        random_offset = random.randint(0, total_books - 1)
+        cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works LIMIT 1 OFFSET {random_offset}")
+        book = cursor.fetchone()
+
+        if book:
+            book_data = {
+                "id": book[0],
+                "key": book[1],
+                "title": book[2],
+                "description": book[3],
+                "subjects": book[4],
+                "author": book[5],
+                "first_published": book[6]
+            }
+            return JsonResponse(book_data)
+        else:
+            return JsonResponse({"error": "Book not found"}, status=404)
