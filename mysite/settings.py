@@ -87,6 +87,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'open_lib': {  # New database config
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "open_lib.db",
     }
 }
 
