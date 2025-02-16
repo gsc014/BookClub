@@ -1,24 +1,32 @@
-import React from 'react';
-
-import './searchbar.css';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Bookcard from './bookcard';
 import './bookcard.css';
 
-// import { addBookCard } from '../App.jsx';
+const Booklist = () => {
+    const [randomBook, setRandomBook] = useState(null);
 
+    useEffect(() => {
+        const fetchRandomBook = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/random-book/');
+                setRandomBook(response.data);
+            } catch (error) {
+                console.error('Error fetching random book:', error);
+            }
+        };
 
-export default function Booklist() {
+        fetchRandomBook();
+    }, []);
 
     return (
         <section id="recommended">
             <h2>Recommended Books</h2>
-            {/* <button onClick={addBookCard}>add book</button> */}
-            <ul id="bookList" className="horizontal-list" />
-
-            <div class='row'>
-                <Bookcard />
-
+            <div className='row'>
+                {randomBook && <Bookcard book={randomBook} />}
             </div>
         </section>
     );
 };
+
+export default Booklist;

@@ -9,6 +9,9 @@ class Work(models.Model):
     author = models.CharField(max_length=255)
     first_published = models.IntegerField(null=True, blank=True)
 
+    def __str__(self):
+        return self.title
+
     class Meta:
         managed = False  # Django won't manage migrations
         db_table = 'works'  # Table name in open_lib.db

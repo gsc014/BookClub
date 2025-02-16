@@ -2,6 +2,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.shortcuts import render
+from .models import Work
+import random
+from django.http import JsonResponse
+from django.db import connections
 
 @api_view(['GET'])
 def profile(request):
@@ -54,12 +59,14 @@ def signup_user(request):
 
 #     return
 
-from django.shortcuts import render
-from .models import Work
-
-import random
-from django.http import JsonResponse
-from django.db import connections
+@api_view(['GET'])
+def search_books(request):
+    query = request.GET.get('q', '')
+    if query:
+        books = Work.objects.using('open_lib').filter(title__icontains=query)
+        results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
+        return Response(results)
+    return Response({"error": "No query provided"}, status=400)
 
 @api_view(['GET'])
 def random_book(request):

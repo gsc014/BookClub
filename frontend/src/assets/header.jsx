@@ -9,7 +9,7 @@ import dark_mode from './pictures/night-mode.png';
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 
-import {closeTabs, showSignInTab, showLogInTab, handleLogin} from '../App.jsx';
+import {closeTabs, showSignInTab, showLogInTab, handleLogin} from '../utils.jsx';
 
 
 function changeColor(isLightmode) {
