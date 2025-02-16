@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './login.css';
 import close from './pictures/close.png';
-import { closeTabs, showLogInTab, showSignInTab, successfulLogin , successfulSignin} from '../App.jsx';
+import { closeTabs, showLogInTab, showSignInTab, successfulLogin , successfulSignin} from '../utils.jsx';
 
 const Signin = () => {
     const [username, setUsername] = useState('');
@@ -70,7 +70,7 @@ const Signin = () => {
                 <div className="input-container ic1">
                     <input
                         className="input"
-                        id="username"
+                        id="username1"
                         type="text"
                         placeholder=" "
                         required
@@ -78,7 +78,7 @@ const Signin = () => {
                         onChange={(e) => setUsername(e.target.value)}
                     />
                     <div className="cut" />
-                    <label htmlFor="username" className="placeholder">
+                    <label htmlFor="username1" className="placeholder">
                         Username
                     </label>
                 </div>

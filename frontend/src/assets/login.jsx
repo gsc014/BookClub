@@ -3,7 +3,7 @@ import axios from 'axios';
 import './login.css';
 import close from './pictures/close.png';
 
-import {closeTabs, showSignInTab, showLogInTab, successfulLogin} from '../App.jsx';
+import {closeTabs, showSignInTab, showLogInTab, successfulLogin} from '../utils.jsx';
 
 const Login = () => {
     const [username, setUsername] = useState('');
