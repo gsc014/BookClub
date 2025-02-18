@@ -1,9 +1,0 @@
-Django==5.0.0
-psycopg2==2.9.9
-mysqlclient==2.2.0
-djangorestframework==3.14.0
-django-cors-headers==4.3.1
-gunicorn==21.2.0
-whitenoise==6.6.0
-python-dotenv==0.19.2
-django-extensions==3.2.3
