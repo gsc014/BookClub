@@ -10,6 +10,8 @@ const Booklist = () => {
         const fetchRandomBook = async () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/random-book/');
+                console.trace("Fetching random book");
+                // throw error
                 setRandomBook(response.data);
             } catch (error) {
                 console.error('Error fetching random book:', error);

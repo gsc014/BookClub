@@ -121,29 +121,7 @@
         const user = document.getElementById('User');
         const bookList = document.getElementById('bookList');
 
-        function addBookToList() {
-            const li = document.createElement('li');
-            var picture = "https://covers.openlibrary.org/b/id/14833301-L.jpg";
-            li.innerHTML = `
-            <div class="book-card">
-                <img src="${picture}" alt="Book Cover">
-                <h3>Book Title</h3>
-                <p>Author Name</p>
-                <button class="button">Save</button>
-                <button class="button">Details</button>
-                <button class="button">Review</button>
-                </div>
-                `;
-            bookList.appendChild(li);
-
-            if (dark) {
-                const newBookCard = li.querySelector('.book-card');
-                newBookCard.style.backgroundColor = '#454545';
-                newBookCard.style.color = 'white';
-                newBookCard.style.borderColor = '#272727';
-            }
-        }
-
+      
         function closeTabs() {
             // document.getElementById('login-form').style.display = 'none';
             // document.getElementById('signup-form').style.display = 'none';

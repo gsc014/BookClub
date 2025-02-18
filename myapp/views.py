@@ -54,16 +54,12 @@ def signup_user(request):
     # return login(request, user)
     return Response({"message": "Signup successful!", "username": user.username})
 
-# @api_view(['GET'])
-# def random_book(request):
-
-#     return
 
 @api_view(['GET'])
 def search_books(request):
     query = request.GET.get('q', '')
     if query:
-        books = Work.objects.using('open_lib').filter(title__icontains=query)
+        books = Work.objects.using('open_lib').filter(title__iregex=r'\b' + query + r'\b')
         results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
         return Response(results)
     return Response({"error": "No query provided"}, status=400)

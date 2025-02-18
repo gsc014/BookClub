@@ -44,12 +44,6 @@ export function addBookToList() {
         newBookCard.style.borderColor = '#272727';
     }
 }
-
-// temporary event listener to add a book card to the list
-search_button.addEventListener('click', function () {
-    addBookToList();
-});
-
 // dark mode button
 document.getElementById('dark_mode').addEventListener('click', function () {
     const buttons = document.querySelectorAll('.button'); // Select all buttons

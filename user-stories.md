@@ -24,3 +24,23 @@ Features:
 Features:
     CRUD (Create, Read, Update, Delete) operations for books.
     Review moderation (approve/delete reviews).
+
+
+
+    Scrum masters are responsible for:
+
+Leading and improving internal processes necessary for Scrum teams to complete their work
+
+Helping the team prepare for and successfully execute sprints, so developers can focus on their work instead of more logistical tasks
+
+Facilitating planning meetings, daily standups, and sprint retrospectives 
+
+Removing roadblocks for developers and keeping everyone aligned with Scrum framework principles
+
+On the other hand, the product owner role has a more external focus than the Scrum master. Instead of leading team processes, they’re more focused on the product itself—specifically how to create the best possible product for end users. 
+
+Product owners are in charge of:
+
+Incorporating feedback from stakeholders and end users
+
+Translating that feedback into specific product features and backlog items for the Scrum team to work on
