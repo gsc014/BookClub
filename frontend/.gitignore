@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-*db
+*.db
 open_lib.db
 
 # Editor directories and files
