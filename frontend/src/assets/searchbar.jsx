@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './searchbar.css';
+import SearchResults from './searchresults';
 
 const Searchbar = () => {
     const [query, setQuery] = useState('');
@@ -8,9 +9,11 @@ const Searchbar = () => {
 
     const handleSearch = async () => {
         try {
+            console.log('Search results:', query); // Log the search query
             const response = await axios.get(`http://127.0.0.1:8000/api/search/?q=${query}`);
-            console.log('Search results:', response.data); // Log the response data
+            
             setResults(response.data);
+            console.log('Search results:', response.data); // Log the response data
         } catch (error) {
             console.error('Error fetching search results:', error);
         }
@@ -29,14 +32,7 @@ const Searchbar = () => {
                     Search
                 </button>
             </div>
-            <div className="search-results">
-                {results.map((result) => (
-                    <div key={result.id} className="search-result-item">
-                        <h3>{result.title}</h3>
-                        <p>{result.author}</p>
-                    </div>
-                ))}
-            </div>
+            {results.length > 0 && <SearchResults results={results} />}
         </div>
     );
 };
