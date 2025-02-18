@@ -1,0 +1,45 @@
+/* filepath: /home/alexander/BookClub/frontend/src/assets/searchresults.css */
+.search-results-container {
+    margin-top: 20px;
+}
+
+.search-results-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.search-result-item {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.pagination button:hover {
+    background-color: #0056b3;
+}

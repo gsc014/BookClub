@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+    <title>Book Club</title>
+</head>
+
+<body>
+
+    <header id="header">
+        <div class="logo">
+            <a href="" style="color: #ffffff; text-decoration: none;">Book Club</a>
+        </div>
+        <div id="useful_buttons">
+            <img src="{% static 'pictures/bright-mode.png' %}" id="dark_mode" class="icon jump top_bar_icon"
+                onclick="toggle_dark_mode()">
+            <img src="{% static 'pictures/user.png' %}" id="User" class="icon jump top_bar_icon"
+                onclick="handle_account()">
+            <img src="{% static 'pictures/settings_icon.png' %}" id="Settings" class="icon spin top_bar_icon">
+        </div>
+    </header>
+
+    <main>
+        <div class="search-bar-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Search for books...">
+                <button id="search_button" class="button">Search</button>
+            </div>
+        </div>
+
+        <section id="recommended">
+            <h2>Recommended Books</h2>
+            <ul id="bookList" class="horizontal-list"></ul>
+        </section>
+
+        <section id="auth-section" style="opacity: 0; pointer-events: none;">
+            <div class="form" id="login-form">
+                <h2>Log In <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt=""
+                        onclick="closeTabs()"></h2>
+                {% if messages %}
+                <div id="messages">
+                    {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'login_user' %}">
+                    {% csrf_token %}
+                    <div class="input-container ic1">
+                        <input class="input" id="username" name="username" type="text" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="username" class="placeholder">Username</label>
+                    </div>
+
+                    <div class="input-container ic2">
+                        <input class="input" id="password" name="password" type="password" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="password" class="placeholder">Password</label>
+                    </div>
+
+                    <button class="submit button" type="submit">Log In</button>
+                </form>
+                <p class="switch-form">
+                    Don't have an account? <button class="button" id="show-signup" onclick="show_sign_in()">Sign
+                        Up</button>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="form" id="signup-form" style="display: none;">
+                <h2>Sign Up <img src="{% static 'pictures/close.png' %}" class="icon jump exit" alt=""
+                        onclick="closeTabs()"></h2>
+                {% if messages %}
+                <div id="messages">
+                    {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'signup_user' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="signup">
+                    <div class="input-container ic1">
+                        <input class="input" id="signup-username" name="username" type="text" placeholder=" " required>
+                        <div class="cut"></div>
+                        <label for="signup-username" class="placeholder">Username</label>
+                    </div>
+                    <div class="input-container ic2">
+                        <input class="input" id="signup-password1" name="password1" type="password" placeholder=" "
+                            required>
+                        <div class="cut"></div>
+                        <label for="signup-password1" class="placeholder">Password</label>
+                    </div>
+                    <div class="input-container ic3">
+                        <input class="input" id="signup-password2" name="password2" type="password" placeholder=" "
+                            required>
+                        <div class="cut"></div>
+                        <label for="signup-password2" class="placeholder">Confirm Password</label>
+                    </div>
+                    <button class="submit button" type="submit">Sign Up</button>
+                </form>
+
+                <p class="switch-form">
+                    Already have an account? <button class="button" id="show-login" onclick="show_log_in()">Log
+                        In</button>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+
+        let dark = false;
+        const search_button = document.getElementById('search_button');
+        const dark_mode = document.getElementById('dark_mode');
+        const user = document.getElementById('User');
+        const bookList = document.getElementById('bookList');
+
+      
+        function closeTabs() {
+            // document.getElementById('login-form').style.display = 'none';
+            // document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('auth-section').style.opacity = 0;
+            document.getElementById('auth-section').style.pointerEvents = 'none';
+            log_in = false;
+            sign_in = false;
+        }
+
+        function show_log_in() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('signup-form').style.display = 'none';
+            log_in = true;
+        }
+
+        function show_sign_in() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+            sign_in = true;
+        }
+
+        var log_in = false;
+        var sign_in = false;
+        function handle_account() {
+            if (log_in == false && sign_in == false) {
+                document.getElementById('auth-section').style.opacity = 1;
+                document.getElementById('auth-section').style.pointerEvents = 'all';
+                show_log_in();
+            } else {
+                closeTabs();
+            }
+        }
+
+        function toggle_dark_mode() {
+            const buttons = document.querySelectorAll('.button');
+            const book_cards = document.querySelectorAll('.book-card');
+            const header = document.getElementById('header');
+            const searchInput = document.querySelector('.search-bar input');
+            const img = document.getElementById('dark_mode');
+
+            if (dark) {
+                img.setAttribute("src", "{% static 'pictures/bright-mode.png' %}");
+                document.body.style.backgroundColor = '#edebd7';
+                header.style.backgroundColor = '#423e37';
+                searchInput.style.backgroundColor = '#fff';
+                searchInput.style.color = '#000';
+
+                buttons.forEach(button => button.style.backgroundColor = '#d1a641');
+                book_cards.forEach(card => card.style.backgroundColor = '#fff');
+                dark = false;
+            } else {
+                img.setAttribute("src", "{% static 'pictures/night-mode.png' %}");
+                document.body.style.backgroundColor = '#252525';
+                header.style.backgroundColor = '#353535';
+                searchInput.style.backgroundColor = '#353535';
+                searchInput.style.color = '#fff';
+
+                buttons.forEach(button => button.style.backgroundColor = '#4464ad');
+                book_cards.forEach(card => card.style.backgroundColor = '#454545');
+                dark = true;
+            }
+        };
+
+
+        function page_loaded() {
+            console.log('Page loaded');
+        }
+
+        // will make sure that the login/signin form is displayed if it was unsucsessful
+        const showLogin = "{{ show_login|default:'false' }}";  // 'true' or 'false'
+        const showSignup = "{{ show_signup|default:'false' }}";  // 'true' or 'false'
+
+        const authSection = document.getElementById('auth-section');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+
+        // Temporarily disable transitions to make changes instant
+        authSection.style.transition = 'none';
+
+        // Check if showLogin or showSignup is 'true' and show the respective form
+        if (showLogin === "true" || showSignup === "true") {
+            authSection.style.display = 'block';  // Show auth section
+            authSection.style.opacity = 1;  // Make it visible instantly
+            authSection.style.pointerEvents = 'all';
+            logged_in = true;
+        }
+
+        if (showLogin === "true") {
+            // loginForm.style.display = 'block';  // Show login form
+            // signupForm.style.display = 'none';  // Hide signup form
+            show_log_in();
+        } else if (showSignup === "true") {
+            // loginForm.style.display = 'none';  // Hide login form
+            // signupForm.style.display = 'block';  // Show signup form
+            show_sign_in();
+        }
+
+        // Re-enable transitions after a small delay
+        setTimeout(function () {
+            authSection.style.transition = '';  // Restore original transition
+        }, 50);  // Delay in ms, ensure it's long enough to complete the change
+        window.onload = page_loaded;
+    </script>
+</body>
+
+</html>

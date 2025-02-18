@@ -1,0 +1,298 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #edebd7;
+    /* --color-background: #edebd7; */
+    
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+body.dark {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1f2023;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.placeholder{
+    --color-background: #edebd7;
+    --color-foreground: #1f2023;
+
+}
+
+/* header {
+    /* width: 100%; */
+    /* background-color: #423e37;
+    color: #FFF;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+} */
+
+/* Logo Styling */
+/* .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+} */
+
+/* Buttons Container */
+/* #useful_buttons {
+    display: flex; /* Use flexbox for the buttons */
+    /* align-items: center; /* Center the buttons vertically */
+    /* gap: 0.5rem; Add spacing between the buttons */
+/* } */ 
+
+/* main {
+    padding: 2rem;
+    /* color: #d1a641; */
+/* } */
+
+/* .search-bar-container {
+    top: 100%;
+    margin: 0 auto;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.search-bar input {
+    padding: 0.5rem;
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+} */
+
+.button {
+    padding: 0.5rem;
+    background-color: #d1a641;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* .book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.book-card {
+    opacity: 1;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    text-align: center;
+    width: 150px;
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+    animation: fadeInAnimation ease 1s;
+    animation-fill-mode: forwards;
+}
+
+.book-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+
+ul.horizontal-list {
+    width: 70%;
+    margin: 0 auto;
+    margin-top: 15%;
+    list-style-type: none;
+    gap: 1.5rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+} */
+
+/* .icon {
+    opacity: 0.5;
+    display: inline-block;
+    vertical-align: middle;
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transformations */
+    /* padding: 5px;
+
+    filter: grayscale(1) brightness(0) invert(1); /* Turns the image into a solid white */
+/* } */
+
+/* .icon_bookcard {
+    width: 10px; /* Adjusted to a more reasonable size */
+    /* height: 4px; /* Matches the width for consistency */
+    /* padding: 0; /* Ensure no extra space */
+    /* box-sizing: border-box; Includes padding and border in width/height */
+    /* display: inline-block; Keeps it inline with other elements */
+    /* object-fit: contain; Ensures the image scales without distortion */
+    /* filter: grayscale(1) brightness(0) invert(0); Optional, removes the solid white filter */
+/* }  */
+
+
+/* Hover effect for all icons */
+/* .icon:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.top_bar_icon {
+    width: 32px;
+    height: 32px;
+}
+
+.exit {
+    width: 16px;
+    height: 16px;
+}
+
+/* Specific spinning effect for the 'spin' class */
+/* .spin:hover {
+    transform: translateY(-2px) rotate(70deg); /* Full rotation on hover */
+/* } */
+
+/* Jumping effect for the 'User' icon */
+/* .jump:hover {
+    transform: translateY(-2px); /* Move up by 10px */
+/* } */
+
+/* .form {
+    /* display: none; */
+    /* background-color: #423e37;
+    border-radius: 20px;
+    box-sizing: border-box;
+    /* height: auto; */
+    /* padding: 20px;
+    width: 320px;
+  } */
+
+/* .form:target {
+    display: block;
+} */
+  
+  .input-container {
+    height: 50px;
+    position: relative;
+    width: 100%;
+  }
+  
+  .ic1 {
+    margin-top: 40px;
+  }
+  
+  .ic2 {
+    margin-top: 30px;
+  }
+
+  .ic3 {
+    margin-top: 20px;
+  }
+  
+  .input {
+    background-color: #ddd;
+    border-radius: 12px;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    font-size: 18px;
+    height: 100%;
+    outline: 0;
+    padding: 4px 20px 0;
+    width: 100%;
+  }
+  
+  .cut {
+    background-color: #423e37;
+    border-radius: 10px;
+    height: 20px;
+    left: 20px;
+    position: absolute;
+    top: -20px;
+    transform: translateY(0);
+    transition: transform 200ms;
+    width: 76px;
+  }
+  
+  .cut-short {
+    width: 50px;
+  }
+  
+  .input:focus ~ .cut,
+  .input:not(:placeholder-shown) ~ .cut {
+    transform: translateY(8px);
+  }
+  
+  .placeholder {
+    color: #65657b;
+    font-family: sans-serif;
+    left: 20px;
+    line-height: 14px;
+    pointer-events: none;
+    position: absolute;
+    transform-origin: 0 50%;
+    transition: transform 200ms, color 200ms;
+    top: 20px;
+  }
+  
+  .input:focus ~ .placeholder,
+  .input:not(:placeholder-shown) ~ .placeholder {
+    transform: translateY(-30px) translateX(10px) scale(0.75);
+  }
+  
+  .input:not(:placeholder-shown) ~ .placeholder {
+    color: #808097;
+  }
+  
+  .input:focus ~ .placeholder {
+    color: #ffffff;
+  }
+  
+  /* .submit {
+    cursor: pointer;
+    font-size: 18px;
+    height: 50px;
+    margin-top: 38px;
+    outline: 0;
+    text-align: center;
+    width: 100%; */
+  /* } */
+
+  #auth-section
+    {
+        pointer-events: none;
+        opacity: 1;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition: opacity 0.2s;
+    }
+  
+    #auth-section {
+        transition: opacity 0.3s ease;
+    }
+  
+
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
