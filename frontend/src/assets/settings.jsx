@@ -44,7 +44,7 @@ const Settings = () => {
     };
 
     const handleSetCookie = () => {
-        Cookies.set('testCookie', 'This is a test cookie', { expires: 7, sameSite: 'Lax' });
+        Cookies.set('testCookie', 'This is a test cookie', { expires: 7, sameSite: 'none', secure: true });
         alert('Cookie set successfully');
     };
 

@@ -8,19 +8,16 @@
 //   </StrictMode>,
 // )
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import IndexPage from './IndexPage';
-import ProfilePage from './ProfilePage';
-import SettingsPage from './SettingsPage';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import { BrowserRouter as Router } from "react-router-dom";
 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-    // <React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <Router>
       <App />
-    // </React.StrictMode>
-  );
-
+    </Router>
+  </React.StrictMode>
+);
 
