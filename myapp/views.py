@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from .models import Work
 import random
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import connections
 
 @api_view(['GET'])
@@ -22,10 +22,15 @@ def profile(request):
         return Response({"error": "User not authenticated"}, status=401)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def settings(request):
-    user = request.user
-    return "hello"
+    if request.method == 'GET':
+        user = request.user
+        return Response({"message": "Settings page"})
+    elif request.method == 'POST':
+        response = HttpResponse("Cookie Set")
+        response.set_cookie('testCookie', 'This is a test cookie', max_age=7*24*60*60, samesite='Lax')
+        return response
 
 @api_view(['POST'])
 def login_user(request):

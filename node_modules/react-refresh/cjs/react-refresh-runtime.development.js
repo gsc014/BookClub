@@ -15,8 +15,8 @@ if (process.env.NODE_ENV !== "production") {
 'use strict';
 
 // ATTENTION
-var REACT_FORWARD_REF_TYPE = Symbol.for('react.forward_ref');
-var REACT_MEMO_TYPE = Symbol.for('react.memo');
+var REACT_FORWARD_REF_TYPE =  Symbol.for('react.forward_ref');
+var REACT_MEMO_TYPE =  Symbol.for('react.memo');
 
 var PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map; // We never remove these associations.
 // It's OK to reference families, but use WeakMap/Set for types.
