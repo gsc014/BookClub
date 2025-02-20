@@ -29,6 +29,12 @@
     justify-content: center;
     flex-shrink: 0;
 }
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;  /* gap between grid items */
+    padding: 16px;
+}
 
 .pagination button {
     margin: 0 5px;

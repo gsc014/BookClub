@@ -33,11 +33,15 @@ const Header = () => {
     const goToSettings = () => {
         navigate('/settings');
     };
+    const goToHome = (e) => {
+        e.preventDefault();
+        navigate('/');
+    };
 
     return (
         <header id="header">
             <div id="logo">
-                <a href="" style={{ color: '#ffffff', textDecoration: 'none' }}>Book Club</a>
+                <a href="/" onClick={goToHome} style={{ color: '#ffffff', textDecoration: 'none' }}>Book Club</a>
             </div>
             <div id="useful_buttons">
                 <img
