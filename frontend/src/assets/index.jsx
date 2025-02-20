@@ -5,3 +5,4 @@ export { default as Login } from './login';
 export { default as Signin } from './signin';
 export { default as Welcome } from './welcome';
 export { default as Profile } from './profile';
+export { default as Settings } from './settings';

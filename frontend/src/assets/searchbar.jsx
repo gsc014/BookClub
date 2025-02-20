@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './searchbar.css';
 import SearchResults from './searchresults';
+import { redirect } from 'react-router-dom';
 
 const Searchbar = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
 
+    const navigate = useNavigate();
+    const goToSearchresults = () => {
+        navigate('/searchresults');
+    };
+
     const handleSearch = async () => {
         try {
-            console.log('Search results:', query); // Log the search query
             const response = await axios.get(`http://127.0.0.1:8000/api/search/?q=${query}`);
-            
-            setResults(response.data);
-            console.log('Search results:', response.data); // Log the response data
-        } catch (error) {
+            // setResults(response.data);
+            const results = response.data;
+            navigate('/searchresults', { state: { results } });
+         } catch (error) {
             console.error('Error fetching search results:', error);
         }
     };
@@ -36,5 +42,4 @@ const Searchbar = () => {
         </div>
     );
 };
-
 export default Searchbar;

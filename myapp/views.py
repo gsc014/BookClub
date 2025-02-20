@@ -21,6 +21,12 @@ def profile(request):
     else:
         return Response({"error": "User not authenticated"}, status=401)
 
+
+@api_view(['GET'])
+def settings(request):
+    user = request.user
+    return "hello"
+
 @api_view(['POST'])
 def login_user(request):
     username = request.data.get('username')

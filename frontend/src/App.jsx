@@ -1,23 +1,59 @@
 import './stylesheet.css';
 import './App.css';
 
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile } from './assets';
-
+import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings } from './assets';
+import SearchResults from './assets/searchresults';
 
 const App = () => {
 
+    const location = useLocation();
     return (
         <div>
-            <Header />
-            <Welcome />
-            <Searchbar />
-            <Booklist />
-            <Login />
-            <Signin />
-            <Profile />
+            <Header />  {/* Keep header always visible */}
+            <Routes>
+                {/* Home Page */}
+                <Route path="/" element={
+                    <>
+                        <Welcome />
+                        <Searchbar />
+                        <Booklist />
+                        <Login />
+                        <Signin />
+                        <Profile />
+                    </>
+                } />
+
+                {/* Settings Page */}
+                <Route path="/settings" element={<Settings />} />
+                {/*search results*/}
+
+                <Route path="/searchresults" element={<SearchResults results={location.state?.results || []} />} />
+            </Routes>
         </div>
     );
 }
+const AppWrapper = () => (
+    <Router>
+        <App />
+    </Router>
+);
+export default AppWrapper;
 
-export default App;
+// const App = () => {
+
+//     return (
+
+//         <div>
+//             <Header />
+//             <Welcome />
+//             <Searchbar />
+//             <Booklist />
+//             <Login />
+//             <Signin />
+//             <Profile />
+
+//         </div>
+//     );
+// }

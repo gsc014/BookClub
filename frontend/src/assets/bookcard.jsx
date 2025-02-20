@@ -8,7 +8,7 @@ const Bookcard = ({ book }) => {
     return (
         <div className="book-card">
             <img 
-                src={`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
+                // src={`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
                 alt={book.title || "Book Cover"}
                 onError={(e) => e.target.src = defaultCover} // Fallback if image fails to load
             />

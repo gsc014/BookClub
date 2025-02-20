@@ -6,7 +6,7 @@ from .views import login_user, signup_user, random_book, search_books
 
 urlpatterns = [
     path('profile/', views.profile, name='profile_api'),
-    # path('settings/', views.settings, name='settings_api'),
+    path('api/settings/', views.settings, name='settings_api'),
     # path('', views.home, name='home'),
     path('api/login/', login_user, name='login_user'),
     path('api/signup/', signup_user, name='signup_user'),

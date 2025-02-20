@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -9,11 +10,11 @@ import dark_mode from './pictures/night-mode.png';
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 
-import {closeTabs, showSignInTab, showLogInTab, handleLogin} from '../utils.jsx';
+import { closeTabs, showSignInTab, showLogInTab, handleLogin } from '../utils.jsx';
 
 
 function changeColor(isLightmode) {
-    if(isLightmode) {
+    if (isLightmode) {
         console.log('light mode');
     } else {
         console.log('dark mode');
@@ -22,10 +23,15 @@ function changeColor(isLightmode) {
 
 const Header = () => {
     const [isLightmode, setDarkmode] = useState(false);
+    const navigate = useNavigate();
 
     const toggleMode = () => {
         changeColor(isLightmode);
         setDarkmode((prev) => !prev);
+    };
+
+    const goToSettings = () => {
+        navigate('/settings');
     };
 
     return (
@@ -51,6 +57,8 @@ const Header = () => {
                         src={settingsIcon}
                         id="Settings"
                         className="icon spin"
+                        onClick={goToSettings}
+
                     />
                 </a>
             </div>
