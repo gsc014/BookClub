@@ -96,3 +96,24 @@ def random_book(request):
             return JsonResponse(book_data)
         else:
             return JsonResponse({"error": "Book not found"}, status=404)
+
+@api_view(['GET'])
+def retrieve_book_info(request, book_id):
+    try:
+        # Assuming `Work` is your book model
+        book = Work.objects.using('open_lib').get(id=book_id)
+
+        book_data = {
+            "id": book.id,
+            "title": book.title,
+            "description": book.description,
+            "author": book.author,
+            "first_published": book.first_published,
+            "subjects": book.subjects,
+        }
+
+        return Response(book_data)
+
+    except Work.DoesNotExist:
+        return Response({"error": "Book not found"}, status=404)
+

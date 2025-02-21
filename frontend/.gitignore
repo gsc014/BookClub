@@ -25,4 +25,6 @@ open_lib.db
 *.njsproj
 *.sln
 *.sw?
-open_lib.db
+
+frontend/venv/
+venv/

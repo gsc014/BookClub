@@ -3,7 +3,7 @@ import './App.css';
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings } from './assets';
+import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage } from './assets';
 import SearchResults from './assets/searchresults';
 
 const App = () => {
@@ -30,6 +30,7 @@ const App = () => {
                 {/*search results*/}
 
                 <Route path="/searchresults" element={<SearchResults results={location.state?.results || []} />} />
+                <Route path="/books/:id" element={<Bookpage book={location.state?.book || []} />} />
             </Routes>
         </div>
     );
