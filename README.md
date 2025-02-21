@@ -30,6 +30,9 @@ Follow these steps to get a local copy of the project up and running:
 
 ### Installation
 
+0. **Database location**:
+    put the openlib database in root folder of /Bookclub
+
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/gsc014/BookClub.git
