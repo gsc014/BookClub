@@ -20,9 +20,10 @@ const Bookcard = ({ book }) => {
                 onError={(e) => e.target.src = defaultCover} // Fallback if image fails to load
             />
             <h3>{book.title}</h3>
-            <img src={saveIcon} id="Save" className="icon_bookcard jump" />
+            <img src={saveIcon} id="Save" className="icon_bookcard jump"/>
             <img src={informationIcon} id="Info" className="icon_bookcard jump" />
         </div>
+
     );
 };
 

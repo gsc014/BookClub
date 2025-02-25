@@ -7,3 +7,4 @@ export { default as Welcome } from './welcome';
 export { default as Profile } from './profile';
 export { default as Settings } from './settings';
 export { default as Bookpage } from './bookpage';
+export { default as StarRating } from './starrating'
