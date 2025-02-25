@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render
-from .models import Work
+from .models import Work, Review
 import random
 from django.http import JsonResponse
 from django.db import connections
@@ -70,6 +70,7 @@ def search_books(request):
         return Response(results)
     return Response({"error": "No query provided"}, status=400)
 
+
 @api_view(['GET'])
 def random_book(request):
     with connections['open_lib'].cursor() as cursor:
@@ -97,10 +98,10 @@ def random_book(request):
         else:
             return JsonResponse({"error": "Book not found"}, status=404)
 
+
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
     try:
-        # Assuming `Work` is your book model
         book = Work.objects.using('open_lib').get(id=book_id)
 
         book_data = {
@@ -117,3 +118,49 @@ def retrieve_book_info(request, book_id):
     except Work.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
 
+
+@api_view(["POST"])
+def add_review(request, book_id1):
+    try:
+        book = Work.objects.using("open_lib").get(id=book_id1)
+        review_text = request.data.get("text")
+        rating = request.data.get("rating")
+        
+        print("book is ", book, "and type", type(book), "with book_id1", book.id)
+
+        review = Review.objects.create(
+            text=review_text, rating=rating, book_id=book.id
+        )
+
+        return Response({"message": "Review added successfully!"}, status=201)
+
+    except Work.DoesNotExist:
+        return Response({"error": "Book not found"}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_reviews(request, bid):
+    try:
+        reviews = Review.objects.filter(book_id=bid)
+        results = [{"rating": review.rating, "text": review.text, "creation_date": review.created_at} for review in reviews]
+        return Response(results)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+
+@api_view(['GET'])
+def autocomplete(request):
+    query = request.GET.get('query', '')
+  
+        
+    print("got query", query, "\n")
+    if not query:
+        return Response([])
+
+    suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
+    return Response(suggestions)    

@@ -23,6 +23,8 @@ function changeColor(isLightmode) {
 
 const Header = () => {
     const [isLightmode, setDarkmode] = useState(false);
+
+
     const navigate = useNavigate();
 
     const toggleMode = () => {
@@ -56,7 +58,6 @@ const Header = () => {
                     className="icon jump"
                     onClick={handleLogin}
                 />
-                <a href="/settings">
                     <img
                         src={settingsIcon}
                         id="Settings"
@@ -64,7 +65,7 @@ const Header = () => {
                         onClick={goToSettings}
 
                     />
-                </a>
+                
             </div>
         </header>
     );
