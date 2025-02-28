@@ -63,6 +63,8 @@ def signup_user(request):
 
 @api_view(['GET'])
 def search_books(request):
+
+    print("getting request", request.GET)
     query = request.GET.get('q', '')
     if query:
         books = Work.objects.using('open_lib').filter(title__iregex=r'\b' + query + r'\b')
@@ -164,3 +166,20 @@ def autocomplete(request):
 
     suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
     return Response(suggestions)    
+
+
+
+@api_view(['GET'])
+def search_filter(request):
+    subject_filter = request.GET.get('filter', '')
+
+    print("got filter", subject_filter)
+    if subject_filter:
+        books = Work.objects.using('open_lib').filter(subjects__icontains=subject_filter)
+        print("have this", books)
+        
+        results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
+        return Response(results)
+    else:
+        return Response({"error": "This shouldnt happen"}, status=400)
+        
