@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 
 import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage } from './assets';
 import SearchResults from './assets/searchresults';
+import SubjectsHeader from './assets/subjectheader';
+
 
 const App = () => {
 
@@ -26,11 +28,18 @@ const App = () => {
                 } />
 
                 {/* Settings Page */}
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings" element={
+                    <Settings />} />
                 {/*search results*/}
 
-                <Route path="/searchresults" element={<SearchResults results={location.state?.results || []} />} />
-                <Route path="/books/:id" element={<Bookpage book={location.state?.book || []} />} />
+                <Route path="/searchresults" element={
+                    <SearchResults results={location.state?.results || []} />} />
+
+                <Route path="/books/:id" element={
+                    <Bookpage book={location.state?.book || []} />
+                    
+                    } />
+
             </Routes>
         </div>
     );
