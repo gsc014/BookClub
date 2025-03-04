@@ -5,10 +5,10 @@
   padding: 20px;
   width: 320px;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, top 0.2s;
   /* position, centre*/
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
