@@ -9,7 +9,7 @@ const Searchbar = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
-    const [filters, setFilters] = useState("");  // <-- Changed from array to string
+    const [filters, setFilters] = useState("");
 
     const navigate = useNavigate();
 
@@ -33,8 +33,25 @@ const Searchbar = () => {
         }
     };
 
+    // Updated function to handle suggestion clicks with book objects
     const handleSuggestionClick = (suggestion) => {
-        setQuery(suggestion); 
+        // Check if suggestion is an object with id and title
+        if (typeof suggestion === 'object' && suggestion.id && suggestion.title) {
+            console.log(`Navigating to book with ID: ${suggestion.id}, Title: ${suggestion.title}`);
+            // Navigate directly to the book page using the ID
+            navigate(`/books/${suggestion.id}`, { 
+                state: { 
+                    book: { 
+                        id: suggestion.id, 
+                        title: suggestion.title 
+                    } 
+                }
+            });
+        } else {
+            // Fallback for string-based suggestions (old format)
+            console.log("Suggestion clicked (old format):", suggestion);
+            setQuery(suggestion);
+        }
     };
 
     useEffect(() => {
@@ -71,8 +88,12 @@ const Searchbar = () => {
                 {suggestions.length > 0 && (
                     <ul className="autocomplete-suggestions">
                         {suggestions.map((suggestion, index) => (
-                            <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
-                                {suggestion}
+                            <li 
+                                key={suggestion.id || index} 
+                                onClick={() => handleSuggestionClick(suggestion)}
+                            >
+                                {/* Display just the title in the suggestion list */}
+                                {suggestion.title || suggestion}
                             </li>
                         ))}
                     </ul>

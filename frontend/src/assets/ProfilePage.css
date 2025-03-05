@@ -1,0 +1,325 @@
+/* Main Profile Page Structure */
+.profile-page {
+  max-width: 1000px;
+  margin: 40px auto;
+  font-family: sans-serif;
+  color: #333;
+  padding: 0 20px;
+}
+
+/* Profile Header */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #423e37;
+}
+
+.profile-header h1 {
+  color: #423e37;
+  margin: 0;
+  font-size: 32px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.logout-btn {
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #635d53;
+  transform: translateY(-2px);
+}
+
+/* Profile Content Layout */
+.profile-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .profile-content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Profile Sections */
+.profile-section {
+  background-color: #f8f8f8;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.profile-section:hover {
+  transform: translateY(-5px);
+}
+
+.profile-section h2 {
+  color: #423e37;
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.profile-section h3 {
+  color: #555;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.profile-info p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.profile-info strong {
+  color: #423e37;
+  font-weight: 600;
+}
+
+/* Account Management Section */
+.account-management {
+  background-color: #f3f3f3;
+  border-left: 4px solid #423e37;
+}
+
+.account-option {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.account-option:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.account-option h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Form Elements */
+.account-form {
+  background-color: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-group input {
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  font-size: 16px;
+  height: 50px;
+  outline: 0;
+  padding: 4px 20px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #423e37;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(66, 62, 55, 0.1);
+}
+
+/* Buttons */
+.toggle-form-btn {
+  padding: 8px 16px;
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.toggle-form-btn:hover {
+  background-color: #635d53;
+}
+
+.submit-btn {
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  height: 50px;
+  margin-top: 15px;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #635d53;
+}
+
+.delete-btn {
+  background-color: #d9534f;
+}
+
+.delete-btn:hover {
+  background-color: #c9302c;
+}
+
+.confirm-delete-btn {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 12px 20px;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #c9302c;
+}
+
+/* Status Messages */
+.form-error {
+  color: #d9534f;
+  background-color: #f9e4e4;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 15px 0;
+  border-left: 4px solid #d9534f;
+}
+
+.form-success {
+  color: #5cb85c;
+  background-color: #e7f4e7;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 15px 0;
+  border-left: 4px solid #5cb85c;
+}
+
+/* Delete Account Warning */
+.delete-confirm {
+  background-color: #f9e4e4;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+.delete-confirm .warning {
+  color: #d9534f;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Loading and Error States */
+.profile-page.loading,
+.profile-page.error {
+  text-align: center;
+  padding: 50px 20px;
+  background-color: #f8f8f8;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-page.loading h2,
+.profile-page.error h2 {
+  color: #423e37;
+}
+
+.profile-page.error p {
+  color: #d9534f;
+  margin: 20px 0;
+}
+
+.profile-page.error button {
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.profile-page.error button:hover {
+  background-color: #635d53;
+}
+
+/* Additional Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.profile-section {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Make inputs appear more like your reference CSS with animation */
+.form-group {
+  position: relative;
+}
+
+.form-group label {
+  position: absolute;
+  left: 20px;
+  top: 15px;
+  color: #65657b;
+  pointer-events: none;
+  transform-origin: 0 50%;
+  transition: transform 200ms, color 200ms;
+  z-index: 1;
+}
+
+.form-group input:focus ~ label,
+.form-group input:not(:placeholder-shown) ~ label {
+  transform: translateY(-25px) translateX(-10px) scale(0.75);
+  color: #423e37;
+}
+
+.form-group input {
+  color: #333;
+  padding-top: 15px;
+}
+
+/* Reading Activity Section */
+.reading-activity {
+  min-height: 200px;
+}

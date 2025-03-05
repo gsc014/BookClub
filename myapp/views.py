@@ -115,17 +115,18 @@ def search_books(request):
     return Response({"error": "No query provided"}, status=400)
 
 
+# random book will not nessarily give a random book, but a random book that has a description
 @api_view(['GET'])
 def random_book(request):
     with connections['open_lib'].cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM works")
+        cursor.execute("SELECT COUNT(*) FROM works WHERE description IS NOT NULL")
         total_books = cursor.fetchone()[0]
 
         if total_books == 0:
             return JsonResponse({"error": "No books found"}, status=404)
 
         random_offset = random.randint(0, total_books - 1)
-        cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works LIMIT 1 OFFSET {random_offset}")
+        cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
         book = cursor.fetchone()
 
         if book:
@@ -150,6 +151,7 @@ def retrieve_book_info(request, book_id):
 
         book_data = {
             "id": book.id,
+            "key": book.key,
             "title": book.title,
             "description": book.description,
             "author": book.author,
@@ -198,14 +200,32 @@ def get_reviews(request, bid):
 
 @api_view(['GET'])
 def autocomplete(request):
+    # query = request.GET.get('query', '')
+      
+    # print("got query", query, "\n")
+    # if not query:
+    #     return Response([])
+
+    # suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
+    # return Response(suggestions)   
+     # Change this to return both title and id as a list of dictionaries
     query = request.GET.get('query', '')
       
     print("got query", query, "\n")
     if not query:
         return Response([])
 
-    suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
-    return Response(suggestions)    
+    # Change this to return both title and id as a list of dictionaries
+    suggestions = Work.objects.using('open_lib').filter(title__icontains=query)[:5]
+    
+    # Format the results as a list of dictionaries with title and id
+    formatted_suggestions = [
+        {'id': book.id, 'title': book.title} 
+        for book in suggestions
+    ]
+    
+    print("suggestions", formatted_suggestions)
+    return Response(formatted_suggestions)
 
 
 @api_view(['GET'])

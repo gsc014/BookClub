@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { isLoggedIn, getCurrentUsername, fetchProfileData, logout } from '../utils';
+import './ProfilePage.css';
 
 function ProfilePage() {
     const { username } = useParams();
