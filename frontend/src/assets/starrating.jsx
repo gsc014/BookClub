@@ -1,28 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './bookpage.css';  // Make sure your styles are imported
 
-const StarRating = ({ rating, setRating }) => {    
+function StarRating({ rating, setRating }) {
+    const [hover, setHover] = useState(0);
+    
     return (
-        <div>
-          {[1, 2, 3, 4, 5].map((star) => {
-            return (  
-              <span
-                className='start'
-                style={{
-                  cursor: 'pointer',
-                  color: rating >= star ? 'gold' : 'gray',
-                  fontSize: `35px`,
-                }}
-                onClick={() => {
-                  setRating(star)
-                }}
-              >
-                {' '}
-                ★{' '}
-              </span>
-            )
-          })}
+        <div className="star-rating">
+            <label>Rating:</label>
+            <div className="stars">
+                {[1, 2, 3, 4, 5].map(star => (
+                    <span 
+                        key={star}
+                        className={`star ${star <= (hover || rating) ? 'filled' : ''}`}
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHover(star)}
+                        onMouseLeave={() => setHover(0)}
+                    >
+                        ★
+                    </span>
+                ))}
+            </div>
+            {rating > 0 && <span className="rating-text">{rating}/5</span>}
         </div>
-      )
-};
+    );
+}
 
 export default StarRating;
