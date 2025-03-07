@@ -172,6 +172,7 @@ def add_review(request, book_id1):
         review_text = request.data.get("text")
         rating = request.data.get("rating")
         
+        
         print("book is ", book, "and type", type(book), "with book_id1", book.id)
 
         review = Review.objects.create(
