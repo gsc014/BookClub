@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './bookpage.css';
 import StarRating from './starrating';
-
+import ProtectedRoute from '../ProtectedRoute';
 import defaultCover from './pictures/no-results.png';
+import { Link } from 'react-router-dom';  // Make sure to import Link for routing
+
 const Bookpage = ({ book }) => {
     const [retrievedBook, setBook] = useState(null);
     const [review, setReview] = useState('');
@@ -32,12 +34,56 @@ const Bookpage = ({ book }) => {
 
     const handleReviewSubmit = (e) => {
         e.preventDefault();
-        // Call backend to post the review (not implemented yet)
-        console.log("Submitting review:", review);
-        axios.post(`http://127.0.0.1:8000/api/reviewtest/${book.id}/`, 
-        { text: review, rating: bookRating } )
-        .then(response => console.log("Review added!", response.data))
-        .catch(error => console.error("Error posting review", error));
+        
+        // Form validation
+        if (!review.trim()) {
+            setErrorMessage('Please write a review before submitting.');
+            return;
+        }
+        
+        if (bookRating === 0) {
+            setErrorMessage('Please select a rating before submitting.');
+            return;
+        }
+        
+        // Disable submit button while processing
+        setIsSubmitting(true);
+        
+        // Clear any existing messages
+        setSuccessMessage('');
+        setErrorMessage('');
+        console.log("posting ", review, bookRating, book.id);
+        const token = localStorage.getItem('authToken');
+
+
+        axios.post(`http://127.0.0.1:8000/api/reviewtest/${book.id}/`, {
+            text: review,
+            rating: bookRating
+        },
+        { headers: { Authorization: `Token ${token}`} })
+        .then(response => {
+            console.log("Review added", response.data);
+            
+            // Clear the form after successful submission
+            setReview('');
+            setRating(0);
+            setSuccessMessage('Your review has been submitted!');
+            
+            // Now fetch the updated reviews AFTER the submission is complete
+            return axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`);
+        })
+        .then(response => {
+            // Update the reviews state with new data
+            setReviews(response.data);
+        })
+        .catch(error => {
+            console.error("Error posting review", error);
+            setErrorMessage('Failed to submit review. Please try again.');
+        })
+        .finally(() => {
+            // Re-enable the submit button
+            setIsSubmitting(false);
+        });
     };
 
     return (
@@ -70,6 +116,7 @@ const Bookpage = ({ book }) => {
                     Submit Review
                 </button>
             </div>
+            <ProtectedRoute>
             <div className="bookpage-reviews">
                 <h3>Reviews:</h3>
                 {reviews.length === 0 ? (
@@ -79,11 +126,17 @@ const Bookpage = ({ book }) => {
                         <div key={index} className="bookpage-review-item">
                             <p><strong>Rating:</strong> {review.rating}</p>
                             <p>{review.text}</p>
-                            <p><em>Posted on: {new Date(review.created_at).toLocaleDateString()}</em></p>
+                            <p>
+                                <strong>By:</strong> 
+                                <Link to={`/profile/${review.username}`}>{review.username}</Link> {/* Update this line */}
+                            </p>
+
+                            <p><em>Posted on: {review.created_at}</em></p>
                         </div>
                     ))
                 )}
             </div>
+            </ProtectedRoute>
         </div>
     );
 };

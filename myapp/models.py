@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User 
 
 class Work(models.Model):
     id = models.AutoField(primary_key=True)
@@ -19,6 +20,7 @@ class Work(models.Model):
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     book_id = models.IntegerField()
     text = models.TextField()
     rating = models.IntegerField()

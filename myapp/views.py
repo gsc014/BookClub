@@ -7,6 +7,13 @@ from .models import Work, Review
 import random
 from django.http import JsonResponse
 from django.db import connections
+from django.contrib.auth import logout as django_logout
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.decorators import login_required  # For ensuring authentication
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 def profile(request):
@@ -122,16 +129,16 @@ def retrieve_book_info(request, book_id):
 
 
 @api_view(["POST"])
+@login_required  # Ensures user is authenticated
 def add_review(request, book_id1):
+    print(" user: ", request.user)
     try:
         book = Work.objects.using("open_lib").get(id=book_id1)
-        review_text = request.data.get("text")
+        review_text = request.data['text']
         rating = request.data.get("rating")
-        
-        print("book is ", book, "and type", type(book), "with book_id1", book.id)
 
         review = Review.objects.create(
-            text=review_text, rating=rating, book_id=book.id
+            text=review_text, rating=rating, book_id=book.id, user=request.user
         )
 
         return Response({"message": "Review added successfully!"}, status=201)
@@ -146,8 +153,8 @@ def add_review(request, book_id1):
 @api_view(['GET'])
 def get_reviews(request, bid):
     try:
-        reviews = Review.objects.filter(book_id=bid)
-        results = [{"rating": review.rating, "text": review.text, "creation_date": review.created_at} for review in reviews]
+        reviews = Review.objects.filter(book_id=bid).select_related('user')
+        results = [{"rating": review.rating, "text": review.text, "creation_date": review.created_at, "username": review.user.username if review.user else "NULL user"} for review in reviews]
         return Response(results)
 
     except Exception as e:

@@ -4,6 +4,8 @@ import axios from 'axios';
 import './searchbar.css';
 import SearchResults from './searchresults';
 import SubjectsHeader from './subjectheader';
+import Welcome from './welcome';
+
 
 const Searchbar = () => {
     const [query, setQuery] = useState('');
@@ -54,7 +56,8 @@ const Searchbar = () => {
 
     return (
         <>
-            <SubjectsHeader onSelect={setFilters} />  
+           <SubjectsHeader onSelect={setFilters} />  
+           <Welcome />
             <div className="search-bar-container">
                 <div className="search-bar">
                     <input

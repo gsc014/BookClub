@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage } from './assets';
 import SearchResults from './assets/searchresults';
 import SubjectsHeader from './assets/subjectheader';
+import ProtectedRoute from './ProtectedRoute';
 
 
 const App = () => {
@@ -13,17 +14,16 @@ const App = () => {
     const location = useLocation();
     return (
         <div>
+            <Login />
+            <Signin />
             <Header />  {/* Keep header always visible */}
             <Routes>
                 {/* Home Page */}
                 <Route path="/" element={
                     <>
-                        <Welcome />
                         <Searchbar />
                         <Booklist />
-                        <Login />
-                        <Signin />
-                        <Profile />
+                        <Profile /> {/* The mini-profile component that is shown as a modal */}
                     </>
                 } />
 
@@ -50,20 +50,3 @@ const AppWrapper = () => (
     </Router>
 );
 export default AppWrapper;
-
-// const App = () => {
-
-//     return (
-
-//         <div>
-//             <Header />
-//             <Welcome />
-//             <Searchbar />
-//             <Booklist />
-//             <Login />
-//             <Signin />
-//             <Profile />
-
-//         </div>
-//     );
-// }
