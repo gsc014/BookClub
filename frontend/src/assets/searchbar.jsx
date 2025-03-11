@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './searchbar.css';
+import './style/searchbar.css';
 import SearchResults from './searchresults';
 import SubjectsHeader from './subjectheader';
+import Welcome from './welcome';
 
 const Searchbar = () => {
     const [query, setQuery] = useState('');
@@ -72,6 +73,7 @@ const Searchbar = () => {
     return (
         <>
             <SubjectsHeader onSelect={setFilters} />  
+            <Welcome />
             <div className="search-bar-container">
                 <div className="search-bar">
                     <input

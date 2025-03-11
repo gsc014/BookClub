@@ -1,0 +1,354 @@
+.settings-page {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-family: sans-serif;
+}
+
+.settings-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.settings-header h1 {
+    color: #423e37;
+    margin-bottom: 5px;
+}
+
+.settings-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.settings-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.settings-section h2 {
+    color: #423e37;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.user-info p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
+
+.account-option {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.account-option:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.account-option h3 {
+    color: #555;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.toggle-form-btn {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.toggle-form-btn:hover {
+    background-color: #e5e5e5;
+}
+
+.delete-btn {
+    background-color: #fff0f0;
+    border-color: #ffcccc;
+    color: #cc0000;
+}
+
+.delete-btn:hover {
+    background-color: #ffecec;
+}
+
+.account-form {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.submit-btn {
+    background-color: #423e37;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #5a544a;
+}
+
+.delete-confirm {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff0f0;
+    border-radius: 5px;
+    border-left: 4px solid #cc0000;
+}
+
+.warning {
+    color: #cc0000;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.confirm-delete-btn {
+    background-color: #cc0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover {
+    background-color: #aa0000;
+}
+
+.form-error {
+    background-color: #fff0f0;
+    color: #cc0000;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #cc0000;
+}
+
+.form-success {
+    background-color: #f0fff0;
+    color: #006600;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #006600;
+}
+
+.settings-error {
+    background-color: #fff0f0;
+    color: #cc0000;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.logout-btn, .back-btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.logout-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #333;
+}
+
+.logout-btn:hover {
+    background-color: #e5e5e5;
+}
+
+.back-btn {
+    background-color: #423e37;
+    border: none;
+    color: white;
+}
+
+.back-btn:hover {
+    background-color: #5a544a;
+}
+
+.preference-option {
+    margin-bottom: 20px;
+}
+
+.preference-option h3 {
+    color: #555;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.preference-option p {
+    color: #777;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    padding: 50px 0;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+    .settings-page {
+        margin: 0;
+        border-radius: 0;
+        padding: 15px;
+    }
+    
+    .settings-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .logout-btn, .back-btn {
+        width: 100%;
+    }
+}
+
+/* Add these styles to your existing settings.css file */
+
+/* Genre tags styling */
+.genre-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.genre-tag {
+    background-color: #f0f0f0;
+    color: #423e37;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+    border: 1px solid #ddd;
+}
+
+.remove-genre {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.2rem;
+    margin-left: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.remove-genre:hover {
+    background-color: #e0e0e0;
+    color: #cc0000;
+}
+
+.genre-form {
+    margin-top: 15px;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: white;
+}
+
+.form-success.small {
+    font-size: 0.9rem;
+    padding: 8px;
+    margin-bottom: 15px;
+}
+
+.preference-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    border-left: 3px solid #423e37;
+    font-style: italic;
+    color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .genre-tags {
+        gap: 8px;
+    }
+    
+    .genre-tag {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+}

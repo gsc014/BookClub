@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './bookpage.css';
+import './style/bookpage.css';
 import StarRating from '../starrating';
 
 import defaultCover from '/home/alexander/BookClub/frontend/src/assets/pictures/no-results.png';

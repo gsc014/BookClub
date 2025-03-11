@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './bookpage.css';  // Make sure your styles are imported
+import './style/bookpage.css';  // Make sure your styles are imported
 
 function StarRating({ rating, setRating }) {
     const [hover, setHover] = useState(0);

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import './header_style.css';
+import './style/header_style.css';
 
 import light_mode from './pictures/bright-mode.png';
 import dark_mode from './pictures/night-mode.png';
@@ -35,6 +35,7 @@ const Header = () => {
     const goToSettings = () => {
         navigate('/settings');
     };
+
     const goToHome = (e) => {
         e.preventDefault();
         navigate('/');

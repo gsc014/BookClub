@@ -93,10 +93,8 @@
   font-weight: 600;
 }
 
-/* Account Management Section */
 .account-management {
   background-color: #f3f3f3;
-  border-left: 4px solid #423e37;
 }
 
 .account-option {
@@ -322,4 +320,161 @@
 /* Reading Activity Section */
 .reading-activity {
   min-height: 200px;
+}
+
+/* Add these styles to your existing ProfilePage.css */
+
+/* Section header with edit button */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Edit profile button */
+.edit-profile-btn {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #423e37;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.edit-profile-btn.cancel {
+  background-color: #f8f8f8;
+  color: #666;
+}
+
+/* Settings button */
+.settings-btn {
+  padding: 8px 16px;
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-btn:hover {
+  background-color: #5a544a;
+}
+
+/* Edit profile form */
+.edit-profile-form {
+  margin-top: 15px;
+}
+
+.edit-profile-form .form-group {
+  margin-bottom: 20px;
+}
+
+.edit-profile-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #423e37;
+}
+
+.edit-profile-form input,
+.edit-profile-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+}
+
+.edit-profile-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.edit-profile-form input:focus,
+.edit-profile-form textarea:focus {
+  outline: none;
+  border-color: #423e37;
+  box-shadow: 0 0 0 2px rgba(66, 62, 55, 0.1);
+}
+
+/* Save profile button */
+.save-profile-btn {
+  padding: 10px 20px;
+  background-color: #423e37;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-profile-btn:hover {
+  background-color: #5a544a;
+}
+
+/* Success and error messages */
+.update-error,
+.update-success {
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+}
+
+.update-error {
+  background-color: #fff0f0;
+  border-left: 4px solid #cc0000;
+  color: #cc0000;
+}
+
+.update-success {
+  background-color: #f0fff0;
+  border-left: 4px solid #00cc00;
+  color: #006600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+  
+  .profile-actions {
+      margin-top: 15px;
+      display: flex;
+      width: 100%;
+  }
+  
+  .settings-btn, .logout-btn {
+      flex: 1;
+  }
+  
+  .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+  
+  .edit-profile-btn {
+      margin-top: 10px;
+  }
+}
+
+.goth_moom{
+  width: 10px;
+  
 }

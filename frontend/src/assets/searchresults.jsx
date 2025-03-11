@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Bookcard from './bookcard'
-import './bookcard.css';
-import './searchresults.css';
+import './style/bookcard.css';
+import './style/searchresults.css';
 
 const SearchResults = ({ results }) => {
     const [currentPage, setCurrentPage] = useState(1);
