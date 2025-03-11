@@ -1,5 +1,5 @@
 import React from 'react';
-import "./subjectheader.css";
+import "./style/subjectheader.css";
 
 const subjects = [
     "Drama", "Romance", "History", "Fiction", "Comedy", 

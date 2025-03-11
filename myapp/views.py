@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Work, Review
+from .models import Work, Review, UserInfo, UserBookList
 import random
 from django.http import JsonResponse
 from django.db import connections
@@ -166,7 +166,9 @@ def retrieve_book_info(request, book_id):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def add_review(request, book_id1):
+    user = request.user
     try:
         book = Work.objects.using("open_lib").get(id=book_id1)
         review_text = request.data.get("text")
@@ -272,12 +274,34 @@ def check_auth(request):
         "session_key_present": bool(request.session.session_key)
     })
 
+def create_userinfo():
+    user_info = UserInfo.objects.create(
+        user_id=get_object_or_404(User, id = 1),
+        bio="I am a software developer",
+        location="Nairobi, Kenya",
+        birth_date="1995-01-01"
+    )
+    print("I HAVE MADE THA USER")
+    return user_info
 
 @api_view(['GET'])
 def user_profile(request, username):
     # Get the requested user or return 404 if not found
     profile_user = get_object_or_404(User, username=username)
-    
+    # print("profile_user", profile_user, profile_user.id)
+    # user_info = get_object_or_404(UserInfo, user_id=profile_user.id)
+    bio = 'No bio available'
+    location = 'No location available'
+    birth_date = 'No birth date available'
+    try:
+        user_info = UserInfo.objects.get(user_id=profile_user.id)
+        username = profile_user.username
+        bio = user_info.bio
+        location = user_info.location
+        birth_date = user_info.birth_date
+    except UserInfo.DoesNotExist:
+        pass
+    # print(user_info)
     # Check if the request user is viewing their own profile
     is_own_profile = request.user.is_authenticated and request.user.username == username
     
@@ -287,10 +311,13 @@ def user_profile(request, username):
         "username": profile_user.username,
         "date_joined": profile_user.date_joined,
         # Include the bio from profile if it exists
-        "bio": profile_user.profile.bio if hasattr(profile_user, 'profile') else "No bio available"
+        "bio": bio,
+        "location": location,
+        "birth_date": birth_date,
     }
     
-    # Add private information only if user is viewing their own profile
+        
+        # Add private information only if user is viewing their own profile
     if is_own_profile:
         profile_data.update({
             "last_login": profile_user.last_login,
@@ -298,9 +325,40 @@ def user_profile(request, username):
             "is_staff": profile_user.is_staff,
             "is_superuser": profile_user.is_superuser,
         })
-    
+
     return Response(profile_data)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user = request.user
+    bio = request.data.get('bio')
+    location = request.data.get('location')
+    birth_date = request.data.get('birth_date')
+    
+    try:
+        # Try to get existing UserInfo
+        user_info, created = UserInfo.objects.get_or_create(user_id=user)
+        
+        # Update fields
+        if bio is not None:
+            user_info.bio = bio
+        if location is not None:
+            user_info.location = location
+        if birth_date is not None:
+            user_info.birth_date = birth_date
+            
+        user_info.save()
+        
+        return Response({
+            "message": "Profile updated successfully",
+            "bio": user_info.bio,
+            "location": user_info.location,
+            "birth_date": user_info.birth_date
+        })
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -370,3 +428,54 @@ def delete_account(request):
     return Response({
         "message": f"Account '{username}' has been deleted successfully"
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_book(request, book_id):
+    user = request.user
+    print("user", user, "id", book_id)
+    try:
+        # Look for a "Saved Books" list specifically
+        book_list = UserBookList.objects.get(user_id=user, name="Saved Books")
+    except UserBookList.DoesNotExist:
+        # Create a new "Saved Books" list if it doesn't exist
+        book_list = UserBookList.objects.create(user_id=user, name="Saved Books")
+    
+    # Check if the book is already in the list to avoid duplicates
+    if int(book_id) not in book_list.book_ids:
+        book_list.book_ids.append(int(book_id))
+        book_list.save()
+        print("Book added to saved list")
+        return Response({"status": "success", "message": "Book saved successfully"}, status=200)
+    else:
+        book_list.book_ids.remove(int(book_id))
+        book_list.save()
+        print("Book already in list")
+        return Response({"status": "removed", "message": "Book was removed"}, status=200)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_saved_books(request):
+    user = request.user
+    book_list = get_object_or_404(UserBookList, user_id=user, name=request.query_params['name'])
+    print("book_list", book_list.book_ids)
+    
+    goth_mommy = []
+    for book_id in book_list.book_ids:
+        try:
+            book = Work.objects.using('open_lib').get(id=book_id)
+
+            book_data = {
+                "id": book.id,
+                "key": book.key,
+                "title": book.title,
+            }
+
+            goth_mommy.append(book_data)
+
+        except Work.DoesNotExist:
+            pass
+    print("goth_mommy", goth_mommy)
+    return Response(goth_mommy)
+        

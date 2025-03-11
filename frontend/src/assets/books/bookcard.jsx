@@ -1,5 +1,5 @@
 import React from 'react';
-import './bookcard.css';
+import './style/bookcard.css';
 import saveIcon from '/home/alexander/BookClub/frontend/src/assets/pictures/save.png';
 import informationIcon from '/home/alexander/BookClub/frontend/src/assets/pictures/file.png';
 import defaultCover from '/home/alexander/BookClub/frontend/src/assets/pictures/no-results.png';

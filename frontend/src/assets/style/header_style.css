@@ -33,6 +33,7 @@
 }
 
 header {
+    z-index: 1;
     background-color: #423e37;
     color: #FFF;
     padding: 1rem 2rem;

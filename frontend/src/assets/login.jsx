@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './login.css';
+import './style/login.css';
 import close from './pictures/close.png';
 
 import {closeTabs, showSignInTab, showLogInTab, successfulLogin} from '../utils.jsx';

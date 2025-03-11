@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Bookcard from './bookcard';
-import './bookcard.css';
+import './style/bookcard.css';
 
 const Booklist = () => {
     const [randomBook, setRandomBook] = useState(null);

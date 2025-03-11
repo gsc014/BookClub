@@ -1,5 +1,5 @@
-import './stylesheet.css';
-import './App.css';
+import './assets/style/stylesheet.css';
+import './assets/style/App.css';
 
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -43,7 +43,6 @@ const App = () => {
                 {/* Home Page */}
                 <Route path="/" element={
                     <>
-                        <Welcome />
                         <Searchbar />
                         <Booklist />
                         <Login />
@@ -71,6 +70,9 @@ const App = () => {
                     <SearchResults results={location.state?.results || []} />} />
 
                 <Route path="/books/:id" element={
+                    <Bookpage book={location.state?.book || []} />
+                } />
+                <Route path="/save-book/:id" element={
                     <Bookpage book={location.state?.book || []} />
                 } />
             </Routes>
