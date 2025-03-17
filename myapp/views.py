@@ -35,13 +35,6 @@ def profile(request):
     else:
         return Response({"error": "User not authenticated"}, status=401)
 
-
-@api_view(['GET'])
-def settings(request):
-    user = request.user
-    return Response("hello")
-
-
 @api_view(['POST'])
 def login_user(request):
     username = request.data.get('username')
@@ -115,34 +108,51 @@ def search_books(request):
     return Response({"error": "No query provided"}, status=400)
 
 
-# random book will not nessarily give a random book, but a random book that has a description
 @api_view(['GET'])
 def random_book(request):
+    # Get the 'num' parameter with a default value of 1
+    num_books = request.GET.get('num', 1)
+    
+    # Convert to integer (since query params come as strings)
+    try:
+        num_books = int(num_books)
+    except (TypeError, ValueError):
+        num_books = 1  # Default if conversion fails
+        
+    print(f"Fetching {num_books} random books")
+    
+    # Rest of your function to fetch random books
     with connections['open_lib'].cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM works WHERE description IS NOT NULL")
         total_books = cursor.fetchone()[0]
 
         if total_books == 0:
             return JsonResponse({"error": "No books found"}, status=404)
-
-        random_offset = random.randint(0, total_books - 1)
-        cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
-        book = cursor.fetchone()
-
-        if book:
-            book_data = {
-                "id": book[0],
-                "key": book[1],
-                "title": book[2],
-                "description": book[3],
-                "subjects": book[4],
-                "author": book[5],
-                "first_published": book[6]
-            }
-            return JsonResponse(book_data)
+            
+        # Modified to fetch multiple books if requested
+        books_data = []
+        for _ in range(num_books):
+            random_offset = random.randint(0, total_books - 1)
+            cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
+            book = cursor.fetchone()
+            
+            if book:
+                book_data = {
+                    "id": book[0],
+                    "key": book[1],
+                    "title": book[2],
+                    "description": book[3],
+                    "subjects": book[4],
+                    "author": book[5],
+                    "first_published": book[6]
+                }
+                books_data.append(book_data)
+        
+        # Return a single book or a list depending on what was requested
+        if num_books == 1 and books_data:
+            return JsonResponse(books_data[0])
         else:
-            return JsonResponse({"error": "Book not found"}, status=404)
-
+            return JsonResponse(books_data, safe=False)  # safe=False allows non-dict objects
 
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
@@ -429,18 +439,17 @@ def delete_account(request):
         "message": f"Account '{username}' has been deleted successfully"
     })
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def save_book(request, book_id):
-    user = request.user
-    print("user", user, "id", book_id)
+# will make a list or get a list if it already exists
+def make_list(user, list_name):
     try:
         # Look for a "Saved Books" list specifically
-        book_list = UserBookList.objects.get(user_id=user, name="Saved Books")
+        book_list = UserBookList.objects.get(user_id=user, name= list_name)
     except UserBookList.DoesNotExist:
         # Create a new "Saved Books" list if it doesn't exist
-        book_list = UserBookList.objects.create(user_id=user, name="Saved Books")
-    
+        book_list = UserBookList.objects.create(user_id=user, name= list_name)
+    return book_list
+
+def add_to_list(book_id, book_list):
     # Check if the book is already in the list to avoid duplicates
     if int(book_id) not in book_list.book_ids:
         book_list.book_ids.append(int(book_id))
@@ -452,14 +461,34 @@ def save_book(request, book_id):
         book_list.save()
         print("Book already in list")
         return Response({"status": "removed", "message": "Book was removed"}, status=200)
+
     
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_book(request, book_id):
+    list_name = request.query_params.get('name')
+    
+    # Validate the list name
+    valid_list_names = ["Saved Books", "Liked Books"]
+    if list_name not in valid_list_names:
+        return Response({
+            "error": f"Invalid list name. Must be one of: {', '.join(valid_list_names)}"
+        }, status=400)
+    
+    user = request.user
+    
+    # Get or create the specified book list
+    book_list = make_list(user, list_name)
+    
+    # Add or remove the book from the list
+    return add_to_list(book_id, book_list)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_saved_books(request):
     user = request.user
     book_list = get_object_or_404(UserBookList, user_id=user, name=request.query_params['name'])
-    print("book_list", book_list.book_ids)
     
     goth_mommy = []
     for book_id in book_list.book_ids:
@@ -476,6 +505,4 @@ def get_saved_books(request):
 
         except Work.DoesNotExist:
             pass
-    print("goth_mommy", goth_mommy)
     return Response(goth_mommy)
-        
