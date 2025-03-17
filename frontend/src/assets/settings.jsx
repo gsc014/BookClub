@@ -19,6 +19,7 @@ const Settings = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [newEmail, setNewEmail] = useState('');
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
     
@@ -185,41 +186,35 @@ const Settings = () => {
             return;
         }
         
+        const authToken = localStorage.getItem('authToken');
+        
         // Call API to change email
-        fetch('http://localhost:8000/api/update-email/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Token ${localStorage.getItem('authToken')}`
-            },
-            body: JSON.stringify({ new_email: newEmail })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to update email');
-                });
+        axios.post('http://127.0.0.1:8000/api/update-email/', 
+            { new_email: newEmail },
+            { 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${authToken}`
+                }
             }
-            return response.json();
-        })
-        .then(data => {
-            setFormSuccess('Email updated successfully!');
+        )
+        .then(response => {
+            setFormSuccess('Email updated successfully! Please log in again with your new email.');
             // Update localStorage with new email
-            const userData = JSON.parse(localStorage.getItem('user'));
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
             userData.email = newEmail;
             localStorage.setItem('user', JSON.stringify(userData));
-
+            
+            // Log out after short delay to allow user to see success message
             setTimeout(() => {
                 logout();
                 navigate('/');
             }, 3000);
         })
         .catch(err => {
-            setFormError(err.message);
+            setFormError(err.response?.data?.error || 'Failed to update email');
         });
     };
-
-
 
     const handleDeleteAccount = () => {
         const authToken = localStorage.getItem('authToken');
@@ -429,6 +424,8 @@ const Settings = () => {
                                 setShowUsernameForm(false);
                                 setShowPasswordForm(false);
                                 setShowDeleteConfirm(false);
+                                setFormError('');
+                                setFormSuccess('');
                             }}
                             className="toggle-form-btn"
                         >
