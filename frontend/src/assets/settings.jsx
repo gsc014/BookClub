@@ -13,6 +13,7 @@ const Settings = () => {
     // Form state for account management
     const [showUsernameForm, setShowUsernameForm] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [showEmailForm, setShowEmailForm] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [newUsername, setNewUsername] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -173,7 +174,53 @@ const Settings = () => {
             setFormError(err.response?.data?.error || 'Failed to update password');
         });
     };
-    
+
+    const handleChangeEmail = (e) => {
+        e.preventDefault();
+        setFormError('');
+        setFormSuccess('');
+        
+        if (!newEmail.trim()) {
+            setFormError('Email cannot be empty');
+            return;
+        }
+        
+        // Call API to change email
+        fetch('http://localhost:8000/api/update-email/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({ new_email: newEmail })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to update email');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            setFormSuccess('Email updated successfully!');
+            // Update localStorage with new email
+            const userData = JSON.parse(localStorage.getItem('user'));
+            userData.email = newEmail;
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            setTimeout(() => {
+                logout();
+                navigate('/');
+            }, 3000);
+        })
+        .catch(err => {
+            setFormError(err.message);
+        });
+    };
+
+
+
     const handleDeleteAccount = () => {
         const authToken = localStorage.getItem('authToken');
         
@@ -292,6 +339,7 @@ const Settings = () => {
                             onClick={() => {
                                 setShowUsernameForm(!showUsernameForm);
                                 setShowPasswordForm(false);
+                                setShowEmailForm(false);
                                 setShowDeleteConfirm(false);
                                 setFormError('');
                                 setFormSuccess('');
@@ -325,6 +373,7 @@ const Settings = () => {
                             onClick={() => {
                                 setShowPasswordForm(!showPasswordForm);
                                 setShowUsernameForm(false);
+                                setShowEmailForm(false);
                                 setShowDeleteConfirm(false);
                                 setFormError('');
                                 setFormSuccess('');
@@ -370,6 +419,38 @@ const Settings = () => {
                             </form>
                         )}
                     </div>
+
+                    {/* Change Email */}
+                    <div className="account-option">
+                        <h3>Change Email</h3>
+                        <button 
+                            onClick={() => {
+                                setShowEmailForm(!showEmailForm);
+                                setShowUsernameForm(false);
+                                setShowPasswordForm(false);
+                                setShowDeleteConfirm(false);
+                            }}
+                            className="toggle-form-btn"
+                        >
+                            {showEmailForm ? 'Cancel' : 'Change Email'}
+                        </button>
+            
+                        {showEmailForm && (
+                            <form onSubmit={handleChangeEmail} className="account-form">
+                                <div className="form-group">
+                                    <label htmlFor="newEmail">New Email:</label>
+                                    <input
+                                        type="email"
+                                        id="newEmail"
+                                        value={newEmail}
+                                        onChange={(e) => setNewEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <button type="submit" className="submit-btn">Update Email</button>
+                            </form>
+                        )}
+                    </div>
                     
                     {/* Delete Account */}
                     <div className="account-option delete-account">
@@ -379,6 +460,7 @@ const Settings = () => {
                                 setShowDeleteConfirm(!showDeleteConfirm);
                                 setShowUsernameForm(false);
                                 setShowPasswordForm(false);
+                                setShowEmailForm(false);
                                 setFormError('');
                                 setFormSuccess('');
                             }}
