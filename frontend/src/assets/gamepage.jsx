@@ -30,6 +30,10 @@ const GamePage = () => {
             <h1>Guess the Book</h1>
             <p>{correctBook.description}</p>
             <ul>
+                {/* Todo: Shuffle the books so that the correct book is not always the first one */}
+                {/* Todo: make the alternatives clickable */}
+                {/* Todo: win screen, score counting, "next turn" button, high score connected to account */}
+                
                 {books.map((book, index) => (
                     <li key={index}>{book.title}</li>
                 ))}
