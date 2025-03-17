@@ -426,6 +426,30 @@ def update_password(request):
     })
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_email(request):
+    user = request.user
+    new_email = request.data.get('new_email')
+    
+    if not new_email:
+        return Response({"error": "New email is required"}, status=400)
+    
+    # Check if email is already taken
+    if User.objects.filter(email=new_email).exists():
+        return Response({"error": "Email already taken"}, status=400)
+    
+    # Update email
+    user.email = new_email
+    user.save()
+    
+    return Response({
+        "message": "Email updated successfully",
+        "email": user.email
+    })
+
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
