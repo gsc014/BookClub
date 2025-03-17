@@ -78,7 +78,9 @@ const App = () => {
                 } />
                 
                 <Route path="/game" element={
-                    <GamePage />
+                    <ProtectedRoute>
+                        <GamePage />
+                    </ProtectedRoute>
                 } />
             </Routes>
         </div>
