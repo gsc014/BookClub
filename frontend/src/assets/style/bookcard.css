@@ -50,3 +50,27 @@ ul.horizontal-list {
     flex-wrap: wrap;
     justify-content: space-around;
 }
+
+/* CSS Grid approach - automatically adjusts number of columns */
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 16px 0;
+}
+
+/* Alternative CSS for a flex-based approach if you prefer */
+/*
+.book-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 16px 0;
+    justify-content: center;
+}
+
+.book-card {
+    flex: 0 1 160px;
+}
+*/
+

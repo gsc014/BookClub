@@ -5,7 +5,6 @@ import './style/ProfilePage.css';
 import axios from 'axios';
 import search from './pictures/search.png';
 import bin from './pictures/bin.png';
-import { use } from 'react';
 
 function ProfilePage() {
     const { username } = useParams();
@@ -23,10 +22,13 @@ function ProfilePage() {
     });
     const [updateError, setUpdateError] = useState('');
     const [updateSuccess, setUpdateSuccess] = useState('');
+    
+    // Books state
     const [savedBooks, setSavedBooks] = useState([]);
     const [loadingSavedBooks, setLoadingSavedBooks] = useState(true);
+    const [likedBooks, setLikedBooks] = useState([]);
+    const [loadingLikedBooks, setLoadingLikedBooks] = useState(true);
     const [goth, setGoth] = useState(false);
-
     
     // Check auth status immediately on component render
     useEffect(() => {
@@ -41,57 +43,22 @@ function ProfilePage() {
     }, [navigate]);
     
     useEffect(() => {
-
         console.log("HELLO!\n");
-
     }, [goth]);
 
-
-
+    // Fetch saved books
     useEffect(() => {
         const authToken = localStorage.getItem('authToken');
-        console.log("Auth token:", authToken);
-        
-        // Check if user is logged in
-        if (!authToken) {
-            console.log("No auth token found");
-            return;
-        }
-        
-        setLoadingSavedBooks(true);
-        
-        // Get saved book list
-        axios.get('http://localhost:8000/api/book-list/', {
-            params: { name: "Saved Books" },
-            headers: {
-                "Authorization": `Token ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            console.log("Book list retrieved:", response.data);
-            setSavedBooks(response.data);
-            setLoadingSavedBooks(false);
-        })
-        .catch(err => {
-            console.error("Error fetching book list:", err);
-            setLoadingSavedBooks(false);
-        });
-    }, []);  // Empty dependency array to run once on component mount
-
-    useEffect(() => {
-        const authToken = localStorage.getItem('authToken');
-        
-        // Check if user is logged in
         if (!authToken) {
             console.log("No auth token found");
             return;
         }
         
         fetchSavedBooks();
-    }, []);  // Empty dependency array to run once on component mount
+        fetchLikedBooks();
+    }, []);
 
-    // Separate effect for data fetching
+    // Separate effect for profile data fetching
     useEffect(() => {
         if (!isLoggedIn()) return; // Skip fetch if not logged in
         
@@ -132,24 +99,23 @@ function ProfilePage() {
         navigate('/books/' + id, { state: { book: { id } } });
     }
 
-    const remove_book = (id) => {
-        console.log("Removing book with ID:", id);
+    const remove_saved_book = (id) => {
+        console.log("Removing saved book with ID:", id);
         const authToken = localStorage.getItem('authToken');
         
-        // Check if user is logged in
         if (!authToken) {
             alert('You must be logged in to remove a book.');
             return;
         }
         
-        // First, optimistically update the UI by filtering out the book
+        // Optimistically update the UI
         setSavedBooks(currentBooks => currentBooks.filter(book => book.id !== id));
         
-        // Then send the request to the server
         axios.post(
-            `http://127.0.0.1:8000/api/save-book/${id}/`, 
-            {}, // Empty object as body
+            `http://127.0.0.1:8000/api/add-book/${id}/`, 
+            {},
             {
+                params: { name: "Saved Books" },
                 headers: {
                     'Authorization': `Token ${authToken}`,
                     'Content-Type': 'application/json'
@@ -157,19 +123,49 @@ function ProfilePage() {
             }
         )
         .then(response => {
-            console.log("Book removed:", response.data);
-            
-            // If the server indicates the book wasn't actually removed, 
-            // fetch the updated list again to ensure consistency
+            console.log("Saved book removed:", response.data);
             if (response.data.status !== 'removed') {
                 fetchSavedBooks();
             }
         })
         .catch(error => {
-            console.error("Error removing book:", error);
-            
-            // On error, fetch the full list again to restore correct state
+            console.error("Error removing saved book:", error);
             fetchSavedBooks();
+        });
+    };
+
+    const remove_liked_book = (id) => {
+        console.log("Removing liked book with ID:", id);
+        const authToken = localStorage.getItem('authToken');
+        
+        if (!authToken) {
+            alert('You must be logged in to remove a liked book.');
+            return;
+        }
+        
+        // Optimistically update the UI
+        setLikedBooks(currentBooks => currentBooks.filter(book => book.id !== id));
+        
+        axios.post(
+            `http://127.0.0.1:8000/api/add-book/${id}/`, 
+            {}, // Empty object as body
+            {
+                params: { name: "Liked Books" },
+                headers: {
+                    'Authorization': `Token ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        )
+        .then(response => {
+            console.log("Liked book removed:", response.data);
+            if (response.data.status !== 'removed') {
+                fetchLikedBooks();
+            }
+        })
+        .catch(error => {
+            console.error("Error removing liked book:", error);
+            fetchLikedBooks();
         });
     };
     
@@ -244,13 +240,38 @@ function ProfilePage() {
             }
         })
         .then(response => {
-            console.log("Book list refreshed:", response.data);
+            console.log("Saved books refreshed:", response.data);
             setSavedBooks(response.data);
             setLoadingSavedBooks(false);
         })
         .catch(err => {
-            console.error("Error refreshing book list:", err);
+            console.error("Error refreshing saved books:", err);
             setLoadingSavedBooks(false);
+        });
+    };
+
+    // Function to fetch liked books
+    const fetchLikedBooks = () => {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) return;
+        
+        setLoadingLikedBooks(true);
+        
+        axios.get('http://localhost:8000/api/book-list/', {
+            params: { name: "Liked Books" },
+            headers: {
+                "Authorization": `Token ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log("Liked books refreshed:", response.data);
+            setLikedBooks(response.data);
+            setLoadingLikedBooks(false);
+        })
+        .catch(err => {
+            console.error("Error refreshing liked books:", err);
+            setLoadingLikedBooks(false);
         });
     };
 
@@ -324,8 +345,8 @@ function ProfilePage() {
                     
                     {isEditing ? (
                         <form className="edit-profile-form" onSubmit={handleProfileUpdate}>
+                            <label htmlFor="bio">Bio:</label>
                             <div className="form-group">
-                                <label htmlFor="bio">Bio:</label>
                                 <textarea
                                     id="bio"
                                     name="bio"
@@ -336,8 +357,8 @@ function ProfilePage() {
                                 />
                             </div>
                             
+                            <label htmlFor="location">Location:</label>
                             <div className="form-group">
-                                <label htmlFor="location">Location:</label>
                                 <input
                                     type="text"
                                     id="location"
@@ -348,8 +369,8 @@ function ProfilePage() {
                                 />
                             </div>
                             
+                            <label htmlFor="birth_date">Birth Date:</label>
                             <div className="form-group">
-                                <label htmlFor="birth_date">Birth Date:</label>
                                 <input
                                     type="date"
                                     id="birth_date"
@@ -382,6 +403,7 @@ function ProfilePage() {
                     )}
                 </div>
 
+                {/* Saved Books Section */}
                 <div className="profile-section">
                     <h2>Saved Books</h2>
                     {loadingSavedBooks ? (
@@ -391,14 +413,37 @@ function ProfilePage() {
                             {savedBooks.map((book) => (
                                 <li key={book.id} className="saved-book">
                                     {book.title} {book.author && `by ${book.author}`}
-                                    <img src={search} className='goth_moom' onClick={() => search_book(book.id)}/>
-                                    <img src={bin} className='goth_moom' onClick={() => remove_book(book.id)}/>
-
+                                    <div className="book-actions">
+                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                        <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
+                                    </div>
                                 </li>
                             ))}
                         </ul>
                     ) : (
                         <p>No saved books yet.</p>
+                    )}
+                </div>
+
+                {/* Liked Books Section */}
+                <div className="profile-section">
+                    <h2>Liked Books</h2>
+                    {loadingLikedBooks ? (
+                        <p>Loading your liked books...</p>
+                    ) : likedBooks.length > 0 ? (
+                        <ul className="liked-books-list">
+                            {likedBooks.map((book) => (
+                                <li key={book.id} className="liked-book">
+                                    {book.title} {book.author && `by ${book.author}`}
+                                    <div className="book-actions">
+                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                        <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No liked books yet.</p>
                     )}
                 </div>
             </div>
