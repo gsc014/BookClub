@@ -1,15 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './style/GamePage.css';
 
 const GamePage = () => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedBook, setSelectedBook] = useState(null);
+    const [isCorrect, setIsCorrect] = useState(null);
+    const [correctCount, setCorrectCount] = useState(0);
+    const [highScore, setHighScore] = useState(0);
 
     useEffect(() => {
+        fetchBooks();
+    }, []);
+
+    const fetchBooks = () => {
+        setLoading(true);
         axios.get('http://127.0.0.1:8000/random_book?num=5')
             .then(response => {
-                setBooks(response.data);
+                const booksWithCorrectFlag = response.data.map((book, index) => ({
+                    ...book,
+                    is_correct: index === 0
+                }));
+                const shuffledBooks = shuffleArray(booksWithCorrectFlag);
+                setBooks(shuffledBooks);
                 setLoading(false);
             })
             .catch(error => {
@@ -17,27 +32,51 @@ const GamePage = () => {
                 setError('Failed to fetch books. Please try again later.');
                 setLoading(false);
             });
-    }, []);
+    };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-    if (books.length === 0) return <div>No books available.</div>;
+    const shuffleArray = (array) => {
+        return array.sort(() => Math.random() - 0.5);
+    };
 
-    const correctBook = books[0];
+    const handleBookClick = (book) => {
+        setSelectedBook(book);
+        if (book.is_correct) {
+            setIsCorrect(true);
+            setCorrectCount(correctCount + 1);
+            if (correctCount + 1 > highScore) {
+                setHighScore(correctCount + 1);
+            }
+        } else {
+            setIsCorrect(false);
+            setCorrectCount(0);
+        }
+        setTimeout(fetchBooks, 1000);
+    };
+
+    const correctBook = books.find(book => book.is_correct);
 
     return (
-        <div>
+        <div className="game-page">
             <h1>Guess the Book</h1>
-            <p>{correctBook.description}</p>
-            <ul>
-                {/* Todo: Shuffle the books so that the correct book is not always the first one */}
-                {/* Todo: make the alternatives clickable */}
-                {/* Todo: win screen, score counting, "next turn" button, high score connected to account */}
-                
+            {correctBook && <p>{correctBook.description}</p>}
+            <div className="book-buttons">
                 {books.map((book, index) => (
-                    <li key={index}>{book.title}</li>
+                    <button key={index} onClick={() => handleBookClick(book)} className="book-button">
+                        {book.title}
+                    </button>
                 ))}
-            </ul>
+            </div>
+            {selectedBook && (
+                <div className="result">
+                    {isCorrect ? <p>Correct!</p> : <p>Incorrect. Try again!</p>}
+                </div>
+            )}
+            <div className="score">
+                <p>Current Streak: {correctCount}</p>
+                <p>High Score: {highScore}</p>
+            </div>
+            {loading && <div>Loading new books...</div>}
+            {error && <div>{error}</div>}
         </div>
     );
 };
