@@ -257,12 +257,14 @@ def search_filter(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_user(request):
-    if request.user.is_authenticated:
-        django_logout(request)
-        return Response({"message": "Successfully logged out"})
-    else:
-        return Response({"message": "You weren't logged in"})
+    # if request.user.is_authenticated:
+    django_logout(request)
+    return Response({"message": "Successfully logged out"}, status=200)
+    #     return Response({"message": "Successfully logged out"})
+    # else:
+    #     return Response({"message": "You weren't logged in"})
 
 
 @api_view(['GET'])
@@ -296,21 +298,33 @@ def create_userinfo():
 
 @api_view(['GET'])
 def user_profile(request, username):
+     # Get the requested user or return a generic "not found" response
+    try:
+        profile_user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"error": "User profile not found"}, status=404)  # Generic error to prevent enumeration
+
     # Get the requested user or return 404 if not found
-    profile_user = get_object_or_404(User, username=username)
+    # profile_user = get_object_or_404(User, username=username)
     # print("profile_user", profile_user, profile_user.id)
     # user_info = get_object_or_404(UserInfo, user_id=profile_user.id)
-    bio = 'No bio available'
-    location = 'No location available'
-    birth_date = 'No birth date available'
-    try:
-        user_info = UserInfo.objects.get(user_id=profile_user.id)
-        username = profile_user.username
-        bio = user_info.bio
-        location = user_info.location
-        birth_date = user_info.birth_date
-    except UserInfo.DoesNotExist:
-        pass
+    # bio = 'No bio available'
+    # location = 'No location available'
+    # birth_date = 'No birth date available'
+    # try:
+    #     user_info = UserInfo.objects.get(user_id=profile_user.id)
+    #     username = profile_user.username
+    #     bio = user_info.bio
+    #     location = user_info.location
+    #     birth_date = user_info.birth_date
+    # except UserInfo.DoesNotExist:
+    #     pass
+      # Default values for user info fields
+    bio, location, birth_date = "No bio available", "No location available", "No birth date available"
+    user_info = UserInfo.objects.filter(user_id=profile_user.id).first()
+    if user_info:
+        bio, location, birth_date = user_info.bio, user_info.location, user_info.birth_date
+
     # print(user_info)
     # Check if the request user is viewing their own profile
     is_own_profile = request.user.is_authenticated and request.user.username == username
