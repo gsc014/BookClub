@@ -93,6 +93,9 @@ DATABASES = {
     'open_lib': {  # New database config
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / "open_lib.db",
+        'TEST': {  # ⬅️ Prevents Django from creating a test DB
+            'MIRROR': 'open_lib'
+        }
     }
 }
 
