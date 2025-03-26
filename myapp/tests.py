@@ -227,5 +227,49 @@ class UserBookListTests(APITestCase):
         response = self.client.get(saved_books_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        
+'''
+tests done:
 
+Login
+Signup
+Logout
+Search
+Add review
+get review(s)
+Update-profile
+Add_book to list (in this case 'Saved books' list)
+get_saved_books (again 'Saved books' list)
+(for the last two should probably test for 'Liked Books' lists as well, just to cover everything)
+
+
+'''
+
+
+'''
+tests to add:
+
+delete_account test
+
+api/filter test
+
+update-username and update-password, but these are in essence update profile split into two,
+could probably fix update_profile to be the alfa omega of updating instead of having 3 functions
+
+retrieve_book_info test
+
+check_auth test
+
+autocomplete test, no clue how to test if this is even working without using my eyes 
+(i have not looked at the function)
+
+i have two profile views one of which is depreciated, why not remove it? dont ask me
+
+random book test, should be easy
+
+'''
+
+
+'''
+We need to make a list of what tests the API endpoints need,
+so far the only test i feel is really comprehensive is for User tests.
+'''
