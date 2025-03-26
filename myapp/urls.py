@@ -28,7 +28,6 @@ urlpatterns = [
     path('api/update-password/', views.update_password, name='update_password'),
     path('api/delete-account/', views.delete_account, name='delete_account'),
     path('api/update-profile/', views.update_profile, name='update_profile'),
-    path('api/add-book/<int:book_id>/', views.add_book, name='save_book'),
-    # path('api/like-book/<int:book_id>/', views.like_book, name='like_book'),
+    path('api/add-book/<int:book_id>/', views.add_book, name='add_book'),
     path('api/book-list/', views.get_saved_books, name='book_list'),
 ]
