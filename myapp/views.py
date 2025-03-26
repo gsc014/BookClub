@@ -297,6 +297,7 @@ def create_userinfo():
     return user_info
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_profile(request, username):
      # Get the requested user or return a generic "not found" response
     try:
@@ -481,8 +482,6 @@ def add_to_list(book_id, book_list):
 @permission_classes([IsAuthenticated])
 def add_book(request, book_id):
     list_name = request.query_params.get('name')
-    
-    # Validate the list name
     valid_list_names = ["Saved Books", "Liked Books"]
     if list_name not in valid_list_names:
         return Response({
@@ -490,11 +489,8 @@ def add_book(request, book_id):
         }, status=400)
     
     user = request.user
-    
-    # Get or create the specified book list
     book_list = make_list(user, list_name)
     
-    # Add or remove the book from the list
     return add_to_list(book_id, book_list)
 
 
