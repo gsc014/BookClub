@@ -7,7 +7,6 @@ from django.test import TestCase
 from django.urls import reverse
 from django.db import transaction
 
-
 class UserTests(APITestCase):
     '''
     8 Tests related to signing up, logging in and logging out,
@@ -17,6 +16,7 @@ class UserTests(APITestCase):
     signup = reverse('signup_user')
     login = reverse('login_user')
     logout = reverse('logout_user')
+    delete = reverse('delete_account')
     
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='password123')
@@ -37,6 +37,10 @@ class UserTests(APITestCase):
             'password':'password123'
         })
         self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+        response = self.client.delete(self.delete)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
 
     def test_logout_successfull(self):
         response = self.client.post(self.logout)
@@ -103,13 +107,23 @@ class BookTests(APITestCase):
             author="Test Author",
             first_published=2000
         )
+        self.book1 = Work.objects.using('open_lib').filter(id=1).first() 
         
     def test_search_books_title(self):
         '''Test to see if the book is in the API response'''
         response = self.client.get('/api/search/', {
             "q": self.book.title
             })
-        self.assertEqual(response.status_code, status.HTTP_200_OK)  
+        self.assertEqual(response.status_code, status.HTTP_200_OK) 
+    
+    def test_retrieve_book_info(self):
+        '''
+        retrieve_book_info used here
+        ''' 
+        url = reverse('retrieve_book_info', kwargs={'book_id':self.book1.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
         
 class ReviewTests(APITestCase):
     '''
@@ -177,6 +191,46 @@ class UserProfileTests(APITestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['bio'], 'Updated bio')
+        
+    def test_update_username(self):
+        '''
+        testing update_username
+        '''
+        url1 = reverse('update_username')
+        response = self.client.post(url1,{
+            'new_username':'test'
+        })
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    
+    def test_update_username_empty(self):
+        '''
+        testing update_username
+        '''
+        url1 = reverse('update_username')
+        response = self.client.post(url1,{})
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+        
+        
+    def test_update_password(self):
+        '''
+        testing update password
+        '''
+        url2 = reverse('update_password')
+        response = self.client.post(url2,{
+            'current_password':'password123',
+            'new_password':'123'
+        })
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_update_password_empty(self):
+        '''
+        testing update password
+        '''
+        url2 = reverse('update_password')
+        response = self.client.post(url2,{})
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+        
     
     def test_non_existing_profile(self):
         '''
@@ -229,18 +283,23 @@ class UserBookListTests(APITestCase):
         
 '''
 tests done:
+User:
+    Login
+    Signup
+    Logout
+    delete_account test
+    Update-profile
+    update-username and update-password, i thought update_profile function did the same thing,
+    but no it only updates bio, location, birthdate, and not username or password
+    Add_book to list (in this case 'Saved books' list)
+    get_saved_books (again 'Saved books' list)
+    (for the last two should probably test for 'Liked Books' lists as well, just to cover everything)
 
-Login
-Signup
-Logout
-Search
-Add review
-get review(s)
-Update-profile
-Add_book to list (in this case 'Saved books' list)
-get_saved_books (again 'Saved books' list)
-(for the last two should probably test for 'Liked Books' lists as well, just to cover everything)
-
+Book:
+    Search
+    retrieve_book_info test
+    Add review
+    get review(s)
 
 '''
 
@@ -248,14 +307,8 @@ get_saved_books (again 'Saved books' list)
 '''
 tests to add:
 
-delete_account test
-
 api/filter test
 
-update-username and update-password, but these are in essence update profile split into two,
-could probably fix update_profile to be the alfa omega of updating instead of having 3 functions
-
-retrieve_book_info test
 
 check_auth test
 
