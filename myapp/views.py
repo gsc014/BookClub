@@ -204,6 +204,10 @@ def add_review(request, book_id1):
 def get_reviews(request, bid):
     try:
         reviews = Review.objects.filter(book_id=bid)
+        
+        if not reviews.exists():
+            return Response({'message':'No reviews available.'},status=204)
+        
         results = [{"rating": review.rating, "text": review.text, "creation_date": review.created_at} for review in reviews]
         return Response(results)
 
@@ -245,10 +249,8 @@ def autocomplete(request):
 def search_filter(request):
     subject_filter = request.GET.get('filter', '')
 
-    print("got filter", subject_filter)
     if subject_filter:
         books = Work.objects.using('open_lib').filter(subjects__icontains=subject_filter)
-        print("have this", books)
         
         results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
         return Response(results)
@@ -469,7 +471,6 @@ def add_to_list(book_id, book_list):
     if int(book_id) not in book_list.book_ids:
         book_list.book_ids.append(int(book_id))
         book_list.save()
-        print("Book added to saved list")
         return Response({"status": "success", "message": "Book saved successfully"}, status=200)
     else:
         book_list.book_ids.remove(int(book_id))
@@ -481,12 +482,19 @@ def add_to_list(book_id, book_list):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_book(request, book_id):
+    print("in add book")
     list_name = request.query_params.get('name')
     valid_list_names = ["Saved Books", "Liked Books"]
     if list_name not in valid_list_names:
         return Response({
             "error": f"Invalid list name. Must be one of: {', '.join(valid_list_names)}"
         }, status=400)
+    
+    try:
+        book = Work.objects.using('open_lib').get(id=book_id)
+    except Work.DoesNotExist:
+        return Response({"error": "Book not found"}, status=404)
+    
     
     user = request.user
     book_list = make_list(user, list_name)

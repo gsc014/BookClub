@@ -124,6 +124,56 @@ class BookTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         
+    def test_random_book(self):
+        '''
+        testing random_book to see if it gives correct status codes
+        '''
+        url = reverse('random_book')
+        
+        response = self.client.get(url,{
+            'num': 1
+        })
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_filter(self):
+        '''
+        testing search filter
+        '''
+        url = reverse('search_filter')
+        
+        response = self.client.get(url,{
+            'filter':'documentary'
+        })
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_autocomplete(self):
+        '''
+        autocomplete test:
+            one test looking that an empty query returns an empty result
+            
+            second test looking for not empty list of query results
+        '''
+        url1 = reverse('autocomplete')
+        
+        response = self.client.get(url1,{
+            'query': ''
+        })
+        
+        self.assertListEqual(response.data,[])
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+        
+        url2 = reverse('autocomplete')
+        
+        response = self.client.get(url2,{
+            'query': 'mathe'
+        })
+        
+        self.assertIsNotNone(response.data)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
         
 class ReviewTests(APITestCase):
     '''
@@ -138,33 +188,53 @@ class ReviewTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         self.book = Work.objects.using('open_lib').filter(id=1).first() 
     
-    def test_add_review(self):
+    def test_add_and_get_review(self):
         '''
-        uses the add_review function in views.py
+        uses the add_review and get_reviews functions in views.py
         '''
-        self.assertIsNotNone(self.book.id, "The book ID should not be None.")
         
+        #start add review
         add_url = reverse('add_review', kwargs={'book_id1': self.book.id})
         response = self.client.post(add_url, {
             'text': 'Great book!', 'rating': 5
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
+        
+        #start get review
         getreview_url = reverse('get_reviews', kwargs={'bid':self.book.id})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
         review_texts = [review['text'] for review in response.data]
         self.assertIn('Great book!', review_texts)
+        
+        
+    def test_add_review_fake_book(self):
+        '''
+        Add a review to fake book
+        '''
+        
+        add_url = reverse('add_review', kwargs={'book_id1': 2904429})
+        response = self.client.post(add_url, {
+            'text': 'Great book!', 'rating': 5
+        })
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_review_from_book_with_no_reviews(self):
+        #start get review
+        getreview_url = reverse('get_reviews', kwargs={'bid':2904408})
+        response = self.client.get(getreview_url)
+        self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
+        # self.assertGreater(len(response.data), 0)
+        # review_texts = [review['text'] for review in response.data]
+        # self.assertIn('Great book!', review_texts)
+        
 
 class UserProfileTests(APITestCase):
     '''
     test for getting a user profile:
     it makes a temp user profile
     checks if the added info is there and if profile can be updated
-    
-    NEED TO ADD:
-    testing for non existing user profile, expect 404 <-- DONE i think
     '''
 
     def setUp(self):
@@ -191,6 +261,18 @@ class UserProfileTests(APITestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['bio'], 'Updated bio')
+        
+    def test_update_profile_no_auth(self):
+        '''
+        update_profile is used here
+        '''
+        print("in updateprofile no auth")
+        self.client.credentials()
+        response = self.client.post('/api/update-profile/', {
+            'bio': 'Updated bio', 'location': 'UK'
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        
         
     def test_update_username(self):
         '''
@@ -252,7 +334,7 @@ class UserBookListTests(APITestCase):
     '''
     Databases need to be defined,
     as Works table is in another database file
-    '''
+    '''     
     databases = {'default', 'open_lib'}
     
     def setUp(self):
@@ -261,7 +343,7 @@ class UserBookListTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
         self.book = Work.objects.using('open_lib').filter(id=1).first()
-
+        
     def test_add_book_to_list_and_get_saved_books(self):
         '''
         Send book list name as part of the URL parameter, 
@@ -281,8 +363,41 @@ class UserBookListTests(APITestCase):
         response = self.client.get(saved_books_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
+    def test_add_book_to_list_and_get_liked_books(self):
+        '''
+        Send book list name as part of the URL parameter, 
+        check to see if it's accepted and book list isn't empty.
+        Then check if the added book can be retrieved in the liked books list.
+        '''
+        
+        url = reverse('add_book', kwargs={'book_id': self.book.id}) + "?name=Liked Books"
+        response = self.client.post(url) 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('status'), 'success')
+        
+        book_list = UserBookList.objects.filter(user_id=self.user, name="Liked Books").first()
+        self.assertIsNotNone(book_list)
+        self.assertIn(self.book.id, book_list.book_ids)
+        liked_books_url = reverse('book_list') + "?name=Liked Books"
+        response = self.client.get(liked_books_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    def test_add_empty_book_to_list(self):
+        '''
+        Adding a book that doesnt exist from the database,
+        should report 404
+        '''
+        
+        url = reverse('add_book', kwargs={'book_id': 2904427}) + "?name=Saved Books"
+        response = self.client.post(url) 
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
+        
+        
 '''
 tests done:
+
+
 User:
     Login
     Signup
@@ -296,28 +411,22 @@ User:
     (for the last two should probably test for 'Liked Books' lists as well, just to cover everything)
 
 Book:
-    Search
     retrieve_book_info test
     Add review
     get review(s)
+    random book test
+    api/filter test
 
+Search:
+    Search
+    autocomplete test
 '''
 
 
 '''
 tests to add:
 
-api/filter test
-
-
-check_auth test
-
-autocomplete test, no clue how to test if this is even working without using my eyes 
-(i have not looked at the function)
-
 i have two profile views one of which is depreciated, why not remove it? dont ask me
-
-random book test, should be easy
 
 '''
 
