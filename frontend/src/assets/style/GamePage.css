@@ -2,8 +2,8 @@
     text-align: center;
     padding: 20px;
     font-family: 'Arial', sans-serif;
-    background-color: #f5f5dc; /* Beige background */
-    color: #4a2c2a; /* Dark brown text */
+    background-color: #f5f5dc;
+    color: #4a2c2a;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -12,7 +12,7 @@
 
 h1 {
     font-size: 2.5rem;
-    color: #4a2c2a; /* Dark brown */
+    color: #4a2c2a;
     margin-bottom: 20px;
 }
 
@@ -28,21 +28,21 @@ h1 {
     padding: 12px 25px;
     font-size: 16px;
     cursor: pointer;
-    border: 2px solid #4a2c2a; /* Dark brown border */
-    background-color: #8b5e3c; /* Medium brown */
-    color: #f5f5dc; /* Beige text */
+    border: 2px solid #4a2c2a;
+    background-color: #8b5e3c;
+    color: #f5f5dc;
     border-radius: 8px;
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
 }
 
 .book-button:hover {
-    background-color: #a67c52; /* Lighter brown */
+    background-color: #a67c52;
     transform: scale(1.05);
 }
 
 .book-button:disabled {
-    background-color: #d3c4a8; /* Light beige */
-    color: #a1a1a1; /* Gray text */
+    background-color: #d3c4a8;
+    color: #a1a1a1;
     cursor: not-allowed;
 }
 
@@ -50,27 +50,27 @@ h1 {
     margin-top: 20px;
     font-size: 20px;
     font-weight: bold;
-    color: #4a2c2a; /* Dark brown */
+    color: #4a2c2a;
 }
 
 .score {
     margin-top: 20px;
     font-size: 18px;
-    color: #4a2c2a; /* Dark brown */
+    color: #4a2c2a;
 }
 
 .game-over {
     text-align: center;
-    background-color: #f5e4d7; /* Light beige */
+    background-color: #f5e4d7;
     padding: 20px;
-    border: 2px solid #8b5e3c; /* Medium brown */
+    border: 2px solid #8b5e3c;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-over p {
     font-size: 18px;
-    color: #8b5e3c; /* Medium brown */
+    color: #8b5e3c;
     margin-bottom: 15px;
 }
 
@@ -78,15 +78,15 @@ h1 {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
-    border: 2px solid #8b5e3c; /* Medium brown */
-    background-color: #8b5e3c; /* Medium brown */
-    color: #f5f5dc; /* Beige text */
+    border: 2px solid #8b5e3c;
+    background-color: #8b5e3c;
+    color: #f5f5dc;
     border-radius: 5px;
     transition: background-color 0.3s, transform 0.2s;
 }
 
 .restart-button:hover {
-    background-color: #a67c52; /* Lighter brown */
+    background-color: #a67c52;
     transform: scale(1.05);
 }
 
