@@ -10,6 +10,8 @@ const GamePage = () => {
     const [isCorrect, setIsCorrect] = useState(null);
     const [correctCount, setCorrectCount] = useState(0);
     const [highScore, setHighScore] = useState(0);
+    const [gameOver, setGameOver] = useState(false);
+    const [buttonsDisabled, setButtonsDisabled] = useState(false);
 
     useEffect(() => {
         fetchBooks();
@@ -39,6 +41,8 @@ const GamePage = () => {
     };
 
     const handleBookClick = (book) => {
+        if (buttonsDisabled || selectedBook) return; // Prevent multiple clicks or clicking after selection
+        setButtonsDisabled(true);
         setSelectedBook(book);
         if (book.is_correct) {
             setIsCorrect(true);
@@ -46,11 +50,29 @@ const GamePage = () => {
             if (correctCount + 1 > highScore) {
                 setHighScore(correctCount + 1);
             }
+            setTimeout(() => {
+                setButtonsDisabled(false);
+                setSelectedBook(null);
+                fetchBooks();
+            }, 0); 
         } else {
             setIsCorrect(false);
-            setCorrectCount(0);
+            setGameOver(true);
         }
-        setTimeout(fetchBooks, 1000);
+    };
+
+    const handleRestart = () => {
+        setGameOver(false);
+        setCorrectCount(0);
+        setSelectedBook(null);
+        setIsCorrect(null);
+        setButtonsDisabled(false);
+
+        const resetBooks = books.map(book => ({ ...book, is_correct: false }));
+        if (resetBooks.length > 0) {
+            resetBooks[0].is_correct = true; // Ensure the first book is correct
+        }
+        setBooks(shuffleArray(resetBooks));
     };
 
     const correctBook = books.find(book => book.is_correct);
@@ -58,25 +80,39 @@ const GamePage = () => {
     return (
         <div className="game-page">
             <h1>Guess the Book</h1>
-            {correctBook && <p>{correctBook.description}</p>}
-            <div className="book-buttons">
-                {books.map((book, index) => (
-                    <button key={index} onClick={() => handleBookClick(book)} className="book-button">
-                        {book.title}
-                    </button>
-                ))}
-            </div>
-            {selectedBook && (
-                <div className="result">
-                    {isCorrect ? <p>Correct!</p> : <p>Incorrect. Try again!</p>}
+            {gameOver ? (
+                <div className="game-over">
+                    <p>Game Over! Your streak was: {correctCount}</p>
+                    <button onClick={handleRestart} className="restart-button">Try Again</button>
                 </div>
+            ) : (
+                <>
+                    {correctBook && <p>{correctBook.description}</p>}
+                    <div className="book-buttons">
+                        {books.map((book, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handleBookClick(book)}
+                                className="book-button"
+                                disabled={buttonsDisabled || selectedBook === book} // Disable button if already selected
+                            >
+                                {book.title}
+                            </button>
+                        ))}
+                    </div>
+                    {selectedBook && (
+                        <div className="result">
+                            {isCorrect ? <p>Correct!</p> : <p>Incorrect. Try again!</p>}
+                        </div>
+                    )}
+                    <div className="score">
+                        <p>Current Streak: {correctCount}</p>
+                        <p>High Score: {highScore}</p>
+                    </div>
+                    {loading && <div>Loading new books...</div>}
+                    {error && <div>{error}</div>}
+                </>
             )}
-            <div className="score">
-                <p>Current Streak: {correctCount}</p>
-                <p>High Score: {highScore}</p>
-            </div>
-            {loading && <div>Loading new books...</div>}
-            {error && <div>{error}</div>}
         </div>
     );
 };
