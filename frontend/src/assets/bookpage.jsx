@@ -128,7 +128,7 @@ const Bookpage = ({ book }) => {
             <div className="bookpage-header">
                 <img
                     className="bookpage-cover"
-                    src={`https://covers.openlibrary.org/b/id/${retrievedBook.id}-L.jpg`}
+                    src={`https://covers.openlibrary.org/b/id/${retrievedBook.cover}-L.jpg`}
                     alt={retrievedBook.title || "Book Cover"}
                     onError={(e) => e.target.src = defaultCover}
                 />
@@ -153,6 +153,13 @@ const Bookpage = ({ book }) => {
                     <p className="bookpage-author">{retrievedBook.author}</p>
                 </div>
             </div>
+
+            <div>
+                <a href="https://bibsok.no/?mode=vt&pubsok_txt_0=0465045154" target="_blank">
+                    Search national library
+                </a>
+            </div>
+
 
             <div className="bookpage-review">
                 <h3>Write a Review</h3>
