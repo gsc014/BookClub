@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Work, Review, UserInfo, UserBookList
+from .models import Review, UserInfo, UserBookList, Books
 import random
 from django.http import JsonResponse
 from django.db import connections
@@ -102,12 +102,15 @@ def search_books(request):
     print("getting request", request.GET)
     query = request.GET.get('q', '')
     if query:
-        books = Work.objects.using('open_lib').filter(title__iregex=r'\b' + query + r'\b')
+        # Use Books model from the default database
+        books = Books.objects.filter(title__iregex=r'\b' + query + r'\b')
+        
+        # Make sure the field names match your Books model
         results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
         return Response(results)
     return Response({"error": "No query provided"}, status=400)
-
-
+    
+    
 @api_view(['GET'])
 def random_book(request):
     # Get the 'num' parameter with a default value of 1
@@ -121,57 +124,233 @@ def random_book(request):
         
     print(f"Fetching {num_books} random books")
     
-    # Rest of your function to fetch random books
-    with connections['open_lib'].cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) FROM works WHERE description IS NOT NULL")
-        total_books = cursor.fetchone()[0]
-
-        if total_books == 0:
-            return JsonResponse({"error": "No books found"}, status=404)
-            
-        # Modified to fetch multiple books if requested
+    try:
+        # Use a more reliable method to get random books
+        # This avoids indexing issues and is more efficient
+        random_books = list(Books.objects
+                        .exclude(description__isnull=True)
+                        .exclude(description='')
+                        .exclude(cover__isnull=True)
+                        .order_by('?')[:num_books])
+        
         books_data = []
-        for _ in range(num_books):
-            random_offset = random.randint(0, total_books - 1)
-            cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
-            book = cursor.fetchone()
-            
-            if book:
-                book_data = {
-                    "id": book[0],
-                    "key": book[1],
-                    "title": book[2],
-                    "description": book[3],
-                    "subjects": book[4],
-                    "author": book[5],
-                    "first_published": book[6]
-                }
-                books_data.append(book_data)
+        for book in random_books:
+            book_data = {
+                "id": book.id,
+                "key": book.key if hasattr(book, 'key') else None,
+                "title": book.title,
+                "description": book.description,
+                "subjects": book.subjects if hasattr(book, 'subjects') else None,
+                "author": book.author,
+                "first_published": book.first_published if hasattr(book, 'first_published') else None,
+                "cover": book.cover if hasattr(book, 'cover') else None
+            }
+            books_data.append(book_data)
         
         # Return a single book or a list depending on what was requested
         if num_books == 1 and books_data:
             return JsonResponse(books_data[0])
         else:
-            return JsonResponse(books_data, safe=False)  # safe=False allows non-dict objects
+            return JsonResponse(books_data, safe=False)
+    
+    except Exception as e:
+        print(f"Error in random_book: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+# @api_view(['GET'])
+# def recommended_books(request):
+#     """Get personalized book recommendations for the authenticated user."""
+#     user = request.user
+#     num_books = int(request.GET.get('num', 6))
+    
+#     if not user.is_authenticated:
+#         # For non-authenticated users, get random books directly
+#         try:
+#             # Use the same logic as random_book but don't call the view function
+#             random_books = list(Books.objects
+#                             .exclude(description__isnull=True)
+#                             .exclude(description='')
+#                             .exclude(cover__isnull=True)
+#                             .order_by('?')[:num_books])
+            
+#             books_data = []
+#             for book in random_books:
+#                 book_data = {
+#                     "id": book.id,
+#                     "key": book.key if hasattr(book, 'key') else None,
+#                     "title": book.title,
+#                     "description": book.description,
+#                     "subjects": book.subjects if hasattr(book, 'subjects') else None,
+#                     "author": book.author,
+#                     "first_published": book.first_published if hasattr(book, 'first_published') else None,
+#                     "cover": book.cover if hasattr(book, 'cover') else None
+#                 }
+#                 books_data.append(book_data)
+            
+#             return JsonResponse(books_data, safe=False)
+        
+#         except Exception as e:
+#             print(f"Error in recommended_books (random fallback): {str(e)}")
+#             return JsonResponse({"error": str(e)}, status=500)
+    
+#     try:
+#         # Rest of your existing code for authenticated users...
+#         # 1. First tier: Find books similar to highly rated books by the user
+#         user_reviews = Review.objects.filter(user_id=user.id, rating__gte=4).values_list('book_id', flat=True)
+        
+#         # If user has rated books, find similar books by genre/subjects
+#         if user_reviews:
+#             # Get genres/subjects from highly rated books
+#             liked_books = Books.objects.filter(id__in=user_reviews)
+#             liked_subjects = []
+#             for book in liked_books:
+#                 if book.subjects:
+#                     # Assuming subjects are stored as comma-separated values or can be parsed
+#                     subjects = book.subjects.split(',') if isinstance(book.subjects, str) else []
+#                     liked_subjects.extend(subjects)
+            
+#             # Weight subjects by frequency
+#             subject_counts = {}
+#             for subject in liked_subjects:
+#                 subject = subject.strip()
+#                 subject_counts[subject] = subject_counts.get(subject, 0) + 1
+            
+#             # Get top subjects
+#             top_subjects = sorted(subject_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+#             top_subject_names = [s[0] for s in top_subjects]
+            
+#             # Find books with similar subjects, excluding already rated books
+#             recommended = []
+#             for subject in top_subject_names:
+#                 similar_books = Books.objects.filter(subjects__icontains=subject)\
+#                                      .exclude(id__in=user_reviews)\
+#                                      .exclude(description__isnull=True)\
+#                                      .exclude(description='')\
+#                                      .exclude(cover__isnull=True)\
+#                                      .order_by('?')
+#                 recommended.extend(list(similar_books[:3]))  # Take up to 3 books per subject
+            
+#             # Remove duplicates while preserving order
+#             seen = set()
+#             recommended = [book for book in recommended if book.id not in seen and not seen.add(book.id)]
+            
+#             # If we have enough recommendations, return them
+#             if len(recommended) >= num_books:
+#                 recommended = recommended[:num_books]
+#             else:
+#                 # 2. Second tier: Add some popular books from favorite genres
+#                 remaining = num_books - len(recommended)
+#                 popular_books = Books.objects.exclude(id__in=user_reviews)\
+#                                     .exclude(id__in=[b.id for b in recommended])\
+#                                     .exclude(description__isnull=True)\
+#                                     .exclude(cover__isnull=True)\
+#                                     .order_by('?')[:remaining]
+#                 recommended.extend(list(popular_books))
+#         else:
+#             # 3. Third tier: If no ratings yet, use random popular books
+#             recommended = list(Books.objects.exclude(description__isnull=True)
+#                               .exclude(description='')
+#                               .exclude(cover__isnull=True)
+#                               .order_by('?')[:num_books])
+        
+#         # Format the response
+#         books_data = []
+#         for book in recommended:
+#             book_data = {
+#                 "id": book.id,
+#                 "key": book.key,
+#                 "title": book.title,
+#                 "description": book.description,
+#                 "subjects": book.subjects,
+#                 "author": book.author,
+#                 "first_published": book.first_published,
+#                 "cover": book.cover
+#             }
+#             books_data.append(book_data)
+        
+#         return JsonResponse(books_data, safe=False)
+    
+#     except Exception as e:
+#         print(f"Error in recommended_books: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
 
 @api_view(['GET'])
-def retrieve_book_info(request, book_id):
-    try:
-        book = Work.objects.using('open_lib').get(id=book_id)
+@permission_classes([IsAuthenticated])
+def recommended_books(request):
+    # Get request parameters
+    user = request.user
+    num_books = int(request.GET.get('num', 10))  # Default to 6 books
+    
+    liked_subject = UserInfo.objects.filter(user_id=user).values_list('top_subject', flat=True).first()
+    print("ong", liked_subject)
+    if not liked_subject:
+        # If no liked subjects, fall back to random books
+        random_books = list(Books.objects
+                            .exclude(description__isnull=True)
+                            .exclude(description='')
+                            .exclude(cover__isnull=True)
+                            .order_by('?')[:num_books])
+        
+        books_data = []
+        for book in random_books:
+            book_data = {
+                "id": book.id,
+                "key": book.key,
+                "title": book.title,
+                "description": book.description,
+                "subjects": book.subjects,
+                "author": book.author,
+                "first_published": book.first_published if hasattr(book, 'first_published') else None,
+                "cover": book.cover if hasattr(book, 'cover') else None
+            }
+            books_data.append(book_data)
+        
+        return JsonResponse(books_data, safe=False)
+    
+    may_like_book = Books.objects.filter(subjects__icontains=liked_subject)[:20]
 
+    # print("may like book", may_like_book)
+
+    books_data = []
+
+    for book in may_like_book:
         book_data = {
             "id": book.id,
             "key": book.key,
             "title": book.title,
             "description": book.description,
-            "author": book.author,
-            "first_published": book.first_published,
             "subjects": book.subjects,
+            "author": book.author,
+            "first_published": book.first_published if hasattr(book, 'first_published') else None,
+            "cover": book.cover if hasattr(book, 'cover') else None
+        }
+        books_data.append(book_data)
+    
+    print("books_data", books_data)
+
+    return JsonResponse(books_data, safe=False)
+    
+
+
+@api_view(['GET'])
+def retrieve_book_info(request, book_id):
+    try:
+        book = Books.objects.get(id=book_id)
+
+        book_data = {
+            "id": book.id,
+            "key": book.key if hasattr(book, 'key') else None,
+            "title": book.title,
+            "description": book.description,
+            "author": book.author,
+            "first_published": book.first_published if hasattr(book, 'first_published') else None,
+            "subjects": book.subjects,
+            "cover": book.cover if hasattr(book, 'cover') else None,
         }
 
         return Response(book_data)
 
-    except Work.DoesNotExist:
+    except Books.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
 
 
@@ -180,10 +359,9 @@ def retrieve_book_info(request, book_id):
 def add_review(request, book_id1):
     user = request.user
     try:
-        book = Work.objects.using("open_lib").get(id=book_id1)
+        book = Books.objects.get(id=book_id1)
         review_text = request.data.get("text")
         rating = request.data.get("rating")
-        
         
         print("book is ", book, "and type", type(book), "with book_id1", book.id)
 
@@ -193,7 +371,7 @@ def add_review(request, book_id1):
 
         return Response({"message": "Review added successfully!"}, status=201)
 
-    except Work.DoesNotExist:
+    except Books.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
 
     except Exception as e:
@@ -213,23 +391,14 @@ def get_reviews(request, bid):
 
 @api_view(['GET'])
 def autocomplete(request):
-    # query = request.GET.get('query', '')
-      
-    # print("got query", query, "\n")
-    # if not query:
-    #     return Response([])
-
-    # suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
-    # return Response(suggestions)   
-     # Change this to return both title and id as a list of dictionaries
     query = request.GET.get('query', '')
       
     print("got query", query, "\n")
     if not query:
         return Response([])
 
-    # Change this to return both title and id as a list of dictionaries
-    suggestions = Work.objects.using('open_lib').filter(title__icontains=query)[:5]
+    # Return both title and id as a list of dictionaries
+    suggestions = Books.objects.filter(title__icontains=query)[:5]
     
     # Format the results as a list of dictionaries with title and id
     formatted_suggestions = [
@@ -247,7 +416,7 @@ def search_filter(request):
 
     print("got filter", subject_filter)
     if subject_filter:
-        books = Work.objects.using('open_lib').filter(subjects__icontains=subject_filter)
+        books = Books.objects.filter(subjects__icontains=subject_filter)
         print("have this", books)
         
         results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
@@ -442,11 +611,11 @@ def delete_account(request):
 # will make a list or get a list if it already exists
 def make_list(user, list_name):
     try:
-        # Look for a "Saved Books" list specifically
-        book_list = UserBookList.objects.get(user_id=user, name= list_name)
+        # Look for a specific list
+        book_list = UserBookList.objects.get(user_id=user, name=list_name)
     except UserBookList.DoesNotExist:
-        # Create a new "Saved Books" list if it doesn't exist
-        book_list = UserBookList.objects.create(user_id=user, name= list_name)
+        # Create a new list if it doesn't exist
+        book_list = UserBookList.objects.create(user_id=user, name=list_name)
     return book_list
 
 def add_to_list(book_id, book_list):
@@ -479,6 +648,34 @@ def add_book(request, book_id):
     
     # Get or create the specified book list
     book_list = make_list(user, list_name)
+
+    # just for finding the top subject
+    if list_name == "Liked Books":
+            # Extract and clean subjects from liked books
+        subjects = []
+        for book_id in book_list.book_ids:
+            try:
+                book = Books.objects.get(id=book_id)
+                if book.subjects:
+                    # Clean and split subjects
+                    book_subjects = [s.strip() for s in book.subjects.split(',')]
+                    subjects.extend(book_subjects)
+            except Books.DoesNotExist:
+                continue
+        
+        # Count subject frequencies
+        subject_counts = {}
+        for subject in subjects:
+            if subject:  # Skip empty subjects
+                # Convert to lowercase when counting
+                lowercase_subject = subject.lower()
+                subject_counts[lowercase_subject] = subject_counts.get(lowercase_subject, 0) + 1
+
+        top_subjects = sorted(subject_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        top_sub = top_subjects[0][0] if top_subjects else None
+        
+        UserInfo.objects.filter(user_id=user).update(top_subject=top_sub)
     
     # Add or remove the book from the list
     return add_to_list(book_id, book_list)
@@ -490,19 +687,20 @@ def get_saved_books(request):
     user = request.user
     book_list = get_object_or_404(UserBookList, user_id=user, name=request.query_params['name'])
     
-    goth_mommy = []
+    saved_books = []
     for book_id in book_list.book_ids:
         try:
-            book = Work.objects.using('open_lib').get(id=book_id)
+            book = Books.objects.get(id=book_id)
 
             book_data = {
                 "id": book.id,
-                "key": book.key,
+                "key": book.key if hasattr(book, 'key') else None,
                 "title": book.title,
             }
 
-            goth_mommy.append(book_data)
+            saved_books.append(book_data)
 
-        except Work.DoesNotExist:
+        except Books.DoesNotExist:
             pass
-    return Response(goth_mommy)
+    return Response(saved_books)
+

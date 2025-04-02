@@ -16,8 +16,14 @@ const Booklist = () => {
             setLoading(true);
             try {
                 // Only fetch the number we need to show
-                const response = await axios.get('http://127.0.0.1:8000/random-book/', {
+                const authToken = localStorage.getItem('authToken');
+                
+                const response = await axios.get('http://127.0.0.1:8000/recommended_books/', {
                     params: { num: booksToShow },
+                    headers: {
+                        "Authorization": `Token ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 console.log("Fetched books:", response.data);
                 

@@ -128,7 +128,7 @@ const Bookpage = ({ book }) => {
             <div className="bookpage-header">
                 <img
                     className="bookpage-cover"
-                    src={`https://covers.openlibrary.org/b/id/${retrievedBook.id}-L.jpg`}
+                    src={`https://covers.openlibrary.org/b/id/${retrievedBook.cover}-M.jpg`}
                     alt={retrievedBook.title || "Book Cover"}
                     onError={(e) => e.target.src = defaultCover}
                 />
@@ -140,6 +140,7 @@ const Bookpage = ({ book }) => {
                                 ? retrievedBook.description || "No description available."
                                 : shortenText(retrievedBook.description || "")}
                         </p>
+                        <p>{retrievedBook.subjects}</p>
                         {retrievedBook.description && retrievedBook.description.length > maxLength && (
                             <button
                                 className="view-more-btn"

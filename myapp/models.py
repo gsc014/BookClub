@@ -32,9 +32,21 @@ class UserInfo(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    top_subject = models.CharField(max_length=255, null=True, blank=True)
+    
 
 class UserBookList(models.Model):
     id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank = True, null = True)
     name = models.CharField(max_length=255)
     book_ids = models.JSONField(default=list)
+
+class Books(models.Model):
+    id = models.AutoField(primary_key=True)
+    key = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    subjects = models.TextField(null=True, blank=True)
+    author = models.CharField(max_length=255)
+    cover = models.IntegerField(null=True, blank=True)
+    first_published = models.IntegerField(null=True, blank=True)

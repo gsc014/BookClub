@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/login/', login_user, name='login_user'),
     path('api/signup/', signup_user, name='signup_user'),
     path('random-book/', random_book, name='random_book'),
+    path('recommended_books/', views.recommended_books, name='recommended_books'),
     path('api/search/', search_books, name='search_books'),
     path('api/book/<int:book_id>/', retrieve_book_info, name='retrieve_book_info'),
     path('api/reviewtest/<int:book_id1>/', add_review, name='add_review'),

@@ -120,15 +120,19 @@ const Bookcard = ({ book }) => {
         navigate(`/books/${book.id}`, {state: { book }});
     };
 
+    // console.log("Bookcard props:", book.cover);
+
     return (
         <div className="book-card" onClick={handleClick}>
             <img 
+                // src={`https://covers.openlibrary.org/b/id/${book.cover}-M.jpg`}
                 src={defaultCover} // {`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
                 alt={book.title || "Book Cover"}
                 className="book-cover"
                 onError={(e) => e.target.src = defaultCover} // Fallback if image fails to load
             />
             <h3>{book.title}</h3>
+            <p>{book.subjects}</p>
             
             {/* Save button with status feedback */}
             <div className="book-actions">
