@@ -12,10 +12,11 @@ urlpatterns = [
     path('api/profile/<str:username>/', views.user_profile, name='user_profile'),
     
     # Your other existing URL patterns
-    path('api/settings/', views.settings, name='settings_api'),
+    # path('api/settings/', views.settings, name='settings_api'),
     path('api/login/', login_user, name='login_user'),
     path('api/signup/', signup_user, name='signup_user'),
     path('random-book/', random_book, name='random_book'),
+    path('recommended_books/', views.recommended_books, name='recommended_books'),
     path('api/search/', search_books, name='search_books'),
     path('api/book/<int:book_id>/', retrieve_book_info, name='retrieve_book_info'),
     path('api/reviewtest/<int:book_id1>/', add_review, name='add_review'),
@@ -28,6 +29,7 @@ urlpatterns = [
     path('api/update-password/', views.update_password, name='update_password'),
     path('api/delete-account/', views.delete_account, name='delete_account'),
     path('api/update-profile/', views.update_profile, name='update_profile'),
-    path('api/save-book/<int:book_id>/', views.save_book, name='save_book'),
+    path('api/add-book/<int:book_id>/', views.add_book, name='save_book'),
+    # path('api/like-book/<int:book_id>/', views.like_book, name='like_book'),
     path('api/book-list/', views.get_saved_books, name='book_list'),
 ]

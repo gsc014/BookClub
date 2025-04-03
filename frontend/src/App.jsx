@@ -72,7 +72,7 @@ const App = () => {
                 <Route path="/books/:id" element={
                     <Bookpage book={location.state?.book || []} />
                 } />
-                <Route path="/save-book/:id" element={
+                <Route path="/add-book/:id" element={
                     <Bookpage book={location.state?.book || []} />
                 } />
             </Routes>
