@@ -7,11 +7,12 @@ const SettingsPage = () => {
     theme: 'dark',
     notifications: true,
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     axios.get('http://127.0.0.1:8000/api/settings/')
       .then(response => setSettings(response.data))
-      .catch(error => console.error('Error fetching settings:', error));
+      .catch(error => setError('Error fetching settings'));
   }, []);
 
   const handleSubmit = (e) => {
@@ -21,6 +22,7 @@ const SettingsPage = () => {
       .catch(error => console.error('Error updating settings:', error));
   };
 
+  if (error) return <div>{error}</div>;
   if (!settings) return <div>Loading...</div>;
 
   return (
