@@ -27,5 +27,7 @@ open_lib.db
 *.sln
 *.sw?
 
+*.Identifier
+
 frontend/venv/
 venv/

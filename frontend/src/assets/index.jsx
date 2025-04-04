@@ -8,3 +8,4 @@ export { default as Profile } from './profile';
 export { default as Settings } from './settings';
 export { default as Bookpage } from './bookpage';
 export { default as StarRating } from './starrating';
+export { default as GamePage } from './gamepage.jsx';
