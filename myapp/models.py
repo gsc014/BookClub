@@ -32,6 +32,7 @@ class UserInfo(models.Model):
     location = models.CharField(max_length=255, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    high_score_titlegame = models.IntegerField(default=0)
 
 class UserBookList(models.Model):
     id = models.AutoField(primary_key=True)
