@@ -19,10 +19,8 @@ const Searchbar = () => {
             setSuggestions([]); 
             return; 
         }
-
-        axios.get(`http://127.0.0.1:8000/api/autocomplete/`, { params: { query } })
-            .then(response => setSuggestions(response.data))
-            .catch(error => console.error("Error fetching suggestions", error));
+        console.log("HELLEOOEO",query)
+        axios.get(`http://127.0.0.1:8000/api/autocomplete`, { params: { query } }).then(response => setSuggestions(response.data)).catch(error => console.error("Error fetching suggestions", error));
     }, [query]);
 
     const handleSearch = async () => {
@@ -44,7 +42,8 @@ const Searchbar = () => {
                 state: { 
                     book: { 
                         id: suggestion.id, 
-                        title: suggestion.title 
+                        title: suggestion.title ,
+                        book: suggestion.book
                     } 
                 }
             });

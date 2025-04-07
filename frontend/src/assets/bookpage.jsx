@@ -14,8 +14,20 @@ const Bookpage = ({ book }) => {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
+    const [isbn, setIsbn] = useState('');
+
 
     const maxLength = 500;
+    const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
+    const fetchIsbn = () => {
+        axios.get(`http://127.0.0.1:8000/api/isbn/${retrievedBook.key}`)
+            .then(response => {
+                setIsbn(response.data) 
+            })
+            .catch(error => console.error('Error fetching ISBN:', error));
+    };
+
+
     const shortenText = (text) => {
         if (!text) return 'No description available.';
         if (text.length <= maxLength) return text;
@@ -38,6 +50,13 @@ const Bookpage = ({ book }) => {
         // Fetch initial reviews
         fetchReviews();
     }, [book.id]);
+
+    useEffect(() => {
+        if (retrievedBook && retrievedBook.key) {  // Ensure the book data is loaded
+            fetchIsbn();  // Only fetch ISBN when retrievedBook is not null
+        }
+    }, [retrievedBook]);  // Trigger this effect when retrievedBook changes
+    
 
     if (!retrievedBook) {
         return <div className="bookpage-loading">Loading book information...</div>;
@@ -66,7 +85,7 @@ const Bookpage = ({ book }) => {
 
         // Get the authentication token
         const authToken = localStorage.getItem('authToken');
-        
+
         // Check if user is logged in
         if (!authToken) {
             setErrorMessage('You must be logged in to submit a review.');
@@ -82,7 +101,7 @@ const Bookpage = ({ book }) => {
 
         // Submit review to the server with authentication token
         axios.post(
-            `http://127.0.0.1:8000/api/reviewtest/${book.id}/`, 
+            `http://127.0.0.1:8000/api/reviewtest/${book.id}/`,
             {
                 text: review,
                 rating: bookRating
@@ -110,7 +129,7 @@ const Bookpage = ({ book }) => {
             })
             .catch(error => {
                 console.error("Error posting review", error);
-                
+
                 if (error.response && error.response.status === 401) {
                     setErrorMessage('You need to log in again to submit a review.');
                 } else {
@@ -155,10 +174,15 @@ const Bookpage = ({ book }) => {
             </div>
 
             <div>
-                <a href="https://bibsok.no/?mode=vt&pubsok_txt_0=0465045154" target="_blank">
-                    Search national library
-                </a>
+                {isbn ? (
+                    <a href={`${test}${isbn}`} target="_blank" rel="noopener noreferrer">
+                        Search national library
+                    </a>
+                ) : (
+                    <p>ISBN not available</p>
+                )}
             </div>
+
 
 
             <div className="bookpage-review">
