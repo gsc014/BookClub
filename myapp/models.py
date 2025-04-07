@@ -17,6 +17,15 @@ class Work(models.Model):
         managed = False  # Django won't manage migrations
         db_table = 'works'  # Table name in open_lib.db
 
+class NewTable(models.Model):
+    id = models.AutoField(primary_key=True)
+    works_key = models.CharField(max_length=255)
+    isbn_10 = models.CharField(max_length=255)
+    
+    class Meta:
+        db_table = 'new_table'
+        managed = False
+
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
@@ -38,3 +47,13 @@ class UserBookList(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank = True, null = True)
     name = models.CharField(max_length=255)
     book_ids = models.JSONField(default=list)
+
+class Books(models.Model):
+    id = models.AutoField(primary_key=True)
+    key = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    subjects = models.TextField(null=True, blank=True)
+    author = models.CharField(max_length=255)
+    cover = models.IntegerField(null=True, blank=True)
+    first_published = models.IntegerField(null=True, blank=True)
