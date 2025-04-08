@@ -51,7 +51,7 @@ class UserBookList(models.Model):
 
 class Books(models.Model):
     id = models.AutoField(primary_key=True)
-    key = models.CharField(max_length=255, unique=True)
+    key = models.CharField(max_length=255, unique=True,db_index=True)
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     subjects = models.TextField(null=True, blank=True)

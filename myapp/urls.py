@@ -32,5 +32,4 @@ urlpatterns = [
     path('api/add-book/<int:book_id>/', views.add_book, name='add_book'),
     path('api/book-list/', views.get_saved_books, name='book_list'),
     path('api/isbn/<str:work_key>', views.getisbn, name='isbn'),
-    path('random_book', views.random_book, name='random_book'),
 ]
