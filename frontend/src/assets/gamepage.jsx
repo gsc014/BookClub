@@ -19,7 +19,7 @@ const GamePage = () => {
 
     const fetchBooks = () => {
         setLoading(true);
-        axios.get('http://127.0.0.1:8000/random_book?num=5')
+        axios.get('http://127.0.0.1:8000/random-book?num=5')
             .then(response => {
                 const booksWithCorrectFlag = response.data.map((book, index) => ({
                     ...book,
