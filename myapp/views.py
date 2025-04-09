@@ -107,6 +107,7 @@ def search_books(request):
         return Response(results)
     return Response({"error": "No query provided"}, status=400)
 
+
 @api_view(['GET'])
 def random_book(request):
     # Get the 'num' parameter with a default value of 1
@@ -119,21 +120,17 @@ def random_book(request):
 
     print(f"Fetching {num_books} random books")
 
-    # Query to get all books with a description
+    # Query to get all books with a description (filter directly in the query)
     books_qs = Books.objects.filter(description__isnull=False)
 
     total_books = books_qs.count()
     if total_books == 0:
         return Response({"error": "No books found"}, status=404)
 
-    books_data = []
-
-    # Fetch random books from the filtered queryset
-    for _ in range(num_books):
-        random_index = random.randint(0, total_books - 1)
-        book = books_qs[random_index]
-
-        books_data.append({
+    # If we only need 1 book, we can randomly sample directly from the database
+    if num_books == 1:
+        book = books_qs.order_by('?').first()  # Randomly fetch 1 book
+        books_data = [{
             "id": book.id,
             "key": book.key,
             "title": book.title,
@@ -141,9 +138,52 @@ def random_book(request):
             "subjects": book.subjects,
             "author": book.author,
             "first_published": book.first_published
-        })
+        }]
+    else:
+        # Randomly select multiple books (limit number of queries)
+        books_data = books_qs.order_by('?')[:num_books].values(
+            'id', 'key', 'title', 'description', 'subjects', 'author', 'first_published')
 
-    return Response(books_data[0] if num_books == 1 else books_data)
+    return Response(books_data)
+
+
+# @api_view(['GET'])
+# def random_book(request):
+#     # Get the 'num' parameter with a default value of 1
+#     num_books = request.GET.get('num', 1)
+    
+#     try:
+#         num_books = int(num_books)
+#     except (TypeError, ValueError):
+#         num_books = 1
+
+#     print(f"Fetching {num_books} random books")
+
+#     # Query to get all books with a description
+#     books_qs = Books.objects.filter(description__isnull=False)
+
+#     total_books = books_qs.count()
+#     if total_books == 0:
+#         return Response({"error": "No books found"}, status=404)
+
+#     books_data = []
+
+#     # Fetch random books from the filtered queryset
+#     for _ in range(num_books):
+#         random_index = random.randint(0, total_books - 1)
+#         book = books_qs[random_index]
+
+#         books_data.append({
+#             "id": book.id,
+#             "key": book.key,
+#             "title": book.title,
+#             "description": book.description,
+#             "subjects": book.subjects,
+#             "author": book.author,
+#             "first_published": book.first_published
+#         })
+
+#     return Response(books_data[0] if num_books == 1 else books_data)
 
 # @api_view(['GET'])
 # def random_book(request):
@@ -595,3 +635,28 @@ def get_saved_books(request):
         except Books.DoesNotExist:
             pass
     return Response(goth_mommy)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def high_score(request):
+    user = request.user
+
+    if request.method == 'GET':
+        # Retrieve the user's high score
+        user_info = UserInfo.objects.filter(user_id=user).first()
+        high_score = user_info.high_score_titlegame if user_info else 0
+        return Response({"high_score": high_score})
+
+    elif request.method == 'POST':
+        # Update the user's high score if the new score is higher
+        new_score = request.data.get('high_score', 0)
+        try:
+            user_info, created = UserInfo.objects.get_or_create(user_id=user)
+            if new_score > user_info.high_score_titlegame:
+                user_info.high_score_titlegame = new_score
+                user_info.save()
+                return Response({"message": "High score updated", "high_score": user_info.high_score_titlegame}, status=200)
+            else:
+                return Response({"message": "High score not beaten", "high_score": user_info.high_score_titlegame}, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
