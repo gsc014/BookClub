@@ -5,9 +5,6 @@ from .views import login_user, signup_user, random_book, search_books, retrieve_
 
 
 urlpatterns = [
-    # Keep the existing profile route for backward compatibility
-    path('profile/', views.profile, name='profile_api'),
-    
     # Add the new username-based profile route
     path('api/profile/<str:username>/', views.user_profile, name='user_profile'),
     
