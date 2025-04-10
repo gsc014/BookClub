@@ -1,13 +1,10 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import login_user, signup_user, random_book, search_books, retrieve_book_info, add_review, get_reviews, autocomplete, search_filter
+from .views import login_user, signup_user, random_book, search_books, retrieve_book_info, add_review, get_reviews, autocomplete, search_filter, high_score
 
 
 urlpatterns = [
-    # Keep the existing profile route for backward compatibility
-    path('profile/', views.profile, name='profile_api'),
-    
     # Add the new username-based profile route
     path('api/profile/<str:username>/', views.user_profile, name='user_profile'),
     
@@ -32,4 +29,5 @@ urlpatterns = [
     path('api/add-book/<int:book_id>/', views.add_book, name='add_book'),
     path('api/book-list/', views.get_saved_books, name='book_list'),
     path('api/isbn/<str:work_key>', views.getisbn, name='isbn'),
+    path('api/high-score/', high_score, name='high_score'),
 ]
