@@ -16,25 +16,6 @@ import logging
 # Set up logging
 logger = logging.getLogger(__name__)
 
-@api_view(['GET'])
-def profile(request):
-    user = request.user  # Get the logged-in user
-    
-    if user.is_authenticated:
-        # Accessing fields directly from the User model
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "last_login": user.last_login,
-            "date_joined": user.date_joined,
-            "is_staff": user.is_staff,
-            "is_superuser": user.is_superuser,
-            # Still include the bio from profile if it exists
-            "bio": user.profile.bio if hasattr(user, 'profile') else "No bio available"
-        })
-    else:
-        return Response({"error": "User not authenticated"}, status=401)
-
 @api_view(['POST'])
 def login_user(request):
     username = request.data.get('username')
