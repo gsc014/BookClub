@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Work, Review, UserInfo, UserBookList
+from .models import Work, Review, UserInfo, UserBookList,Books
 from rest_framework.authtoken.models import Token
 from django.test import TestCase
 from django.urls import reverse
@@ -95,11 +95,9 @@ class BookTests(APITestCase):
     '''
     see if the search function works
     '''
-    
-    databases = {'default', 'open_lib'} 
 
     def setUp(self):
-        self.book = Work.objects.using('open_lib').create(
+        self.book = Books.objects.create(
             key="test_key",
             title="Test Book",
             description="A test description",
@@ -107,7 +105,7 @@ class BookTests(APITestCase):
             author="Test Author",
             first_published=2000
         )
-        self.book1 = Work.objects.using('open_lib').filter(id=1).first() 
+        self.book1 = Books.objects.filter(id=1).first() 
         
     def test_search_books_title(self):
         '''Test to see if the book is in the API response'''
@@ -120,6 +118,7 @@ class BookTests(APITestCase):
         '''
         retrieve_book_info used here
         ''' 
+        print("in test_retrieve_info")
         url = reverse('retrieve_book_info', kwargs={'book_id':self.book1.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
@@ -177,16 +176,18 @@ class BookTests(APITestCase):
         
 class ReviewTests(APITestCase):
     '''
-    Tests making reviews on book already present in the open_lib database,
+    Tests making reviews on book already present in the database,
     a lot easier than making temporary book 
     '''
 
-    databases = {'default', 'open_lib'} 
     def setUp(self):
         self.user = User.objects.create_user(username='reviewer', password='password123')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
-        self.book = Work.objects.using('open_lib').filter(id=1).first() 
+        self.book = Books.objects.create(
+            id = 111,
+            title = "testing book"
+        )
     
     def test_add_and_get_review(self):
         '''
@@ -225,10 +226,6 @@ class ReviewTests(APITestCase):
         getreview_url = reverse('get_reviews', kwargs={'bid':2904408})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
-        # self.assertGreater(len(response.data), 0)
-        # review_texts = [review['text'] for review in response.data]
-        # self.assertIn('Great book!', review_texts)
-        
 
 class UserProfileTests(APITestCase):
     '''
@@ -335,15 +332,16 @@ class UserBookListTests(APITestCase):
     Databases need to be defined,
     as Works table is in another database file
     '''     
-    databases = {'default', 'open_lib'}
     
     def setUp(self):
         self.user = User.objects.create_user(username='listuser', password='password123')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-        self.book = Work.objects.using('open_lib').filter(id=1).first()
-        
+        self.book = Books.objects.create(
+            id = 111,
+            title = "testing book"
+        )
     def test_add_book_to_list_and_get_saved_books(self):
         '''
         Send book list name as part of the URL parameter, 
