@@ -88,30 +88,30 @@ def search_books(request):
         return Response(results)
     return Response({"error": "No query provided"}, status=400)
 
-
 @api_view(['GET'])
 def random_book(request):
-    # Get the 'num' parameter with a default value of 1
-    num_books = request.GET.get('num', 1)
-    
     try:
-        num_books = int(num_books)
+        num_books = int(request.GET.get('num', 1))
     except (TypeError, ValueError):
         num_books = 1
 
-    print(f"Fetching {num_books} random books")
-
-    # Query to get all books with a description (filter directly in the query)
+    # Filter only books that have a description
     books_qs = Books.objects.filter(description__isnull=False)
 
-    total_books = books_qs.count()
-    if total_books == 0:
+    # Get all valid IDs (filtered, sparse-safe)
+    all_ids = list(books_qs.values_list('id', flat=True))
+
+    if not all_ids:
         return Response({"error": "No books found"}, status=404)
 
-    # If we only need 1 book, we can randomly sample directly from the database
-    if num_books == 1:
-        book = books_qs.order_by('?').first()  # Randomly fetch 1 book
-        books_data = [{
+    # Randomly pick N unique IDs
+    random_ids = random.sample(all_ids, min(num_books, len(all_ids)))
+
+    # Fetch the books with those IDs
+    selected_books = books_qs.filter(id__in=random_ids)
+
+    books_data = [
+        {
             "id": book.id,
             "key": book.key,
             "title": book.title,
@@ -119,11 +119,9 @@ def random_book(request):
             "subjects": book.subjects,
             "author": book.author,
             "first_published": book.first_published
-        }]
-    else:
-        # Randomly select multiple books (limit number of queries)
-        books_data = books_qs.order_by('?')[:num_books].values(
-            'id', 'key', 'title', 'description', 'subjects', 'author', 'first_published')
+        }
+        for book in selected_books
+    ]
 
     return Response(books_data)
 
@@ -140,21 +138,17 @@ def random_book(request):
 
 #     print(f"Fetching {num_books} random books")
 
-#     # Query to get all books with a description
+#     # Query to get all books with a description (filter directly in the query)
 #     books_qs = Books.objects.filter(description__isnull=False)
 
 #     total_books = books_qs.count()
 #     if total_books == 0:
 #         return Response({"error": "No books found"}, status=404)
 
-#     books_data = []
-
-#     # Fetch random books from the filtered queryset
-#     for _ in range(num_books):
-#         random_index = random.randint(0, total_books - 1)
-#         book = books_qs[random_index]
-
-#         books_data.append({
+#     # If we only need 1 book, we can randomly sample directly from the database
+#     if num_books == 1:
+#         book = books_qs.order_by('?').first()  # Randomly fetch 1 book
+#         books_data = [{
 #             "id": book.id,
 #             "key": book.key,
 #             "title": book.title,
@@ -162,55 +156,13 @@ def random_book(request):
 #             "subjects": book.subjects,
 #             "author": book.author,
 #             "first_published": book.first_published
-#         })
+#         }]
+#     else:
+#         # Randomly select multiple books (limit number of queries)
+#         books_data = books_qs.order_by('?')[:num_books].values(
+#             'id', 'key', 'title', 'description', 'subjects', 'author', 'first_published')
 
-#     return Response(books_data[0] if num_books == 1 else books_data)
-
-# @api_view(['GET'])
-# def random_book(request):
-#     # Get the 'num' parameter with a default value of 1
-#     num_books = request.GET.get('num', 1)
-    
-#     # Convert to integer (since query params come as strings)
-#     try:
-#         num_books = int(num_books)
-#     except (TypeError, ValueError):
-#         num_books = 1  # Default if conversion fails
-        
-#     print(f"Fetching {num_books} random books")
-    
-#     # Rest of your function to fetch random books
-#     with connections['open_lib'].cursor() as cursor:
-#         cursor.execute("SELECT COUNT(*) FROM works WHERE description IS NOT NULL")
-#         total_books = cursor.fetchone()[0]
-
-#         if total_books == 0:
-#             return JsonResponse({"error": "No books found"}, status=404)
-            
-#         # Modified to fetch multiple books if requested
-#         books_data = []
-#         for _ in range(num_books):
-#             random_offset = random.randint(0, total_books - 1)
-#             cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
-#             book = cursor.fetchone()
-            
-#             if book:
-#                 book_data = {
-#                     "id": book[0],
-#                     "key": book[1],
-#                     "title": book[2],
-#                     "description": book[3],
-#                     "subjects": book[4],
-#                     "author": book[5],
-#                     "first_published": book[6]
-#                 }
-#                 books_data.append(book_data)
-        
-#         # Return a single book or a list depending on what was requested
-#         if num_books == 1 and books_data:
-#             return JsonResponse(books_data[0])
-#         else:
-#             return JsonResponse(books_data, safe=False)  # safe=False allows non-dict objects
+#     return Response(books_data)
 
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
