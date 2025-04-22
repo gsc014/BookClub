@@ -20,7 +20,6 @@ urlpatterns = [
     path('api/autocomplete/', autocomplete, name='autocomplete'),
     path('api/filter/', search_filter, name='search_filter'),
     path('api/logout/', views.logout_user, name='logout_user'),
-    path('api/check-auth/', views.check_auth, name='check_auth'),
     path('api/update-username/', views.update_username, name='update_username'),
     path('api/update-password/', views.update_password, name='update_password'),
     path('api/update-email/', views.update_email, name='update_email'),
