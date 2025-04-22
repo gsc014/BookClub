@@ -59,13 +59,10 @@ def signup_user(request):
     if User.objects.filter(username=username).exists():
         return Response({"error": "Username already taken."}, status=400)
 
-    # Create the new user
     user = User.objects.create_user(username=username, password=password1)
     
-    # Log the user in
     login(request, user)
     
-    # Create or get token for authentication
     token, _ = Token.objects.get_or_create(user=user)
     
     print(f"Signup successful for {username}, token: {token.key}")
@@ -124,45 +121,6 @@ def random_book(request):
     ]
 
     return Response(books_data)
-
-
-# @api_view(['GET'])
-# def random_book(request):
-#     # Get the 'num' parameter with a default value of 1
-#     num_books = request.GET.get('num', 1)
-    
-#     try:
-#         num_books = int(num_books)
-#     except (TypeError, ValueError):
-#         num_books = 1
-
-#     print(f"Fetching {num_books} random books")
-
-#     # Query to get all books with a description (filter directly in the query)
-#     books_qs = Books.objects.filter(description__isnull=False)
-
-#     total_books = books_qs.count()
-#     if total_books == 0:
-#         return Response({"error": "No books found"}, status=404)
-
-#     # If we only need 1 book, we can randomly sample directly from the database
-#     if num_books == 1:
-#         book = books_qs.order_by('?').first()  # Randomly fetch 1 book
-#         books_data = [{
-#             "id": book.id,
-#             "key": book.key,
-#             "title": book.title,
-#             "description": book.description,
-#             "subjects": book.subjects,
-#             "author": book.author,
-#             "first_published": book.first_published
-#         }]
-#     else:
-#         # Randomly select multiple books (limit number of queries)
-#         books_data = books_qs.order_by('?')[:num_books].values(
-#             'id', 'key', 'title', 'description', 'subjects', 'author', 'first_published')
-
-#     return Response(books_data)
 
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
@@ -228,26 +186,15 @@ def get_reviews(request, bid):
 
 
 @api_view(['GET'])
-def autocomplete(request):
-    # query = request.GET.get('query', '')
-      
-    # print("got query", query, "\n")
-    # if not query:
-    #     return Response([])
-
-    # suggestions = Work.objects.using('open_lib').filter(title__icontains=query).values_list('title', flat=True)[:5]
-    # return Response(suggestions)   
-     # Change this to return both title and id as a list of dictionaries
+def autocomplete(request):  
     query = request.GET.get('query', '')
       
     print("got query", query, "\n")
     if not query:
         return Response([])
 
-    # Change this to return both title and id as a list of dictionaries
     suggestions = Books.objects.filter(title__icontains=query)[:5]
     
-    # Format the results as a list of dictionaries with title and id
     formatted_suggestions = [
         {'id': book.id, 'title': book.title} 
         for book in suggestions
@@ -273,12 +220,8 @@ def search_filter(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
-    # if request.user.is_authenticated:
     django_logout(request)
     return Response({"message": "Successfully logged out"}, status=200)
-    #     return Response({"message": "Successfully logged out"})
-    # else:
-    #     return Response({"message": "You weren't logged in"})
 
 
 @api_view(['GET'])
@@ -287,34 +230,6 @@ def getisbn(request,work_key):
     isbn = NewTable.objects.filter(works_key=work_key).first()
     
     return Response(isbn.isbn_10)
-
-
-@api_view(['GET'])
-def check_auth(request):
-    """Check if the user is authenticated"""
-    print("Session key in check_auth:", request.session.session_key)
-    print("User authenticated:", request.user.is_authenticated)
-    
-    if request.user.is_authenticated:
-        return Response({
-            "authenticated": True, 
-            "username": request.user.username,
-            "session_key": request.session.session_key
-        })
-    return Response({
-        "authenticated": False,
-        "session_key_present": bool(request.session.session_key)
-    })
-
-def create_userinfo():
-    user_info = UserInfo.objects.create(
-        user_id=get_object_or_404(User, id = 1),
-        bio="I am a software developer",
-        location="Nairobi, Kenya",
-        birth_date="1995-01-01"
-    )
-    print("I HAVE MADE THA USER")
-    return user_info
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -325,28 +240,12 @@ def user_profile(request, username):
     except User.DoesNotExist:
         return Response({"error": "User profile not found"}, status=404)  # Generic error to prevent enumeration
 
-    # Get the requested user or return 404 if not found
-    # profile_user = get_object_or_404(User, username=username)
-    # print("profile_user", profile_user, profile_user.id)
-    # user_info = get_object_or_404(UserInfo, user_id=profile_user.id)
-    # bio = 'No bio available'
-    # location = 'No location available'
-    # birth_date = 'No birth date available'
-    # try:
-    #     user_info = UserInfo.objects.get(user_id=profile_user.id)
-    #     username = profile_user.username
-    #     bio = user_info.bio
-    #     location = user_info.location
-    #     birth_date = user_info.birth_date
-    # except UserInfo.DoesNotExist:
-    #     pass
       # Default values for user info fields
     bio, location, birth_date = "No bio available", "No location available", "No birth date available"
     user_info = UserInfo.objects.filter(user_id=profile_user.id).first()
     if user_info:
         bio, location, birth_date = user_info.bio, user_info.location, user_info.birth_date
 
-    # print(user_info)
     # Check if the request user is viewing their own profile
     is_own_profile = request.user.is_authenticated and request.user.username == username
     
