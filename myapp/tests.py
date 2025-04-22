@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.test import TestCase
 from django.urls import reverse
 from django.db import transaction
+from unittest.mock import patch
 
 class UserTests(APITestCase):
     '''
@@ -117,7 +118,6 @@ class BookTests(APITestCase):
         
     def test_search_books_empty(self):
         '''test to see if the no query gives bad response, should give 400'''
-        print("empty query test")
         response = self.client.get('/api/search/')
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
     
@@ -125,10 +125,17 @@ class BookTests(APITestCase):
         '''
         retrieve_book_info used here
         ''' 
-        print("in test_retrieve_info")
         url = reverse('retrieve_book_info', kwargs={'book_id':self.book1.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_retrieve_book_info_error(self):
+        '''
+        hoping for 404 because book does not exist
+        ''' 
+        url = reverse('retrieve_book_info', kwargs={'book_id':999999999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
         
     def test_random_book(self):
         '''
@@ -233,6 +240,19 @@ class ReviewTests(APITestCase):
         getreview_url = reverse('get_reviews', kwargs={'bid':2904408})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
+
+    def test_add_review_internal_server_error(self):
+        """
+        Test to trigger 500 Internal Server Error by omitting required fields.
+        """
+        add_url = reverse('add_review', kwargs={'book_id1': self.book.id})
+        
+        response = self.client.post(add_url, {
+            'text': 'Missing rating!'  
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn('error', response.data)
 
 class UserProfileTests(APITestCase):
     '''
@@ -399,6 +419,46 @@ class UserBookListTests(APITestCase):
         
         
         
+class GameTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='listuser', password='password123')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        
+    def test_score_get(self):
+        url = reverse('high_score')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    
+    def test_score_post(self):
+        url = reverse('high_score')
+        response = self.client.post(url)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_score_post_error_handling(self):
+        url = reverse('high_score')
+        with patch('myapp.views.UserInfo.objects.get_or_create') as mocked_get_or_create:
+            mocked_get_or_create.side_effect = Exception("forced error")
+            response = self.client.post(url, {'high_score': 100}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", response.data)
+            
+            
+    def test_score_is_updated_when_higher(self):
+        # Create an existing UserInfo with a lower score
+        UserInfo.objects.create(user_id=self.user, high_score_titlegame=50)
+
+        url = reverse('high_score')
+        response = self.client.post(url, {'high_score': 100}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "High score updated")
+        self.assertEqual(response.data['high_score'], 100)
+
+        # Optional: confirm in DB
+        self.assertEqual(UserInfo.objects.get(user_id=self.user).high_score_titlegame, 100)
+
 '''
 tests done:
 
@@ -425,18 +485,8 @@ Book:
 Search:
     Search
     autocomplete test
-'''
+    
 
+Game:
 
-'''
-tests to add:
-
-
-
-'''
-
-
-'''
-We need to make a list of what tests the API endpoints need,
-so far the only test i feel is really comprehensive is for User tests.
 '''
