@@ -294,7 +294,6 @@ def check_auth(request):
     """Check if the user is authenticated"""
     print("Session key in check_auth:", request.session.session_key)
     print("User authenticated:", request.user.is_authenticated)
-    print("Cookies received:", request.COOKIES)
     
     if request.user.is_authenticated:
         return Response({
@@ -304,7 +303,6 @@ def check_auth(request):
         })
     return Response({
         "authenticated": False,
-        "received_cookies": bool(request.COOKIES),
         "session_key_present": bool(request.session.session_key)
     })
 
@@ -519,7 +517,6 @@ def add_to_list(book_id, book_list):
     else:
         book_list.book_ids.remove(int(book_id))
         book_list.save()
-        print("Book already in list")
         return Response({"status": "removed", "message": "Book was removed"}, status=200)
 
     

@@ -108,11 +108,18 @@ class BookTests(APITestCase):
         self.book1 = Books.objects.filter(id=1).first() 
         
     def test_search_books_title(self):
-        '''Test to see if the book is in the API response'''
+        '''Test to see if the book is in the API response.
+        this doesnt work as intended, it only searches and checks if it managed to search, not if there were any books in results'''
         response = self.client.get('/api/search/', {
             "q": self.book.title
             })
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
+        
+    def test_search_books_empty(self):
+        '''test to see if the no query gives bad response, should give 400'''
+        print("empty query test")
+        response = self.client.get('/api/search/')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
     
     def test_retrieve_book_info(self):
         '''
@@ -424,7 +431,7 @@ Search:
 '''
 tests to add:
 
-i have two profile views one of which is depreciated, why not remove it? dont ask me
+
 
 '''
 
