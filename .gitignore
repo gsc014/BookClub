@@ -16,6 +16,8 @@ dist-ssr
 *.db
 open_lib.db
 
+.coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
