@@ -1,12 +1,14 @@
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Work, Review, UserInfo, UserBookList,Books
+from myapp.models import Work, Review, UserInfo, UserBookList, Books
 from rest_framework.authtoken.models import Token
 from django.test import TestCase
 from django.urls import reverse
 from django.db import transaction
 from unittest.mock import patch
+from django.test import TestCase
+
 
 class UserTests(APITestCase):
     '''
@@ -416,9 +418,7 @@ class UserBookListTests(APITestCase):
         url = reverse('add_book', kwargs={'book_id': 2904427}) + "?name=Saved Books"
         response = self.client.post(url) 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
-        
-        
+          
 class GameTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='listuser', password='password123')
@@ -446,7 +446,6 @@ class GameTests(APITestCase):
             
             
     def test_score_is_updated_when_higher(self):
-        # Create an existing UserInfo with a lower score
         UserInfo.objects.create(user_id=self.user, high_score_titlegame=50)
 
         url = reverse('high_score')
@@ -456,8 +455,54 @@ class GameTests(APITestCase):
         self.assertEqual(response.data['message'], "High score updated")
         self.assertEqual(response.data['high_score'], 100)
 
-        # Optional: confirm in DB
         self.assertEqual(UserInfo.objects.get(user_id=self.user).high_score_titlegame, 100)
+
+
+class ModelTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='pass123')
+    
+    def test_review_creation(self):
+        review = Review.objects.create(
+            book_id=1,
+            text='Loved it!',
+            rating=5
+        )
+        self.assertEqual(review.rating, 5)
+        self.assertIn('Loved it!', review.text)
+
+    def test_userinfo_creation(self):
+        info = UserInfo.objects.create(
+            user_id=self.user,
+            bio='Just a test user',
+            location='Internet',
+            high_score_titlegame=99
+        )
+        self.assertEqual(info.user_id.username, 'testuser')
+        self.assertEqual(info.high_score_titlegame, 99)
+
+    def test_user_book_list(self):
+        book_list = UserBookList.objects.create(
+            user_id=self.user,
+            name='Favorites',
+            book_ids=[1, 2, 3]
+        )
+        self.assertEqual(book_list.name, 'Favorites')
+        self.assertListEqual(book_list.book_ids, [1, 2, 3])
+
+    def test_books_model(self):
+        book = Books.objects.create(
+            key='OL456M',
+            title='Another Book',
+            description='Another awesome book',
+            subjects='Drama',
+            author='John Smith',
+            cover=42,
+            first_published=1999
+        )
+        self.assertEqual(book.title, 'Another Book')
+        self.assertEqual(book.cover, 42)
+
 
 '''
 tests done:
