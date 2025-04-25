@@ -14,11 +14,13 @@ const GamePage = () => {
     const [buttonsDisabled, setButtonsDisabled] = useState(false);
 
     useEffect(() => {
+        fetchHighScore();
         fetchBooks();
     }, []);
 
     const fetchBooks = () => {
         setLoading(true);
+        setError(null);
         axios.get('http://127.0.0.1:8000/random-book?num=5')
             .then(response => {
                 const booksWithCorrectFlag = response.data.map((book, index) => ({
@@ -35,6 +37,37 @@ const GamePage = () => {
                 setLoading(false);
             });
     };
+    
+    const fetchHighScore = () => {
+        const token = localStorage.getItem('authToken');
+        axios.get('http://127.0.0.1:8000/api/high-score/', {
+            headers: {
+                Authorization: `Token ${token}`
+            }
+        })
+        .then(response => {
+            setHighScore(response.data.high_score);
+        })
+        .catch(error => {
+            console.error('Error fetching high score:', error);
+        });
+    };
+
+    const updateHighScore = (newScore) => {
+        const token = localStorage.getItem('authToken');
+        axios.post('http://127.0.0.1:8000/api/high-score/', { high_score: newScore }, {
+            headers: {
+                Authorization: `Token ${token}`
+            }
+        })
+        .then(response => {
+            console.log(response.data.message);
+        })
+        .catch(error => {
+            console.error('Error updating high score:', error);
+        });
+    };
+
 
     const shuffleArray = (array) => {
         return array.sort(() => Math.random() - 0.5);
@@ -49,6 +82,7 @@ const GamePage = () => {
             setCorrectCount(correctCount + 1);
             if (correctCount + 1 > highScore) {
                 setHighScore(correctCount + 1);
+                updateHighScore(correctCount + 1);
             }
             setTimeout(() => {
                 setButtonsDisabled(false);

@@ -50,7 +50,10 @@ const Bookpage = ({ book }) => {
                 setBook(response.data)
                 console.log("Book data:", response.data);
             })
-            .catch(error => console.error('Error fetching book details:', error));
+            .catch(error => {
+                console.error('Error fetching book details:', error);
+                setBook({ error: 'Failed to fetch book details' });
+            });
         // Fetch initial reviews
         fetchReviews();
     }, [book.id]);
@@ -61,6 +64,10 @@ const Bookpage = ({ book }) => {
         }
     }, [retrievedBook]);  // Trigger this effect when retrievedBook changes
     
+
+    if (retrievedBook?.error) {
+        return <div className="bookpage-error">{retrievedBook.error}</div>;
+    }
 
     if (!retrievedBook) {
         return <div className="bookpage-loading">Loading book information...</div>;

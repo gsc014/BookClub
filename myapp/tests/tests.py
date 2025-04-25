@@ -1,11 +1,14 @@
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Work, Review, UserInfo, UserBookList
+from myapp.models import Work, Review, UserInfo, UserBookList, Books
 from rest_framework.authtoken.models import Token
 from django.test import TestCase
 from django.urls import reverse
 from django.db import transaction
+from unittest.mock import patch
+from django.test import TestCase
+
 
 class UserTests(APITestCase):
     '''
@@ -95,11 +98,9 @@ class BookTests(APITestCase):
     '''
     see if the search function works
     '''
-    
-    databases = {'default', 'open_lib'} 
 
     def setUp(self):
-        self.book = Work.objects.using('open_lib').create(
+        self.book = Books.objects.create(
             key="test_key",
             title="Test Book",
             description="A test description",
@@ -107,14 +108,20 @@ class BookTests(APITestCase):
             author="Test Author",
             first_published=2000
         )
-        self.book1 = Work.objects.using('open_lib').filter(id=1).first() 
+        self.book1 = Books.objects.filter(id=1).first() 
         
     def test_search_books_title(self):
-        '''Test to see if the book is in the API response'''
+        '''Test to see if the book is in the API response.
+        this doesnt work as intended, it only searches and checks if it managed to search, not if there were any books in results'''
         response = self.client.get('/api/search/', {
             "q": self.book.title
             })
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
+        
+    def test_search_books_empty(self):
+        '''test to see if the no query gives bad response, should give 400'''
+        response = self.client.get('/api/search/')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
     
     def test_retrieve_book_info(self):
         '''
@@ -123,6 +130,14 @@ class BookTests(APITestCase):
         url = reverse('retrieve_book_info', kwargs={'book_id':self.book1.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_retrieve_book_info_error(self):
+        '''
+        hoping for 404 because book does not exist
+        ''' 
+        url = reverse('retrieve_book_info', kwargs={'book_id':999999999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
         
     def test_random_book(self):
         '''
@@ -177,16 +192,18 @@ class BookTests(APITestCase):
         
 class ReviewTests(APITestCase):
     '''
-    Tests making reviews on book already present in the open_lib database,
+    Tests making reviews on book already present in the database,
     a lot easier than making temporary book 
     '''
 
-    databases = {'default', 'open_lib'} 
     def setUp(self):
         self.user = User.objects.create_user(username='reviewer', password='password123')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
-        self.book = Work.objects.using('open_lib').filter(id=1).first() 
+        self.book = Books.objects.create(
+            id = 111,
+            title = "testing book"
+        )
     
     def test_add_and_get_review(self):
         '''
@@ -225,10 +242,19 @@ class ReviewTests(APITestCase):
         getreview_url = reverse('get_reviews', kwargs={'bid':2904408})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
-        # self.assertGreater(len(response.data), 0)
-        # review_texts = [review['text'] for review in response.data]
-        # self.assertIn('Great book!', review_texts)
+
+    def test_add_review_internal_server_error(self):
+        """
+        Test to trigger 500 Internal Server Error by omitting required fields.
+        """
+        add_url = reverse('add_review', kwargs={'book_id1': self.book.id})
         
+        response = self.client.post(add_url, {
+            'text': 'Missing rating!'  
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn('error', response.data)
 
 class UserProfileTests(APITestCase):
     '''
@@ -335,15 +361,16 @@ class UserBookListTests(APITestCase):
     Databases need to be defined,
     as Works table is in another database file
     '''     
-    databases = {'default', 'open_lib'}
     
     def setUp(self):
         self.user = User.objects.create_user(username='listuser', password='password123')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-        self.book = Work.objects.using('open_lib').filter(id=1).first()
-        
+        self.book = Books.objects.create(
+            id = 111,
+            title = "testing book"
+        )
     def test_add_book_to_list_and_get_saved_books(self):
         '''
         Send book list name as part of the URL parameter, 
@@ -391,9 +418,92 @@ class UserBookListTests(APITestCase):
         url = reverse('add_book', kwargs={'book_id': 2904427}) + "?name=Saved Books"
         response = self.client.post(url) 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+          
+class GameTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='listuser', password='password123')
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         
+    def test_score_get(self):
+        url = reverse('high_score')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
         
+    
+    def test_score_post(self):
+        url = reverse('high_score')
+        response = self.client.post(url)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
         
+    def test_score_post_error_handling(self):
+        url = reverse('high_score')
+        with patch('myapp.views.UserInfo.objects.get_or_create') as mocked_get_or_create:
+            mocked_get_or_create.side_effect = Exception("forced error")
+            response = self.client.post(url, {'high_score': 100}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", response.data)
+            
+            
+    def test_score_is_updated_when_higher(self):
+        UserInfo.objects.create(user_id=self.user, high_score_titlegame=50)
+
+        url = reverse('high_score')
+        response = self.client.post(url, {'high_score': 100}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], "High score updated")
+        self.assertEqual(response.data['high_score'], 100)
+
+        self.assertEqual(UserInfo.objects.get(user_id=self.user).high_score_titlegame, 100)
+
+
+class ModelTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='pass123')
+    
+    def test_review_creation(self):
+        review = Review.objects.create(
+            book_id=1,
+            text='Loved it!',
+            rating=5
+        )
+        self.assertEqual(review.rating, 5)
+        self.assertIn('Loved it!', review.text)
+
+    def test_userinfo_creation(self):
+        info = UserInfo.objects.create(
+            user_id=self.user,
+            bio='Just a test user',
+            location='Internet',
+            high_score_titlegame=99
+        )
+        self.assertEqual(info.user_id.username, 'testuser')
+        self.assertEqual(info.high_score_titlegame, 99)
+
+    def test_user_book_list(self):
+        book_list = UserBookList.objects.create(
+            user_id=self.user,
+            name='Favorites',
+            book_ids=[1, 2, 3]
+        )
+        self.assertEqual(book_list.name, 'Favorites')
+        self.assertListEqual(book_list.book_ids, [1, 2, 3])
+
+    def test_books_model(self):
+        book = Books.objects.create(
+            key='OL456M',
+            title='Another Book',
+            description='Another awesome book',
+            subjects='Drama',
+            author='John Smith',
+            cover=42,
+            first_published=1999
+        )
+        self.assertEqual(book.title, 'Another Book')
+        self.assertEqual(book.cover, 42)
+
+
 '''
 tests done:
 
@@ -420,18 +530,8 @@ Book:
 Search:
     Search
     autocomplete test
-'''
+    
 
+Game:
 
-'''
-tests to add:
-
-i have two profile views one of which is depreciated, why not remove it? dont ask me
-
-'''
-
-
-'''
-We need to make a list of what tests the API endpoints need,
-so far the only test i feel is really comprehensive is for User tests.
 '''

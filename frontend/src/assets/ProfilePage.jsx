@@ -544,51 +544,55 @@ function ProfilePage() {
                     )}
                 </div>
 
-                {/* Saved Books Section */}
-                <div className="profile-section">
-                    <h2>Saved Books</h2>
-                    {loadingSavedBooks ? (
-                        <p>Loading your saved books...</p>
-                    ) : savedBooks.length > 0 ? (
-                        <ul className="saved-books-list">
-                            {savedBooks.map((book) => (
-                                <li key={book.id} className="saved-book">
-                                    {book.title} {book.author && `by ${book.author}`}
-                                    <div className="book-actions">
-                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                        <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No saved books yet.</p>
-                    )}
-                </div>
+                {/* Only show Saved Books on own profile */}
+                {isOwnProfile && (
+                    <div className="profile-section">
+                        <h2>Saved Books</h2>
+                        {loadingSavedBooks ? (
+                            <p>Loading your saved books...</p>
+                        ) : savedBooks.length > 0 ? (
+                            <ul className="saved-books-list">
+                                {savedBooks.map((book) => (
+                                    <li key={book.id} className="saved-book">
+                                        {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No saved books yet.</p>
+                        )}
+                    </div>
+                )}
 
-                {/* Liked Books Section */}
-                <div className="profile-section">
-                    <h2>Liked Books</h2>
-                    {loadingLikedBooks ? (
-                        <p>Loading your liked books...</p>
-                    ) : likedBooks.length > 0 ? (
-                        <ul className="liked-books-list">
-                            {likedBooks.map((book) => (
-                                <li key={book.id} className="liked-book">
-                                    {book.title} {book.author && `by ${book.author}`}
-                                    <div className="book-actions">
-                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                        <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No liked books yet.</p>
-                    )}
-                </div>
+                {/* Only show Liked Books on own profile */}
+                {isOwnProfile && (
+                    <div className="profile-section">
+                        <h2>Liked Books</h2>
+                        {loadingLikedBooks ? (
+                            <p>Loading your liked books...</p>
+                        ) : likedBooks.length > 0 ? (
+                            <ul className="liked-books-list">
+                                {likedBooks.map((book) => (
+                                    <li key={book.id} className="liked-book">
+                                        {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No liked books yet.</p>
+                        )}
+                    </div>
+                )}
 
-                {/* Other User's Liked Books Section */}
+                {/* Other User's Liked Books Section - shown when viewing other profiles */}
                 {!isOwnProfile && (
                     <div className="profile-section">
                         <h2>{username}'s Liked Books</h2>
@@ -597,6 +601,9 @@ function ProfilePage() {
                                 {otherUserLikedBooks.map((book) => (
                                     <li key={book.id} className="liked-book">
                                         {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                        </div>
                                     </li>
                                 ))}
                             </ul>

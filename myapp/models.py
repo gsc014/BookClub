@@ -63,3 +63,12 @@ class Author(models.Model):
     id = models.AutoField(primary_key=True)
     key = models.CharField(max_length=255, unique=True, db_index=True)
     name = models.CharField(max_length=255)
+
+class RecommendedBooks(models.Model):
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, blank = True, null = True)
+    book_id = models.IntegerField()
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
+    cover = models.IntegerField(null=True, blank=True)
+    first_published = models.IntegerField(null=True, blank=True)

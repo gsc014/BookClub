@@ -42,10 +42,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    'django_nose',
 ]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# TEST_RUNNER = 'pytest_runner.DjangoRunner'
+# TEST_RUNNER = 'pytest_runner.DjangoPytestRunner'
 
 NOSE_ARGS = [
     '--with-coverage',

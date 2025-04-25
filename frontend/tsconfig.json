@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "jsx": "react-jsx",
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "types": ["vitest", "node"],
+      "outDir": "./dist",
+      "allowJs": true
+    },
+    "include": ["src/*", "tests/**/*", "**/*.ts", "**/*.tsx", "**/*.jsx"]
+}

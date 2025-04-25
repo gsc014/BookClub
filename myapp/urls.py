@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import login_user, signup_user, random_book, search_books, retrieve_book_info, add_review, get_reviews, autocomplete, search_filter
+from .views import login_user, signup_user, random_book, search_books, retrieve_book_info, add_review, get_reviews, autocomplete, search_filter, high_score
 
 
 urlpatterns = [
@@ -24,7 +24,6 @@ urlpatterns = [
     path('api/autocomplete/', autocomplete, name='autocomplete'),
     path('api/filter/', search_filter, name='search_filter'),
     path('api/logout/', views.logout_user, name='logout_user'),
-    path('api/check-auth/', views.check_auth, name='check_auth'),
     path('api/update-username/', views.update_username, name='update_username'),
     path('api/update-password/', views.update_password, name='update_password'),
     path('api/update-email/', views.update_email, name='update_email'),
@@ -38,4 +37,5 @@ urlpatterns = [
     path('api/isbn/<str:work_key>', views.getisbn, name='isbn'),
     path('api/books_by_author/', views.get_books_by_author, name='books_by_author'),
     path('api/autocomplete-profile/', views.autocomplete_profile, name='autocomplete_profile'),
+    path('api/high-score/', high_score, name='high_score'),
 ]
