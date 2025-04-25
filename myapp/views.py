@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Work, Review, UserInfo, UserBookList, NewTable, Books
+from .models import Work, Review, UserInfo, UserBookList, NewTable, Books, Author
 import random
 from django.http import JsonResponse
 from django.db import connections
@@ -16,24 +16,25 @@ import logging
 # Set up logging
 logger = logging.getLogger(__name__)
 
-@api_view(['GET'])
-def profile(request):
-    user = request.user  # Get the logged-in user
+
+# @api_view(['GET'])
+# def profile(request):
+#     user = request.user  # Get the logged-in user
     
-    if user.is_authenticated:
-        # Accessing fields directly from the User model
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "last_login": user.last_login,
-            "date_joined": user.date_joined,
-            "is_staff": user.is_staff,
-            "is_superuser": user.is_superuser,
-            # Still include the bio from profile if it exists
-            "bio": user.profile.bio if hasattr(user, 'profile') else "No bio available"
-        })
-    else:
-        return Response({"error": "User not authenticated"}, status=401)
+#     if user.is_authenticated:
+#         # Accessing fields directly from the User model
+#         return Response({
+#             "id": user.id,
+#             "username": user.username,
+#             "last_login": user.last_login,
+#             "date_joined": user.date_joined,
+#             "is_staff": user.is_staff,
+#             "is_superuser": user.is_superuser,
+#             # Still include the bio from profile if it exists
+#             "bio": user.profile.bio if hasattr(user, 'profile') else "No bio available"
+#         })
+#     else:
+#         return Response({"error": "User not authenticated"}, status=401)
 
 @api_view(['POST'])
 def login_user(request):
@@ -96,6 +97,24 @@ def signup_user(request):
         "token": token.key
     })
 
+@api_view(['GET'])
+def autocomplete_profile(request):
+    query = request.GET.get('query', '')
+    
+    if not query:
+        return Response([])
+
+    # Change this to return both title and id as a list of dictionaries
+    suggestions = User.objects.filter(username__icontains=query)[:5]
+    
+    # Format the results as a list of dictionaries with title and id
+    formatted_suggestions = [
+        {'id': user.id, 'username': user.username} 
+        for user in suggestions
+    ]
+    
+    print("suggestions", formatted_suggestions)
+    return Response(formatted_suggestions)
 
 @api_view(['GET'])
 def search_books(request):
@@ -107,9 +126,11 @@ def search_books(request):
         return Response(results)
     return Response({"error": "No query provided"}, status=400)
 
+
+from django.db import connection
+
 @api_view(['GET'])
 def random_book(request):
-    # Get the 'num' parameter with a default value of 1
     num_books = request.GET.get('num', 1)
     
     try:
@@ -117,91 +138,154 @@ def random_book(request):
     except (TypeError, ValueError):
         num_books = 1
 
-    print(f"Fetching {num_books} random books")
-
-    # Query to get all books with a description
-    books_qs = Books.objects.filter(description__isnull=False)
-
-    total_books = books_qs.count()
-    if total_books == 0:
-        return Response({"error": "No books found"}, status=404)
-
-    books_data = []
-
-    # Fetch random books from the filtered queryset
-    for _ in range(num_books):
-        random_index = random.randint(0, total_books - 1)
-        book = books_qs[random_index]
-
-        books_data.append({
-            "id": book.id,
-            "key": book.key,
-            "title": book.title,
-            "description": book.description,
-            "subjects": book.subjects,
-            "author": book.author,
-            "first_published": book.first_published
-        })
-
+    # Use raw SQL with RANDOM() for SQLite or RAND() for MySQL
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT id, key, title, description, subjects, author, first_published
+            FROM myapp_books
+            WHERE description IS NOT NULL
+            ORDER BY RANDOM()
+            LIMIT %s
+        """, [num_books])
+        
+        books_data = []
+        for row in cursor.fetchall():
+            books_data.append({
+                "id": row[0],
+                "key": row[1],
+                "title": row[2],
+                "description": row[3],
+                "subjects": row[4],
+                "author": row[5],
+                "first_published": row[6]
+            })
+    
     return Response(books_data[0] if num_books == 1 else books_data)
 
-# @api_view(['GET'])
-# def random_book(request):
-#     # Get the 'num' parameter with a default value of 1
-#     num_books = request.GET.get('num', 1)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def recommended_book(request):
+    user = request.user
+    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
     
-#     # Convert to integer (since query params come as strings)
-#     try:
-#         num_books = int(num_books)
-#     except (TypeError, ValueError):
-#         num_books = 1  # Default if conversion fails
-        
-#     print(f"Fetching {num_books} random books")
+    # If no blocked genres, just return random books
+    blocked_genres = []
+    if genre_list and genre_list.book_ids:
+        blocked_genres = [genre.lower() for genre in genre_list.book_ids]
+        print("Blocked genres:", blocked_genres)
     
-#     # Rest of your function to fetch random books
-#     with connections['open_lib'].cursor() as cursor:
-#         cursor.execute("SELECT COUNT(*) FROM works WHERE description IS NOT NULL")
-#         total_books = cursor.fetchone()[0]
-
-#         if total_books == 0:
-#             return JsonResponse({"error": "No books found"}, status=404)
-            
-#         # Modified to fetch multiple books if requested
-#         books_data = []
-#         for _ in range(num_books):
-#             random_offset = random.randint(0, total_books - 1)
-#             cursor.execute(f"SELECT id, key, title, description, subjects, author, first_published FROM works WHERE description IS NOT NULL LIMIT 1 OFFSET {random_offset}")
-#             book = cursor.fetchone()
-            
-#             if book:
-#                 book_data = {
-#                     "id": book[0],
-#                     "key": book[1],
-#                     "title": book[2],
-#                     "description": book[3],
-#                     "subjects": book[4],
-#                     "author": book[5],
-#                     "first_published": book[6]
-#                 }
-#                 books_data.append(book_data)
+    if not blocked_genres:
+        # FIX: Pass the underlying Django HttpRequest instead of DRF Request
+        return random_book(request._request)
+    
+    num_books = request.GET.get('num', 1)
+    try:
+        num_books = int(num_books)
+    except (TypeError, ValueError):
+        num_books = 1
+    
+    # We'll fetch more books than requested to have extras after filtering
+    fetch_multiplier = 3
+    fetch_count = num_books * fetch_multiplier
+    
+    # Use raw SQL with RANDOM() for SQLite or RAND() for MySQL
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT id, key, title, description, subjects, author, first_published
+            FROM myapp_books
+            WHERE description IS NOT NULL
+            ORDER BY RANDOM()
+            LIMIT %s
+        """, [fetch_count])
         
-#         # Return a single book or a list depending on what was requested
-#         if num_books == 1 and books_data:
-#             return JsonResponse(books_data[0])
-#         else:
-#             return JsonResponse(books_data, safe=False)  # safe=False allows non-dict objects
-
+        all_books = []
+        for row in cursor.fetchall():
+            book_data = {
+                "id": row[0],
+                "key": row[1],
+                "title": row[2],
+                "description": row[3],
+                "subjects": row[4],
+                "author": row[5],
+                "first_published": row[6]
+            }
+            all_books.append(book_data)
+    
+    # Filter out books with blocked genres
+    filtered_books = []
+    for book in all_books:
+        # Skip books with no subjects
+        if not book["subjects"]:
+            filtered_books.append(book)
+            continue
+            
+        # Check if book's subjects contain any blocked genres
+        subjects = book["subjects"].lower()
+        should_include = True
+        
+        for blocked_genre in blocked_genres:
+            if blocked_genre.lower() in subjects:
+                should_include = False
+                print(f"Filtered out book {book['id']} - {book['title']} due to blocked genre: {blocked_genre}")
+                break
+                
+        if should_include:
+            filtered_books.append(book)
+            
+        # Stop once we have enough books
+        if len(filtered_books) >= num_books:
+            break
+    
+    # If we don't have enough filtered books, get more random ones
+    if len(filtered_books) < num_books:
+        print(f"Warning: Only found {len(filtered_books)} books after filtering. Fetching more random books.")
+        # This is recursive but with a very limited depth (typically just 1 extra call)
+        additional_books_needed = num_books - len(filtered_books)
+        
+        # Temporarily store the current request
+        original_request = request._request
+        
+        # Create a modified request with updated num parameter
+        request._request = type('obj', (object,), {
+            'GET': {'num': str(additional_books_needed)}
+        })
+        
+        # Get more books with another call to this same function
+        additional_response = recommended_book(request._request)
+        additional_data = additional_response.data
+        
+        # Restore original request
+        request._request = original_request
+        
+        # Add the additional books to our filtered list
+        if isinstance(additional_data, list):
+            filtered_books.extend(additional_data)
+        else:
+            filtered_books.append(additional_data)
+    
+    # Return only the requested number of books
+    result_books = filtered_books[:num_books]
+    return Response(result_books[0] if num_books == 1 and result_books else result_books)
+    
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
     try:
         book = Books.objects.get(id=book_id)
 
+        try:
+            author = Author.objects.get(key=book.author).name
+            print("author is ", author)
+        except Author.DoesNotExist:
+            print("Author not found")
+            author = book.author
+        
         book_data = {
             "id": book.id,
             "key": book.key,
             "title": book.title,
             "description": book.description,
-            "author": book.author,
+            "author": author,
+            "author_key": book.author,
             "first_published": book.first_published,
             "subjects": book.subjects,
             "cover": book.cover
@@ -213,6 +297,33 @@ def retrieve_book_info(request, book_id):
     except Books.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
 
+@api_view(['GET'])
+def get_books_by_author(request):
+    author_key = request.GET.get('key', '')
+    if not author_key:
+        return Response({"error": "No author key provided"}, status=400)
+    
+    # Filter books by author key, excluding the current book if an ID is provided
+    current_book_id = request.GET.get('exclude_id')
+    books_query = Books.objects.filter(author=author_key)
+    
+    if current_book_id:
+        books_query = books_query.exclude(id=current_book_id)
+    
+    books = books_query  # Limit to 10 books
+    
+    results = [
+        {
+            "id": book.id,
+            "key": book.key,
+            "title": book.title,
+            "author": book.author,
+            "cover": book.cover
+        } 
+        for book in books
+    ]
+    return Response(results)
+    
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -287,9 +398,10 @@ def autocomplete(request):
 @api_view(['GET'])
 def search_filter(request):
     subject_filter = request.GET.get('filter', '')
+    num = request.GET.get('num', 1)
 
     if subject_filter:
-        books = Books.objects.filter(subjects__icontains=subject_filter)
+        books = Books.objects.filter(subjects__icontains=subject_filter)[:num]
         
         results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
         return Response(results)
@@ -334,16 +446,6 @@ def check_auth(request):
         "received_cookies": bool(request.COOKIES),
         "session_key_present": bool(request.session.session_key)
     })
-
-def create_userinfo():
-    user_info = UserInfo.objects.create(
-        user_id=get_object_or_404(User, id = 1),
-        bio="I am a software developer",
-        location="Nairobi, Kenya",
-        birth_date="1995-01-01"
-    )
-    print("I HAVE MADE THA USER")
-    return user_info
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -555,7 +657,7 @@ def add_to_list(book_id, book_list):
 def add_book(request, book_id):
     print("in add book")
     list_name = request.query_params.get('name')
-    valid_list_names = ["Saved Books", "Liked Books"]
+    valid_list_names = ["Saved Books", "Liked Books", "Blocked Books"]
     if list_name not in valid_list_names:
         return Response({
             "error": f"Invalid list name. Must be one of: {', '.join(valid_list_names)}"
@@ -566,9 +668,12 @@ def add_book(request, book_id):
     except Books.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
     
-    
+    # print("book_id type", type(book))
     user = request.user
     book_list = make_list(user, list_name)
+
+    # print("Book found:", book_list.book_ids)
+    # print("Book ID type:", type(book_list.book_ids))
     
     return add_to_list(book_id, book_list)
 
@@ -576,10 +681,29 @@ def add_book(request, book_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_saved_books(request):
-    user = request.user
-    book_list = get_object_or_404(UserBookList, user_id=user, name=request.query_params['name'])
+    # Check if we're requesting another user's lists
+    target_username = request.query_params.get('username')
+    list_name = request.query_params.get('name')
     
-    goth_mommy = []
+    # Determine which user's lists we want to see
+    if target_username and target_username != request.user.username:
+        # Looking at another user's lists
+        try:
+            target_user = User.objects.get(username=target_username)
+            # Only allow viewing "Liked Books" for other users
+            if list_name != "Liked Books":
+                return Response({"error": "You can only view other users' liked books"}, status=403)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+        user = target_user
+    else:
+        # Looking at our own lists
+        user = request.user
+
+    # Get the requested list
+    book_list = get_object_or_404(UserBookList, user_id=user, name=list_name)
+    
+    books_data = []
     for book_id in book_list.book_ids:
         try:
             book = Books.objects.get(id=book_id)
@@ -588,10 +712,67 @@ def get_saved_books(request):
                 "id": book.id,
                 "key": book.key,
                 "title": book.title,
+                "author": book.author,  # Adding author for better display
+                "cover": book.cover     # Adding cover for thumbnail display
             }
 
-            goth_mommy.append(book_data)
+            books_data.append(book_data)
 
         except Books.DoesNotExist:
             pass
-    return Response(goth_mommy)
+    
+    return Response(books_data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def block_genre(request):
+    genres = request.data.get('blocked_genres', [])
+    if not genres:
+        return Response({"error": "No genres provided"}, status=400)
+    
+    user = request.user
+    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
+    if not genre_list:
+        # Create a new list if it doesn't exist
+        genre_list = UserBookList.objects.create(user_id=user, name="Blocked Books", book_ids=[])
+    
+    # Update with the complete list (this replaces the existing list)
+    genre_list.book_ids = genres
+    genre_list.save()
+    return Response({"message": "Genres updated successfully.", "blocked_genres": genres})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_blocked_genres(request):
+    user = request.user
+    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
+    
+    if not genre_list:
+        return Response({"blocked_genres": []})
+    
+    return Response({"blocked_genres": genre_list.book_ids})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unblock_genre(request):
+    genre = request.data.get('blocked_genre', '')
+    if not genre:
+        return Response({"error": "No genre provided"}, status=400)
+    
+    user = request.user
+    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
+    if not genre_list:
+        return Response({"message": "No blocked genres."})
+    
+    if genre in genre_list.book_ids:
+        genre_list.book_ids.remove(genre)
+        genre_list.save()
+        return Response({
+            "message": f"Genre '{genre}' removed from blocked list.",
+            "blocked_genres": genre_list.book_ids
+        })
+    
+    return Response({
+        "message": f"Genre '{genre}' not found in blocked list.",
+        "blocked_genres": genre_list.book_ids
+    })

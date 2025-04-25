@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './style/bookpage.css';
 import StarRating from './starrating';
+import Booklist from './booklist';
 
 import defaultCover from './pictures/no-results.png';
 
@@ -16,9 +17,9 @@ const Bookpage = ({ book }) => {
     const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
     const [isbn, setIsbn] = useState('');
 
-
     const maxLength = 500;
     const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
+
     const fetchIsbn = () => {
         axios.get(`http://127.0.0.1:8000/api/isbn/${retrievedBook.key}`)
             .then(response => {
@@ -26,7 +27,6 @@ const Bookpage = ({ book }) => {
             })
             .catch(error => console.error('Error fetching ISBN:', error));
     };
-
 
     const shortenText = (text) => {
         if (!text) return 'No description available.';
@@ -37,16 +37,20 @@ const Bookpage = ({ book }) => {
     // Function to fetch reviews
     const fetchReviews = () => {
         axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`)
-            .then(response => setReviews(response.data))
+            .then(response => {
+                setReviews(response.data)
+            })
             .catch(error => console.error('Error fetching reviews:', error));
     };
 
     useEffect(() => {
         // Fetch book details
         axios.get(`http://127.0.0.1:8000/api/book/${book.id}`)
-            .then(response => setBook(response.data))
+            .then(response => {
+                setBook(response.data)
+                console.log("Book data:", response.data);
+            })
             .catch(error => console.error('Error fetching book details:', error));
-
         // Fetch initial reviews
         fetchReviews();
     }, [book.id]);
@@ -169,7 +173,7 @@ const Bookpage = ({ book }) => {
                             </button>
                         )}
                     </div>
-                    <p className="bookpage-author">{retrievedBook.author}</p>
+                    <p className="bookpage-author">{typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}</p>
                 </div>
             </div>
 
@@ -183,7 +187,17 @@ const Bookpage = ({ book }) => {
                 )}
             </div>
 
-
+            {/* Use BookList for author's other works */}
+            {retrievedBook.author_key && (
+                <div className="author-other-books">
+                    <Booklist 
+                        title={`More by ${typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}`}
+                        apiUrl="http://127.0.0.1:8000/api/books_by_author/"
+                        params={{ key: retrievedBook.author_key }}
+                        booksToShow={5}
+                    />
+                </div>
+            )}
 
             <div className="bookpage-review">
                 <h3>Write a Review</h3>

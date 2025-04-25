@@ -3,23 +3,44 @@ import axios from 'axios';
 import Bookcard from './bookcard';
 import './style/bookcard.css';
 
-const Booklist = () => {
+const Booklist = ({ 
+    title = "Recommended Books", 
+    apiUrl = 'http://127.0.0.1:8000/api/random-book/', 
+    params = {}, 
+    booksToShow = 6 
+}) => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // Number of books to display in the first row
-    const booksToShow = 6;  // Adjust this number based on your design
 
     useEffect(() => {
         const fetchBooks = async () => {
             setLoading(true);
             try {
-                // Only fetch the number we need to show
-                const response = await axios.get('http://127.0.0.1:8000/random-book/', {
-                    params: { num: booksToShow },
-                });
-                console.log("Fetched books:", response.data);
+                // Use the provided API URL with the specified parameters
+                const finalParams = { ...params };
+                if (!finalParams.num) {
+                    finalParams.num = booksToShow;
+                }
+                
+                const authToken = localStorage.getItem('authToken');
+                let response;
+                
+                if (!authToken) {
+                    // Not logged in - use random books
+                    response = await axios.get(apiUrl, { params: finalParams });
+                } else {
+                    // Logged in - use recommended books
+                    response = await axios.get("http://127.0.0.1:8000/api/recommended-book/", {
+                        params: finalParams,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Token ${authToken}`
+                        }
+                    });
+                }
+                
+                console.log(`Fetched books for ${title}:`, response.data);
                 
                 // Handle both single object and array responses
                 if (Array.isArray(response.data)) {
@@ -29,22 +50,22 @@ const Booklist = () => {
                     setBooks([response.data]);
                 }
             } catch (error) {
-                console.error('Error fetching books:', error);
-                setError('Failed to load recommended books');
+                console.error(`Error fetching books for ${title}:`, error);
+                setError(`Failed to load ${title.toLowerCase()}`);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchBooks();
-    }, []);
+    }, [apiUrl, JSON.stringify(params), booksToShow, title]);
 
     return (
-        <section id="recommended">
-            <h2>Recommended Books</h2>
+        <section className="book-list-section">
+            <h2>{title}</h2>
             
             {loading ? (
-                <div className="loading-container">Loading recommended books...</div>
+                <div className="loading-container">Loading {title.toLowerCase()}...</div>
             ) : error ? (
                 <div className="error-container">{error}</div>
             ) : (
@@ -54,7 +75,7 @@ const Booklist = () => {
                             <Bookcard key={book.id} book={book} />
                         ))
                     ) : (
-                        <div className="no-books">No recommended books available</div>
+                        <div className="no-books">No {title.toLowerCase()} available</div>
                     )}
                 </div>
             )}

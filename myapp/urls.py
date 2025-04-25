@@ -6,7 +6,7 @@ from .views import login_user, signup_user, random_book, search_books, retrieve_
 
 urlpatterns = [
     # Keep the existing profile route for backward compatibility
-    path('profile/', views.profile, name='profile_api'),
+    # path('profile/', views.profile, name='profile_api'),
     
     # Add the new username-based profile route
     path('api/profile/<str:username>/', views.user_profile, name='user_profile'),
@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/login/', login_user, name='login_user'),
     path('api/signup/', signup_user, name='signup_user'),
     path('random-book/', random_book, name='random_book'),
+    path('api/recommended-book/', views.recommended_book, name='random_book_api'),
     path('api/search/', search_books, name='search_books'),
     path('api/book/<int:book_id>/', retrieve_book_info, name='retrieve_book_info'),
     path('api/reviewtest/<int:book_id1>/', add_review, name='add_review'),
@@ -30,6 +31,11 @@ urlpatterns = [
     path('api/delete-account/', views.delete_account, name='delete_account'),
     path('api/update-profile/', views.update_profile, name='update_profile'),
     path('api/add-book/<int:book_id>/', views.add_book, name='add_book'),
+    path('api/block-genres/', views.block_genre, name='block_genre'),
+    path('api/unblock-genre/', views.unblock_genre, name='unblock_genre'),
+    path('api/blocked-genres/', views.get_blocked_genres, name='blocked_genres'),
     path('api/book-list/', views.get_saved_books, name='book_list'),
     path('api/isbn/<str:work_key>', views.getisbn, name='isbn'),
+    path('api/books_by_author/', views.get_books_by_author, name='books_by_author'),
+    path('api/autocomplete-profile/', views.autocomplete_profile, name='autocomplete_profile'),
 ]

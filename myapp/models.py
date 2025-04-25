@@ -51,10 +51,15 @@ class UserBookList(models.Model):
 
 class Books(models.Model):
     id = models.AutoField(primary_key=True)
-    key = models.CharField(max_length=255, unique=True,db_index=True)
+    key = models.CharField(max_length=255, unique=True, db_index=True)
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     subjects = models.TextField(null=True, blank=True)
     author = models.CharField(max_length=255)
     cover = models.IntegerField(null=True, blank=True)
     first_published = models.IntegerField(null=True, blank=True)
+
+class Author(models.Model):
+    id = models.AutoField(primary_key=True)
+    key = models.CharField(max_length=255, unique=True, db_index=True)
+    name = models.CharField(max_length=255)

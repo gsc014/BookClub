@@ -1,5 +1,5 @@
 .settings-page {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 20px auto;
     padding: 20px;
     background-color: white;
@@ -24,6 +24,24 @@
 .settings-header p {
     color: #666;
     font-size: 1.1rem;
+}
+
+/* New two-column layout */
+.settings-layout {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.settings-left-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.settings-right-column {
+    flex: 1;
 }
 
 .settings-content {
