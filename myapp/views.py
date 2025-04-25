@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Work, Review, UserInfo, UserBookList, NewTable, Books
+from .models import Review, UserInfo, UserBookList, NewTable, Books
 import random
 from django.http import JsonResponse
 from django.db import connections
@@ -98,8 +98,8 @@ def random_book(request):
     # Get all valid IDs (filtered, sparse-safe)
     all_ids = list(books_qs.values_list('id', flat=True))
 
-    if not all_ids:
-        return Response({"error": "No books found"}, status=404)
+    # if not all_ids:
+    #     return Response({"error": "No books found"}, status=404)
 
     # Randomly pick N unique IDs
     random_ids = random.sample(all_ids, min(num_books, len(all_ids)))
