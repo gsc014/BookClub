@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Review, UserInfo, UserBookList, NewTable, Books, Author, RecommendedBooks
+from .models import Review, UserInfo, UserBookList, NewTable, Books, Author
 import random
 from django.http import JsonResponse
 from django.db import connections
