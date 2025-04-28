@@ -7,12 +7,29 @@
     object-fit: contain;
 }
 
-
-.book-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Book list container */
+.book-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 16px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Add this to help with calculations */
+    box-sizing: border-box;
 }
 
+/* Book list section */
+.book-list-section {
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+/* Book card */
 .book-card {
     opacity: 1;
     background-color: white;
@@ -21,10 +38,19 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     padding: 1rem;
     text-align: center;
-    width: 150px;
-    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+    width: 150px; /* Fixed width */
+    flex: 0 0 auto; /* Prevent stretching */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     animation: fadeInAnimation ease 1s;
     animation-fill-mode: forwards;
+    /* Add this to make width calculation more accurate */
+    box-sizing: border-box;
+}
+
+/* Book card hover effect */
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .book-card img {
@@ -51,27 +77,23 @@ ul.horizontal-list {
     justify-content: space-around;
 }
 
-/* Alternative approach using flexbox */
-.book-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 16px 0;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* If using flexbox approach */
-.book-card {
-    /* Keep your existing styles */
-    width: 150px;
-    /* No need for margin: 0 auto; with flexbox */
-}
-
-/* Add or update these styles in your bookcard.css file */
-.book-list-section {
+/* Loading and error states */
+.loading-container, .error-container, .no-books {
     width: 100%;
-    padding: 20px 0;
-    text-align: center; /* Center the heading */
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* Make the list responsive at small screen sizes */
+@media (max-width: 480px) {
+    .book-list {
+        gap: 15px;
+    }
+    
+    .book-card {
+        width: 140px;
+        padding: 0.8rem;
+    }
 }

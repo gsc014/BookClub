@@ -5,13 +5,15 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-from .models import Work, Review, UserInfo, UserBookList, NewTable, Books, Author, RecommendedBooks
+from .models import Review, UserInfo, UserBookList, NewTable, Books, Author, RecommendedBooks
 import random
 from django.http import JsonResponse
 from django.db import connections
 from django.contrib.auth import logout as django_logout
 from rest_framework.authtoken.models import Token
 import logging
+from django.core.paginator import Paginator
+from django.db.models import Q, Min, Max
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -97,53 +99,144 @@ def autocomplete_profile(request):
 def search_books(request):
     print("getting request", request.GET)
     query = request.GET.get('q', '')
-    if query:
-        books = Books.objects.filter(title__iregex=r'\b' + query + r'\b')
-        results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
-        return Response(results)
-    return Response({"error": "No query provided"}, status=400)
-
+    page_str = request.GET.get('page', '1')
+    per_page_str = request.GET.get('per_page', '10')
+    
+    try:
+        page = int(page_str)
+        per_page = int(per_page_str)
+    except ValueError:
+        page = 1
+        per_page = 10
+        
+    if not query:
+        return Response({"error": "No query provided"}, status=400)
+    
+    # Change from regex word boundary to simple contains
+    # This matches the behavior of autocomplete
+    books = Books.objects.filter(title__icontains=query)
+    
+    # Set up pagination
+    paginator = Paginator(books, per_page)
+    total_books = paginator.count
+    
+    # Handle page number being out of range
+    if page > paginator.num_pages and paginator.num_pages > 0:
+        page = paginator.num_pages
+    
+    # Get current page
+    current_page = paginator.get_page(page)
+    
+    # Format book data
+    results = [
+        {
+            "id": book.id,
+            "title": book.title,
+            "author": book.author,
+            "cover": book.cover,
+            "key": book.key
+        } 
+        for book in current_page
+    ]
+    
+    # Return properly structured response
+    return Response({
+        "results": results,
+        "query": query,
+        "pagination": {
+            "total_books": total_books,
+            "total_pages": paginator.num_pages,
+            "current_page": page,
+            "per_page": per_page,
+            "has_next": current_page.has_next(),
+            "has_previous": current_page.has_previous()
+        }
+    })
 
 from django.db import connection
 
 @api_view(['GET'])
 def random_book(request):
-    num_books = request.GET.get('num', 1)
-    
     try:
         num_books = int(request.GET.get('num', 1))
     except (TypeError, ValueError):
         num_books = 1
 
-    # Use raw SQL with RANDOM() for SQLite or RAND() for MySQL
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT id, key, title, description, subjects, author, first_published
-            FROM myapp_books
-            WHERE description IS NOT NULL
-            ORDER BY RANDOM()
-            LIMIT %s
-        """, [num_books])
-        
-        books_data = []
-        for row in cursor.fetchall():
-            books_data.append({
-                "id": row[0],
-                "key": row[1],
-                "title": row[2],
-                "description": row[3],
-                "subjects": row[4],
-                "author": row[5],
-                "first_published": row[6]
-            })
+    # Get min and max ID values for books with both descriptions and covers
+    min_id = Books.objects.filter(
+        description__isnull=False,
+        cover__isnull=False
+    ).aggregate(Min('id'))['id__min'] or 1
     
-    return Response(books_data[0] if num_books == 1 else books_data)
+    max_id = Books.objects.filter(
+        description__isnull=False, 
+        cover__isnull=False
+    ).aggregate(Max('id'))['id__max'] or 1000
+    
+    # We'll need more random IDs since we're filtering more strictly now
+    sample_size = min(5 * num_books, max_id - min_id + 1)
+    random_ids = random.sample(range(min_id, max_id + 1), sample_size)
+    
+    # Get books with those IDs that have descriptions AND covers
+    books = Books.objects.filter(
+        id__in=random_ids, 
+        description__isnull=False,
+        cover__isnull=False,  # Only return books with covers
+        cover__gt=0           # Make sure cover IDs are valid positive numbers
+    )[:num_books]
+    
+    # If we didn't get enough books, use the more expensive fallback
+    if len(books) < num_books:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, key, title, description, subjects, author, first_published, cover
+                FROM myapp_books
+                WHERE description IS NOT NULL 
+                AND cover IS NOT NULL
+                AND cover > 0
+                ORDER BY RANDOM()
+                LIMIT %s
+            """, [num_books])
+            
+            books_data = []
+            for row in cursor.fetchall():
+                books_data.append({
+                    "id": row[0],
+                    "key": row[1],
+                    "title": row[2],
+                    "description": row[3],
+                    "subjects": row[4],
+                    "author": row[5],
+                    "first_published": row[6],
+                    "cover": row[7]
+                })
+            
+            return Response(books_data[0] if num_books == 1 else books_data)
+    
+    # Format the book data
+    books_data = [
+        {
+            "id": book.id,
+            "key": book.key,
+            "title": book.title,
+            "description": book.description,
+            "subjects": book.subjects,
+            "author": book.author,
+            "first_published": book.first_published,
+            "cover": book.cover
+        } 
+        for book in books
+    ]
+    
+    return Response(books_data[0] if num_books == 1 and books_data else books_data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def recommended_book(request):
+    from django.core.cache import cache
+    import time
+    
     user = request.user
-    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
     
     # Get number of books to return
     try:
@@ -151,100 +244,139 @@ def recommended_book(request):
     except (TypeError, ValueError):
         num_books = 1
     
-    # Get blocked genres
+    # Use caching to speed up repeated requests
+    cache_key = f'recommended_books_{user.id}_{num_books}_{int(time.time() / 300)}'  # Cache key changes every 5 minutes
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return Response(cached_result[0] if num_books == 1 and cached_result else cached_result)
+    
+    # Get blocked genres with one query
+    genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
     blocked_genres = []
     if genre_list and genre_list.book_ids:
         blocked_genres = [genre.lower() for genre in genre_list.book_ids]
         print("Blocked genres:", blocked_genres)
     
-    # If no blocked genres, just return random books from RecommendedBooks table
+    # If no blocked genres, use efficient random book selection
     if not blocked_genres:
-        # Get random books from RecommendedBooks table
-        random_books = list(RecommendedBooks.objects.order_by('?')[:num_books])
+        # Use the same efficient approach from random_book but require covers
+        min_id = Books.objects.filter(
+            description__isnull=False,
+            cover__isnull=False,
+            cover__gt=0
+        ).aggregate(Min('id'))['id__min'] or 1
         
-        # Format the response
-        result_books = []
-        for book in random_books:
-            # Get full book details from Books table
-            try:
-                full_book = Books.objects.get(id=book.book_id)
-                book_data = {
-                    "id": full_book.id,
-                    "key": full_book.key,
-                    "title": full_book.title,
-                    "description": full_book.description,
-                    "subjects": full_book.subjects,
-                    "author": full_book.author,
-                    "first_published": full_book.first_published
-                }
-                result_books.append(book_data)
-            except Books.DoesNotExist:
-                # If book not found in Books table, use simplified data from RecommendedBooks
-                book_data = {
-                    "id": book.book_id,
-                    "title": book.title,
-                    "author": book.author,
-                    "first_published": book.first_published
-                }
-                result_books.append(book_data)
-                
+        max_id = Books.objects.filter(
+            description__isnull=False,
+            cover__isnull=False,
+            cover__gt=0
+        ).aggregate(Max('id'))['id__max'] or 1000
+        
+        # Get random IDs (5x what we need to handle missing records)
+        sample_size = min(5 * num_books, max_id - min_id + 1)
+        random_ids = random.sample(range(min_id, max_id + 1), sample_size)
+        
+        # Get books with those IDs that have descriptions AND covers
+        books = list(Books.objects.filter(
+            id__in=random_ids, 
+            description__isnull=False,
+            cover__isnull=False,
+            cover__gt=0
+        )[:num_books])
+        
+        # Format the results
+        result_books = [
+            {
+                "id": book.id,
+                "key": book.key,
+                "title": book.title,
+                "description": book.description,
+                "subjects": book.subjects,
+                "author": book.author,
+                "first_published": book.first_published,
+                "cover": book.cover
+            }
+            for book in books
+        ]
+        
+        # Cache the result for 5 minutes
+        cache.set(cache_key, result_books, 300)
         return Response(result_books[0] if num_books == 1 and result_books else result_books)
+
+    # For filtering with blocked genres, use an efficient database-level approach
     
-    # If there are blocked genres, we need to filter
-    # Get all books from RecommendedBooks (just 100, so this is fast)
-    all_books = list(RecommendedBooks.objects.all())
+    # 1. Get a sample of candidate books (much larger than what we need)
+    # This is more efficient than scanning the entire table
+    sample_size = min(2000, Books.objects.count())  # Increased sample size since we're filtering more
     
-    # Shuffle the books to get random order
-    import random
-    random.shuffle(all_books)
+    # Use min/max ID approach for better performance, requiring covers
+    min_id = Books.objects.filter(
+        description__isnull=False,
+        cover__isnull=False,
+        cover__gt=0
+    ).aggregate(Min('id'))['id__min'] or 1
     
-    # Filter books that don't have blocked genres
+    max_id = Books.objects.filter(
+        description__isnull=False,
+        cover__isnull=False,
+        cover__gt=0
+    ).aggregate(Max('id'))['id__max'] or 1000
+    
+    # Get random IDs (much more than we need)
+    candidate_ids = random.sample(range(min_id, max_id + 1), min(sample_size, max_id - min_id + 1))
+    
+    # 2. Get books with those IDs that have descriptions AND covers
+    candidate_books = Books.objects.filter(
+        id__in=candidate_ids, 
+        description__isnull=False,
+        cover__isnull=False,
+        cover__gt=0
+    )
+    
+    # 3. Filter out books with blocked genres at database level
     filtered_books = []
-    for book in all_books:
-        try:
-            full_book = Books.objects.get(id=book.book_id)
-            
-            # Skip books with no subjects
-            if not full_book.subjects:
-                filtered_books.append(full_book)
-                continue
-                
-            # Check if book's subjects contain any blocked genres
-            subjects = full_book.subjects.lower()
-            should_include = True
-            
-            for blocked_genre in blocked_genres:
-                if blocked_genre.lower() in subjects:
-                    should_include = False
-                    break
-                    
-            if should_include:
-                filtered_books.append(full_book)
-                
-            # Stop once we have enough books
+    for book in candidate_books:
+        if not book.subjects:
+            filtered_books.append(book)
             if len(filtered_books) >= num_books:
                 break
-                
-        except Books.DoesNotExist:
             continue
+            
+        subjects = book.subjects.lower()
+        should_include = True
+        
+        for blocked_genre in blocked_genres:
+            if blocked_genre.lower() in subjects:
+                should_include = False
+                break
+                
+        if should_include:
+            filtered_books.append(book)
+            
+        if len(filtered_books) >= num_books:
+            break
     
-    # Format the response
-    result_books = []
-    for book in filtered_books[:num_books]:
-        book_data = {
+    # Format the results
+    result_books = [
+        {
             "id": book.id,
             "key": book.key,
-            "title": book.title,
+            "title": book.title, 
             "description": book.description,
             "subjects": book.subjects,
             "author": book.author,
-            "first_published": book.first_published
+            "first_published": book.first_published,
+            "cover": book.cover
         }
-        result_books.append(book_data)
+        for book in filtered_books[:num_books]
+    ]
     
-    # If we still don't have enough books, just return what we have
+    # Cache the result
+    cache.set(cache_key, result_books, 300)
+    
+    # Return response
     return Response(result_books[0] if num_books == 1 and result_books else result_books)
-    
+
 @api_view(['GET'])
 def retrieve_book_info(request, book_id):
     try:
@@ -278,6 +410,7 @@ def retrieve_book_info(request, book_id):
 @api_view(['GET'])
 def get_books_by_author(request):
     author_key = request.GET.get('key', '')
+    print("author key", author_key)
     if not author_key:
         return Response({"error": "No author key provided"}, status=400)
     
@@ -316,7 +449,10 @@ def add_review(request, book_id1):
         print("book is ", book, "and type", type(book), "with book_id1", book.id)
 
         review = Review.objects.create(
-            text=review_text, rating=rating, book_id=book.id
+            text=review_text, 
+            rating=rating, 
+            book_id=book.id,
+            user=user  # Add this line
         )
 
         return Response({"message": "Review added successfully!"}, status=201)
@@ -325,21 +461,37 @@ def add_review(request, book_id1):
         return Response({"error": "Book not found"}, status=404)
 
     except Exception as e:
+        print(f"Error creating review: {e}")  # Add this line for better debugging
         return Response({"error": str(e)}, status=500)
 
 
 @api_view(['GET'])
 def get_reviews(request, bid):
     try:
-        reviews = Review.objects.filter(book_id=bid)
+        reviews = Review.objects.filter(book_id=bid).order_by('-created_at')
         
-        if not reviews.exists():
-            return Response({'message':'No reviews available.'},status=204)
-        
-        results = [{"rating": review.rating, "text": review.text, "creation_date": review.created_at} for review in reviews]
-        return Response(results)
-
+        # Include username in the response
+        reviews_data = []
+        for review in reviews:
+            # Get the username safely, handling the case where user might be None
+            try:
+                username = review.user.username if review.user else "Anonymous"
+            except AttributeError:
+                username = "Anonymous"
+                
+            # Add all review data to the response
+            reviews_data.append({
+                'id': review.id,
+                'rating': review.rating,
+                'text': review.text,
+                'username': username,
+                'creation_date': review.created_at  # Make sure this field name matches your model
+            })
+            
+        return Response(reviews_data)
     except Exception as e:
+        # Log the exception for debugging
+        print(f"Error getting reviews: {str(e)}")
         return Response({"error": str(e)}, status=500)
 
 
@@ -365,15 +517,59 @@ def autocomplete(request):
 @api_view(['GET'])
 def search_filter(request):
     subject_filter = request.GET.get('filter', '')
-    num = request.GET.get('num', 1)
+    page_str = request.GET.get('page', '1')
+    per_page_str = request.GET.get('per_page', '10')
+    
+    try:
+        page = int(page_str)
+        per_page = int(per_page_str)
+    except ValueError:
+        page = 1
+        per_page = 10
+    
+    print("subject filter", subject_filter)
 
     if subject_filter:
-        books = Books.objects.filter(subjects__icontains=subject_filter)[:num]
+        # Get all matching books
+        all_books = Books.objects.filter(subjects__icontains=subject_filter).order_by('id')
         
-        results = [{"id": book.id, "title": book.title, "author": book.author} for book in books]
-        return Response(results)
+        # Set up pagination
+        paginator = Paginator(all_books, per_page)
+        total_books = paginator.count
+        
+        # Handle page number being out of range
+        if page > paginator.num_pages and paginator.num_pages > 0:
+            page = paginator.num_pages
+        
+        # Get current page
+        current_page = paginator.get_page(page)
+        
+        # Format book data
+        results = [
+            {
+                "id": book.id,
+                "title": book.title,
+                "author": book.author,
+                "cover": book.cover,
+                "key": book.key
+            } 
+            for book in current_page
+        ]
+        
+        # Return properly structured response
+        return Response({
+            "results": results,
+            "pagination": {
+                "total_books": total_books,
+                "total_pages": paginator.num_pages,
+                "current_page": page,
+                "per_page": per_page,
+                "has_next": current_page.has_next(),
+                "has_previous": current_page.has_previous()
+            }
+        })
     else:
-        return Response({"error": "This shouldnt happen"}, status=400)
+        return Response({"error": "Filter parameter is required"}, status=400)
 
 
 @api_view(['POST'])
@@ -634,14 +830,23 @@ def get_saved_books(request):
         try:
             book = Books.objects.get(id=book_id)
 
+            try:
+                author = Author.objects.get(key=book.author).name
+                print("author is ", author)
+            except Author.DoesNotExist:
+                print("Author not found")
+                author = book.author
+        
+
             book_data = {
                 "id": book.id,
                 "key": book.key,
                 "title": book.title,
-                "author": book.author,  # Adding author for better display
+                "author": author,  # Adding author for better display
                 "cover": book.cover     # Adding cover for thumbnail display
             }
 
+            
             books_data.append(book_data)
 
         except Books.DoesNotExist:

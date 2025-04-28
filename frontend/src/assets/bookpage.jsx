@@ -38,6 +38,7 @@ const Bookpage = ({ book }) => {
     const fetchReviews = () => {
         axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`)
             .then(response => {
+                console.log("Fetched reviews:", response.data);
                 setReviews(response.data)
             })
             .catch(error => console.error('Error fetching reviews:', error));
@@ -115,11 +116,12 @@ const Bookpage = ({ book }) => {
             `http://127.0.0.1:8000/api/reviewtest/${book.id}/`,
             {
                 text: review,
-                rating: bookRating
+                rating: bookRating  // Make sure this is a number, not a string
             },
             {
                 headers: {
-                    'Authorization': `Token ${authToken}`
+                    'Authorization': `Token ${authToken}`,
+                    'Content-Type': 'application/json'  // Add this line
                 }
             }
         )
@@ -136,6 +138,7 @@ const Bookpage = ({ book }) => {
             })
             .then(response => {
                 // Update the reviews state with new data
+                console.log("Updated reviews:", response.data);
                 setReviews(response.data);
             })
             .catch(error => {
@@ -184,13 +187,19 @@ const Bookpage = ({ book }) => {
                 </div>
             </div>
 
-            <div>
+            <div className="bookpage-external-links">
                 {isbn ? (
-                    <a href={`${test}${isbn}`} target="_blank" rel="noopener noreferrer">
-                        Search national library
+                    <a 
+                        href={`${test}${isbn}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="national-library-link"
+                    >
+                        <span className="link-icon">📚</span>
+                        Search National Library
                     </a>
                 ) : (
-                    <p>ISBN not available</p>
+                    <p className="library-link-unavailable">ISBN not available</p>
                 )}
             </div>
 
@@ -198,7 +207,7 @@ const Bookpage = ({ book }) => {
             {retrievedBook.author_key && (
                 <div className="author-other-books">
                     <Booklist 
-                        title={`More by ${typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}`}
+                        title={`Books by ${typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}`}
                         apiUrl="http://127.0.0.1:8000/api/books_by_author/"
                         params={{ key: retrievedBook.author_key }}
                         booksToShow={5}
@@ -236,9 +245,18 @@ const Bookpage = ({ book }) => {
                 ) : (
                     reviews.map((review, index) => (
                         <div key={index} className="bookpage-review-item">
-                            <p><strong>Rating:</strong> {review.rating}</p>
-                            <p>{review.text}</p>
-                            <p><em>Posted on: {new Date(review.created_at).toLocaleDateString()}</em></p>
+                            <div className="review-header">
+                                <p className="review-username">
+                                    <strong>{review.username || "Anonymous"}</strong>
+                                </p>
+                                <p className="review-rating">
+                                    <strong>Rating:</strong> {review.rating}/5
+                                </p>
+                            </div>
+                            <p className="review-text">{review.text}</p>
+                            <p className="review-date">
+                                <em>Posted on: {new Date(review.creation_date).toLocaleString()}</em>
+                            </p>
                         </div>
                     ))
                 )}

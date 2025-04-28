@@ -10,6 +10,7 @@ import dark_mode from './pictures/night-mode.png';
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 import gameIcon from './pictures/game_icon.png';
+import bookLogo from './pictures/book_logo.png'; // Add this import for the logo
 
 import { closeTabs, showSignInTab, showLogInTab, handleLogin } from '../utils.jsx';
 
@@ -49,7 +50,15 @@ const Header = () => {
     return (
         <header id="header">
             <div id="logo">
-                <a href="/" onClick={goToHome} style={{ color: '#ffffff', textDecoration: 'none' }}>Book Club</a>
+                <a href="/" onClick={goToHome} style={{ textDecoration: 'none' }}>
+                    <img 
+                        src={bookLogo} 
+                        alt="Book Club Logo" 
+                        id="book-logo" 
+                        className="logo-image" 
+                    />
+                </a>
+                Book Club
             </div>
             <div id="useful_buttons">
                 {/* <img
