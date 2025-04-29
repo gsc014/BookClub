@@ -344,7 +344,7 @@ function ProfilePage() {
                     {updateSuccess && <div className="update-success">{updateSuccess}</div>}
                     
                     {isEditing ? (
-                        <form className="edit-profile-form" onSubmit={handleProfileUpdate}>
+                        <form className="edit-profile-form" onSubmit={handleProfileUpdate} aria-label="Edit profile form">
                             <label htmlFor="bio">Bio:</label>
                             <div className="form-group">
                                 <textarea

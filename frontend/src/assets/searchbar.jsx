@@ -19,7 +19,6 @@ const Searchbar = () => {
             setSuggestions([]); 
             return; 
         }
-        console.log("HELLEOOEO",query)
         axios.get(`http://127.0.0.1:8000/api/autocomplete`, { params: { query } }).then(response => setSuggestions(response.data)).catch(error => console.error("Error fetching suggestions", error));
     }, [query]);
 
