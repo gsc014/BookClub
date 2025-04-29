@@ -1,15 +1,13 @@
 // src/assets/header.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// Remove unused imports like useState, useEffect, axios
-// import { useState, useEffect } from 'react';
-// import axios from 'axios';
 
 import './style/header_style.css';
 
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 import gameIcon from './pictures/game_icon.png';
+import bookLogo from './pictures/book_logo.png'; // Add this import for the logo
 
 // Keep only used imports from utils
 import { handleLogin } from '../utils.jsx';
@@ -42,30 +40,40 @@ const Header = () => {
     return (
         <header id="header">
             <div id="logo">
-                <a href="/" onClick={goToHome} style={{ color: '#ffffff', textDecoration: 'none' }}>Book Club</a>
+                <a href="/" onClick={goToHome} style={{ textDecoration: 'none' }}>
+                    <img 
+                        src={bookLogo} 
+                        alt="Book Club Logo" 
+                        id="book-logo" 
+                        className="logo-image" 
+                    />
+                </a>
+                Book Club
             </div>
             <div id="useful_buttons">
-                {/* Dark mode button commented out */}
+                {/* <img
+                    src={isLightmode ? dark_mode : light_mode}
+                    id="dark_mode"
+                    className="icon jump"
+                    onClick={toggleMode}
+                /> */}
                 <img
                         src={gameIcon}
                         id="Game"
                         className="icon jump"
                         onClick={goToGame}
-                        alt="Game Page" 
                     />
                 <img
                     src={userImage}
                     id="User"
                     className="icon jump"
                     onClick={handleLogin}
-                    alt="User Login/Profile" 
                 />
                 <img
                     src={settingsIcon}
                     id="Settings"
                     className="icon spin"
                     onClick={goToSettings}
-                    alt="Settings Page" 
                 />
             </div>
         </header>
