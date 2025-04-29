@@ -49,3 +49,20 @@ header {
     font-size: 1.5rem;
     font-weight: bold;
 }
+
+.logo-image {
+    height: 40px; /* Adjust based on your logo size */
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    filter: brightness(0) invert(1);
+}
+
+#logo a {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* You may need to adjust other existing CSS if there are specific styles 
+   that were applied to the text version of the logo */

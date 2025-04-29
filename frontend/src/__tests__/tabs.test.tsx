@@ -1,94 +1,163 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Tabs from '../assets/Tabs'; // Adjust the import path accordingly
-import axios from 'axios';
-import { BrowserRouter, useNavigate } from 'react-router-dom';
+// src/__tests__/tabs.test.tsx
 
-// Mock axios.get properly
-vi.mock('axios', () => ({
-    get: vi.fn(),
-  }));
-// Mock react-router-dom
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    BrowserRouter: ({ children }: any) => <div>{children}</div>,  // Mock BrowserRouter to just render children
-    useNavigate: vi.fn(), // Mock useNavigate hook
-  };
+import React from 'react';
+import { render, screen, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock, Mocked } from 'vitest'; // Added Mock type
+import axios, { AxiosStatic } from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+// Import the component to test
+import Tabs from '../assets/Tabs.jsx';
+
+// --- Mocks ---
+vi.mock('axios');
+const mockedAxios = axios as Mocked<AxiosStatic>;
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+    };
 });
 
+// Mock the SubjectsHeader component INSIDE the factory
+vi.mock('../assets/subjectheader', () => {
+    // Define the mock component structure within the factory
+    const MockSubjectsHeaderComponent = vi.fn(({ onSelect }) => (
+        <div data-testid="mock-subjects-header" onClick={() => onSelect('history')}> {/* Provide a default value or handle appropriately */}
+            Mock Subjects Header Content
+        </div>
+    ));
+    // Return the object structure expected by the module system
+    return {
+        default: MockSubjectsHeaderComponent
+    };
+});
+
+// --- Test Suite ---
+
 describe('Tabs Component', () => {
-  const mockNavigate = vi.fn(); // Mock navigate function
-  const mockData = { results: ['Book 1', 'Book 2'] }; // Sample mock data
-  
-  beforeEach(() => {
-    // Reset mocks before each test
-    vi.mocked(axios.get).mockImplementationOnce(() => 
-      Promise.resolve({ data: mockData })  // Mock successful API response
-    );
-    vi.mocked(useNavigate).mockReturnValue(mockNavigate); // Mock useNavigate
-  });
+    const mockApiData = { results: [{ id: 1, title: 'Filtered Book' }] };
+    const filterValue = 'history';
+    const expectedUrl = `http://127.0.0.1:8000/api/filter/?filter=${filterValue}`;
 
-  it('renders the SubjectsHeader component', () => {
-    render(
-      <BrowserRouter>
-        <Tabs />
-      </BrowserRouter>
-    );
-    
-    // Check if SubjectsHeader component is rendered by verifying the subject buttons
-    const subjectButtons = screen.getAllByRole('button');
-    expect(subjectButtons).toHaveLength(9);  // Assuming there are 9 subjects
-  });
+    // Declare a variable to hold the reference to the actual mock function instance
+    let MockSubjectsHeaderInstance: Mock;
 
-  it('calls handleFilterSelect and navigates on selecting a subject', async () => {
-    render(
-      <BrowserRouter>
-        <Tabs />
-      </BrowserRouter>
-    );
+    beforeEach(async () => {
+        // Dynamically import the *mocked* module to get the instance
+        // This needs to be done AFTER vi.mock has run
+        const SubjectsHeaderMockedModule = await import('../assets/subjectheader');
+        MockSubjectsHeaderInstance = SubjectsHeaderMockedModule.default as Mock;
 
-    const filter = 'Drama';
-    
-    // Find the "Drama" button in SubjectsHeader and simulate a click
-    const dramaButton = screen.getByText(filter);
-    fireEvent.click(dramaButton);
-    
-    // Check if axios.get was called with the correct URL
-    expect(axios.get).toHaveBeenCalledWith(`http://127.0.0.1:8000/api/filter/?filter=${filter}`);
+        // Reset mocks before each test
+        vi.clearAllMocks(); // Clears axios, navigate
+        MockSubjectsHeaderInstance.mockClear(); // Clear calls/instances of the header mock specifically
 
-    // Wait for navigation to happen after the mock API response
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/searchresults', { state: { results: mockData } });
-    });
-  });
+        // Setup default mock behaviors
+        mockedAxios.get.mockResolvedValue({ data: mockApiData });
 
-  it('handles API errors gracefully', async () => {
-    // Mock the API request to reject with an error
-    (axios.get as vi.Mock).mockRejectedValue(new Error('API Error')); // Casting to vi.Mock
-
-    // Spy on console.error to check if it's being called
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    // Render the Tabs component wrapped in a BrowserRouter
-    render(
-      <BrowserRouter>
-        <Tabs />
-      </BrowserRouter>
-    );
-
-    // Simulate selecting a filter to trigger the API call
-    const filter = 'Fiction';
-    const button = screen.getByText(filter); // Assuming the button text matches the filter
-    button.click();
-
-    // Wait for the error handling to be executed
-    await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching filtered results:', expect.any(Error));
+        // Optional: If you need to override the default implementation from the factory for specific tests,
+        // you can do it here or within the 'it' block using MockSubjectsHeaderInstance.mockImplementation(...)
+        // For now, the factory implementation might be enough. If tests fail related to onClick,
+        // you might need to set a specific implementation here.
+        MockSubjectsHeaderInstance.mockImplementation(({ onSelect }) => (
+             <div data-testid="mock-subjects-header" onClick={() => onSelect(filterValue)}>
+                 Mock Subjects Header Content
+             </div>
+         ));
     });
 
-    // Clean up the spy
-    consoleErrorSpy.mockRestore();
-  });
+    afterEach(() => {
+        // Optional: vi.clearAllMocks() in beforeEach is usually sufficient
+    });
 
+    it('renders the SubjectsHeader component', () => {
+        render(<Tabs />);
+        // Check if our mocked SubjectsHeader was rendered using the instance
+        expect(MockSubjectsHeaderInstance).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('mock-subjects-header')).toBeInTheDocument();
+    });
+
+    it('calls axios.get with the correct URL when a filter is selected', async () => {
+        render(<Tabs />);
+
+        // Get the onSelect prop passed to the mock instance
+        const passedProps = MockSubjectsHeaderInstance.mock.calls[0][0];
+        const handleFilterSelect = passedProps.onSelect;
+
+        await act(async () => {
+            handleFilterSelect(filterValue);
+        });
+
+        expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+        expect(mockedAxios.get).toHaveBeenCalledWith(expectedUrl);
+    });
+
+    it('navigates to search results with data on successful API call', async () => {
+        // Optional: Reset mock specifically for this test if needed, though beforeEach handles default
+        // mockedAxios.get.mockResolvedValue({ data: mockApiData });
+
+        render(<Tabs />);
+
+        const passedProps = MockSubjectsHeaderInstance.mock.calls[0][0];
+        const handleFilterSelect = passedProps.onSelect;
+
+        await act(async () => {
+             handleFilterSelect(filterValue);
+         });
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledTimes(1);
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith('/searchresults', {
+            state: { results: mockApiData },
+        });
+    });
+
+    it('does not call axios.get or navigate if the filter is falsy', async () => {
+        render(<Tabs />);
+
+        const passedProps = MockSubjectsHeaderInstance.mock.calls[0][0];
+        const handleFilterSelect = passedProps.onSelect;
+
+        await act(async () => {
+            handleFilterSelect(null);
+        });
+        expect(mockedAxios.get).not.toHaveBeenCalled();
+        expect(mockNavigate).not.toHaveBeenCalled();
+
+         await act(async () => {
+             handleFilterSelect('');
+         });
+         expect(mockedAxios.get).not.toHaveBeenCalled();
+         expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('handles API errors and does not navigate', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const apiError = new Error('Network Failed');
+        mockedAxios.get.mockRejectedValue(apiError);
+
+        render(<Tabs />);
+
+        const passedProps = MockSubjectsHeaderInstance.mock.calls[0][0];
+        const handleFilterSelect = passedProps.onSelect;
+
+        await act(async () => {
+             handleFilterSelect(filterValue);
+        });
+
+        await waitFor(() => {
+             expect(mockedAxios.get).toHaveBeenCalledWith(expectedUrl);
+        });
+
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching filtered results:', apiError);
+
+        consoleErrorSpy.mockRestore();
+    });
 });

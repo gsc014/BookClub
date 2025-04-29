@@ -60,7 +60,7 @@ const Searchbar = () => {
         let url = `http://127.0.0.1:8000/api/filter/?filter=${filters}`;
         console.log("attempting", url);
 
-        axios.get(url)
+        axios.get(url, { params: { num: 10 } })
             .then(response => {
                 navigate('/searchresults', { state: { results: response.data } });
             })

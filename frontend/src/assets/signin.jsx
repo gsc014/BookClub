@@ -60,7 +60,7 @@ const Signin = () => {
                 <img
                     src={close}
                     className="icon jump exit"
-                    alt=""
+                    alt="Close sign up form"
                     onClick={closeTabs}
                 />
             </h2>

@@ -404,3 +404,43 @@
         padding: 6px 12px;
     }
 }
+
+/* Add to your bookpage.css */
+.bookpage-external-links {
+    margin: 24px 0;
+    text-align: center;
+}
+
+.national-library-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #353535;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.national-library-link:hover {
+    background-color: #323232;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.national-library-link:active {
+    transform: translateY(0);
+}
+
+.link-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+.library-link-unavailable {
+    color: #777;
+    font-style: italic;
+}

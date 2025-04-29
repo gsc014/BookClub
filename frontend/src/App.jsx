@@ -40,14 +40,14 @@ const App = () => {
     return (
         <div>
             <Header />  {/* Keep header always visible */}
+            <Login />
+            <Signin />
             <Routes>
                 {/* Home Page */}
                 <Route path="/" element={
                     <>
                         <Searchbar />
                         <Booklist />
-                        <Login />
-                        <Signin />
                         <Profile /> {/* The mini-profile component that is shown as a modal */}
                     </>
                 } />

@@ -44,7 +44,7 @@ const Login = () => {
                 <img
                     src={close}
                     className="icon jump exit"
-                    alt=""
+                    alt="Close login form"
                     // onClick={() => document.getElementById('login-form').style.display = 'none'}
                     onClick={closeTabs}
                 />
