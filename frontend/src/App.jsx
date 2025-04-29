@@ -1,3 +1,4 @@
+import React from 'react';
 import './assets/style/stylesheet.css';
 import './assets/style/App.css';
 
@@ -8,7 +9,6 @@ import { checkInitialAuthState, getAuthHeaders, isLoggedIn } from './utils';
 import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage} from './assets';
 import ProfilePage from './assets/ProfilePage';
 import SearchResults from './assets/searchresults';
-import SubjectsHeader from './assets/subjectheader';
 import GamePage from './assets/gamepage';
 
 // Updated ProtectedRoute component with verbose logging
@@ -92,5 +92,5 @@ const AppWrapper = () => (
         <App />
     </Router>
 );
-
+export { App };
 export default AppWrapper;
