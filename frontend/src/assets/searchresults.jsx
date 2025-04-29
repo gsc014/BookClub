@@ -5,13 +5,14 @@ import Bookcard from './bookcard';
 import './style/bookcard.css';
 import './style/searchresults.css';
 
-const SearchResults = () => {
+const SearchResults = ({ results, pagination, query }) => {
     const location = useLocation();
+    // Get results from location state
     const initialResults = location.state?.initialResults || [];
     const initialFilter = location.state?.initialFilter || '';
     // Check if this is a title search or a subject filter
     const isSearchQuery = location.state?.isSearchQuery || false;
-    
+
     const [books, setBooks] = useState(initialResults);
     const [currentPage, setCurrentPage] = useState(1);
     const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -27,6 +28,16 @@ const SearchResults = () => {
         console.log("Initial results:", initialResults);
         console.log("Is search query:", isSearchQuery);
     }, [initialFilter, initialResults, isSearchQuery]);
+
+    // Add this useEffect to your SearchResults component
+    useEffect(() => {
+        if (location.state?.initialResults?.length > 0) {
+            setBooks(location.state.initialResults);
+            if (location.state.initialFilter) {
+                setFilter(location.state.initialFilter);
+            }
+        }
+    }, [location.state]);
 
     // Fetch books when page, resultsPerPage, or filter changes
     useEffect(() => {

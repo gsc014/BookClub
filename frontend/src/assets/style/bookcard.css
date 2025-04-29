@@ -97,3 +97,79 @@ ul.horizontal-list {
         padding: 0.8rem;
     }
 }
+
+/* Small book card styles */
+.book-card-small {
+    width: 100%;
+    cursor: pointer;
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 8px;
+}
+
+.book-card-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.book-card-small-content {
+    display: flex;
+    height: 100px;
+}
+
+.book-cover-small {
+    width: 65px;
+    height: 100px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.book-info-small {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.book-title-small {
+    margin: 0 0 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.book-author-small {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.book-rating {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.rating-stars {
+    color: #FFD700;
+    margin-right: 2px;
+}
+
+.rating-value {
+    font-weight: bold;
+    margin-right: 3px;
+}
+
+.rating-count {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+}

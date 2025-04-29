@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { checkInitialAuthState, getAuthHeaders, isLoggedIn } from './utils';
 
 import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage} from './assets';
+import TopRatedBooks from './assets/toprated';
 import ProfilePage from './assets/ProfilePage';
 import SearchResults from './assets/searchresults';
 import GamePage from './assets/gamepage';
@@ -47,7 +48,14 @@ const App = () => {
                 <Route path="/" element={
                     <>
                         <Searchbar />
-                        <Booklist />
+                        <div className="home-layout">
+                            <div className="main-content">
+                                <Booklist />
+                            </div>
+                            <div className="side-content">
+                                <TopRatedBooks limit={6} />
+                            </div>
+                        </div>
                         <Profile /> {/* The mini-profile component that is shown as a modal */}
                     </>
                 } />
@@ -67,8 +75,7 @@ const App = () => {
                 } />
 
                 {/* Search results */}
-                <Route path="/searchresults" element={
-                    <SearchResults results={location.state?.results || []} />} />
+                <Route path="/searchresults" element={<SearchResults />} />
 
                 <Route path="/books/:id" element={
                     <Bookpage book={location.state?.book || []} />

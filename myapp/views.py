@@ -931,3 +931,54 @@ def high_score(request):
                 return Response({"message": "High score not beaten", "high_score": user_info.high_score_titlegame}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+def highest_rated_books(request):
+    try:
+        # Get parameters
+        num_books = int(request.GET.get('num', 5))
+        
+        # Ensure we have a reasonable limit
+        num_books = min(max(1, num_books), 20)
+        
+        # Use raw SQL for better performance with aggregation
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT b.id, b.key, b.title, b.author, b.cover, 
+                       AVG(r.rating) as avg_rating, 
+                       COUNT(r.id) as review_count
+                FROM myapp_books b
+                INNER JOIN myapp_review r ON b.id = r.book_id
+                WHERE b.cover IS NOT NULL AND b.cover > 0
+                GROUP BY b.id
+                HAVING COUNT(r.id) >= 3  -- Minimum number of reviews
+                ORDER BY avg_rating DESC, review_count DESC
+                LIMIT %s
+            """, [num_books])
+
+
+            books_data = []
+            for row in cursor.fetchall():
+                try:
+                    author = Author.objects.get(key=row[3]).name
+                    print("author is ", author)
+                except Author.DoesNotExist:
+                    print("Author not found")
+                    author = row[3]
+                
+                books_data.append({
+                    "id": row[0],
+                    "key": row[1],
+                    "title": row[2],
+                    "author": author,
+                    "cover": row[4],
+                    "avg_rating": round(float(row[5]), 1),
+                    "review_count": row[6]
+                })
+        
+        return Response(books_data)
+    
+    except Exception as e:
+        print(f"Error fetching highest rated books: {str(e)}")
+        return Response({"error": "Failed to retrieve highest rated books"}, status=500)

@@ -35,4 +35,5 @@ urlpatterns = [
     path('api/books_by_author/', views.get_books_by_author, name='books_by_author'),
     path('api/autocomplete-profile/', views.autocomplete_profile, name='autocomplete_profile'),
     path('api/high-score/', high_score, name='high_score'),
+    path('highest-rated/', views.highest_rated_books, name='highest-rated'),
 ]
