@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './style/bookpage.css';
 import StarRating from './starrating';
+import Booklist from './booklist';
 
 import defaultCover from './pictures/no-results.png';
 
@@ -16,9 +17,9 @@ const Bookpage = ({ book }) => {
     const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
     const [isbn, setIsbn] = useState('');
 
-
     const maxLength = 500;
     const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
+
     const fetchIsbn = () => {
         axios.get(`http://127.0.0.1:8000/api/isbn/${retrievedBook.key}`)
             .then(response => {
@@ -26,7 +27,6 @@ const Bookpage = ({ book }) => {
             })
             .catch(error => console.error('Error fetching ISBN:', error));
     };
-
 
     const shortenText = (text) => {
         if (!text) return 'No description available.';
@@ -37,19 +37,24 @@ const Bookpage = ({ book }) => {
     // Function to fetch reviews
     const fetchReviews = () => {
         axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`)
-            .then(response => setReviews(response.data))
+            .then(response => {
+                console.log("Fetched reviews:", response.data);
+                setReviews(response.data)
+            })
             .catch(error => console.error('Error fetching reviews:', error));
     };
 
     useEffect(() => {
         // Fetch book details
         axios.get(`http://127.0.0.1:8000/api/book/${book.id}`)
-            .then(response => setBook(response.data))
+            .then(response => {
+                setBook(response.data)
+                console.log("Book data:", response.data);
+            })
             .catch(error => {
                 console.error('Error fetching book details:', error);
                 setBook({ error: 'Failed to fetch book details' });
             });
-
         // Fetch initial reviews
         fetchReviews();
     }, [book.id]);
@@ -111,11 +116,12 @@ const Bookpage = ({ book }) => {
             `http://127.0.0.1:8000/api/reviewtest/${book.id}/`,
             {
                 text: review,
-                rating: bookRating
+                rating: bookRating  // Make sure this is a number, not a string
             },
             {
                 headers: {
-                    'Authorization': `Token ${authToken}`
+                    'Authorization': `Token ${authToken}`,
+                    'Content-Type': 'application/json'  // Add this line
                 }
             }
         )
@@ -132,6 +138,7 @@ const Bookpage = ({ book }) => {
             })
             .then(response => {
                 // Update the reviews state with new data
+                console.log("Updated reviews:", response.data);
                 setReviews(response.data);
             })
             .catch(error => {
@@ -176,21 +183,37 @@ const Bookpage = ({ book }) => {
                             </button>
                         )}
                     </div>
-                    <p className="bookpage-author">{retrievedBook.author}</p>
+                    <p className="bookpage-author">{typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}</p>
                 </div>
             </div>
 
-            <div>
+            <div className="bookpage-external-links">
                 {isbn ? (
-                    <a href={`${test}${isbn}`} target="_blank" rel="noopener noreferrer">
-                        Search national library
+                    <a 
+                        href={`${test}${isbn}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="national-library-link"
+                    >
+                        <span className="link-icon">📚</span>
+                        Search National Library
                     </a>
                 ) : (
-                    <p>ISBN not available</p>
+                    <p className="library-link-unavailable">ISBN not available</p>
                 )}
             </div>
 
-
+            {/* Use BookList for author's other works */}
+            {retrievedBook.author_key && (
+                <div className="author-other-books">
+                    <Booklist 
+                        title={`Books by ${typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}`}
+                        apiUrl="http://127.0.0.1:8000/api/books_by_author/"
+                        params={{ key: retrievedBook.author_key }}
+                        booksToShow={5}
+                    />
+                </div>
+            )}
 
             <div className="bookpage-review">
                 <h3>Write a Review</h3>
@@ -222,9 +245,18 @@ const Bookpage = ({ book }) => {
                 ) : (
                     reviews.map((review, index) => (
                         <div key={index} className="bookpage-review-item">
-                            <p><strong>Rating:</strong> {review.rating}</p>
-                            <p>{review.text}</p>
-                            <p><em>Posted on: {new Date(review.created_at).toLocaleDateString()}</em></p>
+                            <div className="review-header">
+                                <p className="review-username">
+                                    <strong>{review.username || "Anonymous"}</strong>
+                                </p>
+                                <p className="review-rating">
+                                    <strong>Rating:</strong> {review.rating}/5
+                                </p>
+                            </div>
+                            <p className="review-text">{review.text}</p>
+                            <p className="review-date">
+                                <em>Posted on: {new Date(review.creation_date).toLocaleString()}</em>
+                            </p>
                         </div>
                     ))
                 )}

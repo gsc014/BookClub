@@ -8,7 +8,7 @@
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "types": ["vitest", "node"],
+      "types": ["vitest", "node","vitest/globals"],
       "outDir": "./dist",
       "allowJs": true
     },

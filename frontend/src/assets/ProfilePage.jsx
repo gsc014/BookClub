@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { isLoggedIn, getCurrentUsername, fetchProfileData, logout } from '../utils';
 import './style/ProfilePage.css';
@@ -29,7 +29,15 @@ function ProfilePage() {
     const [likedBooks, setLikedBooks] = useState([]);
     const [loadingLikedBooks, setLoadingLikedBooks] = useState(true);
     const [goth, setGoth] = useState(false);
-    
+    const [otherUserLikedBooks, setOtherUserLikedBooks] = useState([]);
+
+    // Add search-related state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const searchRef = useRef(null);
+
     // Check auth status immediately on component render
     useEffect(() => {
         console.log("ProfilePage mounted - auth check");
@@ -75,6 +83,13 @@ function ProfilePage() {
                     birth_date: data.birth_date || ''
                 });
                 setLoading(false);
+
+                if (getCurrentUsername() === username) {
+                    fetchBookList("Saved Books");
+                    fetchBookList("Liked Books");
+                } else {
+                    fetchOtherUserBookList(username);
+                }
             })
             .catch(err => {
                 console.error('Error fetching profile:', err);
@@ -88,6 +103,20 @@ function ProfilePage() {
                 }
             });
     }, [username, navigate]);
+
+    // Close search results when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowResults(false);
+            }
+        }
+        
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [searchRef]);
 
     const handleLogout = () => {
         logout();
@@ -275,6 +304,83 @@ function ProfilePage() {
         });
     };
 
+    // When viewing own profile
+    const fetchBookList = (listName) => {
+        const authToken = localStorage.getItem('authToken');
+        axios.get(`http://127.0.0.1:8000/api/saved-books/?name=${listName}`, {
+            headers: {
+                'Authorization': `Token ${authToken}`
+            }
+        })
+        .then(response => {
+            if (listName === "Saved Books") {
+                setSavedBooks(response.data);
+            } else if (listName === "Liked Books") {
+                setLikedBooks(response.data);
+            }
+        })
+        .catch(error => console.error(`Error fetching ${listName}:`, error));
+    };
+
+    // When viewing someone else's profile
+    const fetchOtherUserBookList = (username) => {
+        const authToken = localStorage.getItem('authToken');
+        axios.get(`http://127.0.0.1:8000/api/saved-books/?name=Liked Books&username=${username}`, {
+            headers: {
+                'Authorization': `Token ${authToken}`
+            }
+        })
+        .then(response => {
+            setOtherUserLikedBooks(response.data);
+        })
+        .catch(error => console.error(`Error fetching user's liked books:`, error));
+    };
+
+    // Handle search input changes
+    const handleSearchChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        
+        if (query.trim().length > 0) {
+            setIsSearching(true);
+            searchProfiles(query);
+            setShowResults(true);
+        } else {
+            setSearchResults([]);
+            setShowResults(false);
+        }
+    };
+
+    // Search for profiles
+    const searchProfiles = (query) => {
+        axios.get(`http://127.0.0.1:8000/api/autocomplete-profile/?query=${encodeURIComponent(query)}`)
+            .then(response => {
+                setSearchResults(response.data);
+                setIsSearching(false);
+            })
+            .catch(error => {
+                console.error('Error searching profiles:', error);
+                setIsSearching(false);
+            });
+    };
+
+    // Navigate to selected profile
+    const goToProfile = (username) => {
+        setSearchQuery('');
+        setShowResults(false);
+        navigate(`/profile/${username}`);
+    };
+
+    // Submit search form
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/profile/${searchQuery.trim()}`);
+            setSearchQuery('');
+            setShowResults(false);
+        }
+    };
+
     // Render loading state
     if (loading) {
         return (
@@ -317,6 +423,41 @@ function ProfilePage() {
             <div className="profile-header">
                 <h1>{profileData.username}'s Profile</h1>
                 <div className="profile-actions">
+                
+                <div className="profile-search-container" ref={searchRef}>
+                <form onSubmit={handleSearchSubmit} className="profile-search-form">
+                    <input
+                        type="text"
+                        placeholder="Search for profiles..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="profile-search-input"
+                    />
+                    <button type="submit" className="profile-search-button">
+                        <img src={search} alt="Search" />
+                    </button>
+
+                    {showResults && (
+                        <div className="profile-search-results">
+                            {isSearching ? (
+                                <div className="search-loading">Searching...</div>
+                            ) : searchResults.length > 0 ? (
+                                searchResults.map(user => (
+                                    <div 
+                                        key={user.id} 
+                                        className="search-result-item"
+                                        onClick={() => goToProfile(user.username)}
+                                    >
+                                        {user.username}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="no-results">No profiles found</div>
+                            )}
+                        </div>
+                    )}
+                </form>
+            </div>
                     {isOwnProfile && (
                         <>
                             <button className="settings-btn" onClick={handleGoToSettings}>Account Settings</button>
@@ -403,49 +544,74 @@ function ProfilePage() {
                     )}
                 </div>
 
-                {/* Saved Books Section */}
-                <div className="profile-section">
-                    <h2>Saved Books</h2>
-                    {loadingSavedBooks ? (
-                        <p>Loading your saved books...</p>
-                    ) : savedBooks.length > 0 ? (
-                        <ul className="saved-books-list">
-                            {savedBooks.map((book) => (
-                                <li key={book.id} className="saved-book">
-                                    {book.title} {book.author && `by ${book.author}`}
-                                    <div className="book-actions">
-                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                        <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No saved books yet.</p>
-                    )}
-                </div>
+                {/* Only show Saved Books on own profile */}
+                {isOwnProfile && (
+                    <div className="profile-section">
+                        <h2>Saved Books</h2>
+                        {loadingSavedBooks ? (
+                            <p>Loading your saved books...</p>
+                        ) : savedBooks.length > 0 ? (
+                            <ul className="saved-books-list">
+                                {savedBooks.map((book) => (
+                                    <li key={book.id} className="saved-book">
+                                        {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No saved books yet.</p>
+                        )}
+                    </div>
+                )}
 
-                {/* Liked Books Section */}
-                <div className="profile-section">
-                    <h2>Liked Books</h2>
-                    {loadingLikedBooks ? (
-                        <p>Loading your liked books...</p>
-                    ) : likedBooks.length > 0 ? (
-                        <ul className="liked-books-list">
-                            {likedBooks.map((book) => (
-                                <li key={book.id} className="liked-book">
-                                    {book.title} {book.author && `by ${book.author}`}
-                                    <div className="book-actions">
-                                        <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                        <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No liked books yet.</p>
-                    )}
-                </div>
+                {/* Only show Liked Books on own profile */}
+                {isOwnProfile && (
+                    <div className="profile-section">
+                        <h2>Liked Books</h2>
+                        {loadingLikedBooks ? (
+                            <p>Loading your liked books...</p>
+                        ) : likedBooks.length > 0 ? (
+                            <ul className="liked-books-list">
+                                {likedBooks.map((book) => (
+                                    <li key={book.id} className="liked-book">
+                                        {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No liked books yet.</p>
+                        )}
+                    </div>
+                )}
+
+                {/* Other User's Liked Books Section - shown when viewing other profiles */}
+                {!isOwnProfile && (
+                    <div className="profile-section">
+                        <h2>{username}'s Liked Books</h2>
+                        {otherUserLikedBooks.length > 0 ? (
+                            <ul className="liked-books-list">
+                                {otherUserLikedBooks.map((book) => (
+                                    <li key={book.id} className="liked-book">
+                                        {book.title} {book.author && `by ${book.author}`}
+                                        <div className="book-actions">
+                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No liked books yet.</p>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

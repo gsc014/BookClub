@@ -123,7 +123,8 @@ const Bookcard = ({ book }) => {
     return (
         <div className="book-card" onClick={handleClick}>
             <img 
-                src={defaultCover} // {`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
+                // src={defaultCover} // {`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
+                src={`https://covers.openlibrary.org/w/olid/${book.key}-M.jpg`}
                 alt={book.title || "Book Cover"}
                 className="book-cover"
                 onError={(e) => e.target.src = defaultCover} // Fallback if image fails to load
