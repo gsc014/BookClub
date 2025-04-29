@@ -15,7 +15,7 @@ const Searchbar = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (query.length < 5) { 
+        if (query.length < 1) { 
             setSuggestions([]); 
             return; 
         }
@@ -25,7 +25,16 @@ const Searchbar = () => {
     const handleSearch = async () => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/search/?q=${query}`);
-            navigate('/searchresults', { state: { results: response.data } });
+            console.log("Search response:", response.data);
+            
+            // Navigate with properly structured state
+            navigate('/searchresults', { 
+                state: { 
+                    initialResults: response.data.results, 
+                    initialFilter: query,
+                    isSearchQuery: true 
+                }
+            });
         } catch (error) {
             console.error('Error fetching search results:', error);
         }

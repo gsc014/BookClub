@@ -40,3 +40,33 @@
 .read-the-docs {
   color: #888;
 }
+
+.home-layout {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    gap: 30px;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.side-content {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+    .home-layout {
+        flex-direction: column;
+    }
+    
+    .side-content {
+        width: 100%;
+        margin-top: 20px;
+    }
+}

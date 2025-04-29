@@ -9,7 +9,7 @@ import heart from './pictures/hearted.png';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
-const Bookcard = ({ book }) => {
+const Bookcard = ({ book, isSmall = false }) => {
     const navigate = useNavigate();
     const [isSaved, setIsSaved] = useState(false);
     const [saveStatus, setSaveStatus] = useState(null);
@@ -32,7 +32,7 @@ const Bookcard = ({ book }) => {
             return;
         }
 
-        setLikeStatus('liking');
+        // setLikeStatus('liking');
 
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${book.id}/`, 
@@ -53,7 +53,7 @@ const Bookcard = ({ book }) => {
             else {
                 setIsLiked(true);
             }
-            setLikeStatus('liked');
+            // setLikeStatus('liked');
             
             // Optional: Show a temporary success message
             setTimeout(() => setLikeStatus(null), 2000);
@@ -67,7 +67,6 @@ const Bookcard = ({ book }) => {
         });
     };
 
-
     const saveBook = (e) => {
         // Prevent the click from propagating to the parent div
         e.stopPropagation();
@@ -80,7 +79,7 @@ const Bookcard = ({ book }) => {
             return;
         }
 
-        setSaveStatus('saving');
+        // setSaveStatus('saving');
 
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${book.id}/`, 
@@ -101,7 +100,7 @@ const Bookcard = ({ book }) => {
             else {
                 setIsSaved(true);
             }
-            setSaveStatus('saved');
+            // setSaveStatus('saved');
             
             // Optional: Show a temporary success message
             setTimeout(() => setSaveStatus(null), 2000);
@@ -120,10 +119,39 @@ const Bookcard = ({ book }) => {
         navigate(`/books/${book.id}`, {state: { book }});
     };
 
+    // Return small version of card if isSmall prop is true
+    if (isSmall) {
+        return (
+            <div className="book-card-small" onClick={handleClick}>
+                <div className="book-card-small-content">
+                    <img 
+                        src={`https://covers.openlibrary.org/w/olid/${book.key}-M.jpg`}
+                        alt={book.title || "Book Cover"}
+                        className="book-cover-small"
+                        onError={(e) => e.target.src = defaultCover}
+                    />
+                    <div className="book-info-small">
+                        <h4 className="book-title-small">{book.title}</h4>
+                        <p className="book-author-small">
+                            {typeof book.author === 'object' ? book.author.name : book.author}
+                        </p>
+                        {book.avg_rating && (
+                            <div className="book-rating">
+                                <span className="rating-stars">★</span> 
+                                <span className="rating-value">{book.avg_rating}</span>
+                                <span className="rating-count">({book.review_count})</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Return regular card
     return (
         <div className="book-card" onClick={handleClick}>
             <img 
-                // src={defaultCover} // {`https://covers.openlibrary.org/w/olid/${book.key}-L.jpg`} 
                 src={`https://covers.openlibrary.org/w/olid/${book.key}-M.jpg`}
                 alt={book.title || "Book Cover"}
                 className="book-cover"
