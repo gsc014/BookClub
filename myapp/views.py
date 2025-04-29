@@ -5,22 +5,15 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404
-<<<<<<< HEAD
-from .models import Review, UserInfo, UserBookList, NewTable, Books
-=======
 from .models import Review, UserInfo, UserBookList, NewTable, Books, Author
->>>>>>> 94c4b99cb12720307820ed6865335865eb002a18
 import random
 from django.http import JsonResponse
 from django.db import connections
 from django.contrib.auth import logout as django_logout
 from rest_framework.authtoken.models import Token
 import logging
-<<<<<<< HEAD
-=======
 from django.core.paginator import Paginator
 from django.db.models import Q, Min, Max
->>>>>>> 94c4b99cb12720307820ed6865335865eb002a18
 
 # Set up logging
 logger = logging.getLogger(__name__)
