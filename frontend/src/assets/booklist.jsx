@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Bookcard from './bookcard';
 import './style/bookcard.css';
+import './style/booklist.css';
 
 const Booklist = ({ 
     title = "Recommended Books", 
@@ -16,14 +17,14 @@ const Booklist = ({
 
     // Calculate optimal number of books based on screen width
     const calculateOptimalBooksCount = () => {
-        const bookCardWidth = 182; // width + padding + border
-        const gap = 20; // gap in pixels
+        const bookCardWidth = 250; // width + padding + border
+        const gap = 40; // gap in pixels
         
-        const containerWidth = Math.min(window.innerWidth - 40, 1200); // 40px for container padding
+        const containerWidth = window.innerWidth - 40; // 40px for container padding
         const booksPerRow = Math.max(1, Math.floor(containerWidth / (bookCardWidth + gap)));
         
         // Request enough books to fill 2 rows
-        return booksPerRow * 2;
+        return booksPerRow * 3;
     };
 
     useEffect(() => {
@@ -97,21 +98,21 @@ const Booklist = ({
     }, [apiUrl, JSON.stringify(params), screenWidth, title]);
 
     return (
-        <section className="book-list-section">
-            <h2>{title}</h2>
+        <section className="booklist-container">
+            <h2 className="booklist-title">{title}</h2>
             
             {loading ? (
-                <div className="loading-container">Loading {title.toLowerCase()}...</div>
+                <div className="booklist-loading">Loading {title.toLowerCase()}...</div>
             ) : error ? (
-                <div className="error-container">{error}</div>
+                <div className="booklist-error">{error}</div>
             ) : (
-                <div className="book-list">
+                <div className="booklist-grid">
                     {books.length > 0 ? (
                         books.map(book => (
                             <Bookcard key={book.id} book={book} />
                         ))
                     ) : (
-                        <div className="no-books">No {title.toLowerCase()} available</div>
+                        <div className="booklist-empty">No {title.toLowerCase()} available</div>
                     )}
                 </div>
             )}

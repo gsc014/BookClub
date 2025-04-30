@@ -1,0 +1,49 @@
+.booklist-container {
+    background: var(--bg-light, #fff);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    width: 96%;
+}
+
+.booklist-title {
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+    color: var(--text-color, #333);
+    border-bottom: 1px solid var(--border-color, #eee);
+    padding-bottom: 10px;
+    text-align: left;
+}
+
+.booklist-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+}
+
+.booklist-loading,
+.booklist-error,
+.booklist-empty {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text-secondary, #666);
+    font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .booklist-container {
+        padding: 15px;
+    }
+    
+    .booklist-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .booklist-grid {
+        gap: 15px;
+    }
+}

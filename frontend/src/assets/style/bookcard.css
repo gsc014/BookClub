@@ -120,56 +120,42 @@ ul.horizontal-list {
     height: 100px;
 }
 
+/* Update book-info-small for better spacing */
+.book-info-small {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Changed from space-between to flex-start */
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative; /* Added for absolute positioning of ratings */
+    min-height: 90px; /* Ensure consistent height */
+}
+
+/* Move the author name up by adjusting its margin */
+.book-author-small {
+    margin: 0;
+    margin-top: 2px; /* Small space after title */
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Position the rating at the bottom of the container */
+.book-rating {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.8); /* Add slight background */
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
 .book-cover-small {
     width: 65px;
     height: 100px;
     object-fit: cover;
     flex-shrink: 0;
-}
-
-.book-info-small {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex-grow: 1;
-    overflow: hidden;
-}
-
-.book-title-small {
-    margin: 0 0 4px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-color);
-}
-
-.book-author-small {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.book-rating {
-    display: flex;
-    align-items: center;
-    font-size: 0.8rem;
-    margin-top: 4px;
-}
-
-.rating-stars {
-    color: #FFD700;
-    margin-right: 2px;
-}
-
-.rating-value {
-    font-weight: bold;
-    margin-right: 3px;
-}
-
-.rating-count {
-    color: var(--text-secondary);
-    font-size: 0.7rem;
 }

@@ -36,4 +36,6 @@ urlpatterns = [
     path('api/autocomplete-profile/', views.autocomplete_profile, name='autocomplete_profile'),
     path('api/high-score/', high_score, name='high_score'),
     path('highest-rated/', views.highest_rated_books, name='highest-rated'),
+    path('most-liked/', views.most_liked_books, name='most-liked'),
+    path('most-active-users/', views.most_active_users, name='most-active-users'),
 ]

@@ -8,6 +8,8 @@ import { checkInitialAuthState, getAuthHeaders, isLoggedIn } from './utils';
 
 import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage} from './assets';
 import TopRatedBooks from './assets/toprated';
+import MostLikedBooks from './assets/mostLikedBooks';
+import MostActiveUsers from './assets/mostActiveUsers';
 import ProfilePage from './assets/ProfilePage';
 import SearchResults from './assets/searchresults';
 import GamePage from './assets/gamepage';
@@ -49,11 +51,15 @@ const App = () => {
                     <>
                         <Searchbar />
                         <div className="home-layout">
+                            <div className='right-side-content'>
+                                <TopRatedBooks limit={3} />
+                            </div>
                             <div className="main-content">
                                 <Booklist />
                             </div>
                             <div className="side-content">
-                                <TopRatedBooks limit={6} />
+                                <MostLikedBooks limit={3} />
+                                <MostActiveUsers limit={5} />
                             </div>
                         </div>
                         <Profile /> {/* The mini-profile component that is shown as a modal */}
@@ -77,9 +83,7 @@ const App = () => {
                 {/* Search results */}
                 <Route path="/searchresults" element={<SearchResults />} />
 
-                <Route path="/books/:id" element={
-                    <Bookpage book={location.state?.book || []} />
-                } />
+                <Route path="/books/:id" element={<Bookpage book={location.state?.book || []} />} />
                 <Route path="/add-book/:id" element={
                     <Bookpage book={location.state?.book || []} />
                 } />

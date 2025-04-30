@@ -10,3 +10,5 @@ export { default as Bookpage } from './bookpage';
 export { default as StarRating } from './starrating';
 export { default as GamePage } from './gamepage.jsx';
 export { default as TopRatedBooks } from './toprated';
+export { default as MostLikedBooks } from './mostLikedBooks';
+export { default as MostActiveUsers } from './mostActiveUsers';

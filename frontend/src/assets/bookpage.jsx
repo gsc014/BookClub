@@ -1,264 +1,269 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './style/bookpage.css';
-import StarRating from './starrating';
-import Booklist from './booklist';
-
 import defaultCover from './pictures/no-results.png';
 
-const Bookpage = ({ book }) => {
-    const [retrievedBook, setBook] = useState(null);
-    const [review, setReview] = useState('');
-    const [reviews, setReviews] = useState([]);
-    const [bookRating, setRating] = useState(0);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
-    const [isbn, setIsbn] = useState('');
-
-    const maxLength = 500;
-    const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
-
-    const fetchIsbn = () => {
-        axios.get(`http://127.0.0.1:8000/api/isbn/${retrievedBook.key}`)
-            .then(response => {
-                setIsbn(response.data) 
-            })
-            .catch(error => console.error('Error fetching ISBN:', error));
-    };
-
-    const shortenText = (text) => {
-        if (!text) return 'No description available.';
-        if (text.length <= maxLength) return text;
-        return text.slice(0, maxLength) + '...';
-    }
-
-    // Function to fetch reviews
-    const fetchReviews = () => {
-        axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`)
-            .then(response => {
-                console.log("Fetched reviews:", response.data);
-                setReviews(response.data)
-            })
-            .catch(error => console.error('Error fetching reviews:', error));
-    };
-
-    useEffect(() => {
-        // Fetch book details
-        axios.get(`http://127.0.0.1:8000/api/book/${book.id}`)
-            .then(response => {
-                setBook(response.data)
-                console.log("Book data:", response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching book details:', error);
-                setBook({ error: 'Failed to fetch book details' });
-            });
-        // Fetch initial reviews
-        fetchReviews();
-    }, [book.id]);
-
-    useEffect(() => {
-        if (retrievedBook && retrievedBook.key) {  // Ensure the book data is loaded
-            fetchIsbn();  // Only fetch ISBN when retrievedBook is not null
-        }
-    }, [retrievedBook]);  // Trigger this effect when retrievedBook changes
+const Bookpage = () => {
+    // Get the book ID from URL params and any state passed during navigation
+    const { id } = useParams();
+    const location = useLocation();
     
+    // Get book data from state if available
+    const stateBook = location.state?.book || null;
+    
+    // State variables
+    const [book, setBook] = useState(stateBook);
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(!stateBook);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [userReview, setUserReview] = useState('');
+    const [userRating, setUserRating] = useState(0);
+    const [showFullDescription, setShowFullDescription] = useState(false);
+    const [descriptionClass, setDescriptionClass] = useState('bookpage-description truncated');
 
-    if (retrievedBook?.error) {
-        return <div className="bookpage-error">{retrievedBook.error}</div>;
-    }
-
-    if (!retrievedBook) {
-        return <div className="bookpage-loading">Loading book information...</div>;
-    }
-
-    const handleReviewChange = (e) => {
-        setReview(e.target.value);
-        // Clear any existing messages when user starts typing
-        if (successMessage) setSuccessMessage('');
-        if (errorMessage) setErrorMessage('');
-    };
-
-    const handleReviewSubmit = (e) => {
-        e.preventDefault();
-
-        // Form validation
-        if (!review.trim()) {
-            setErrorMessage('Please write a review before submitting.');
+    // Fetch book data if not provided via state
+    useEffect(() => {
+        // If we don't have a book ID or we already have the book from state, don't fetch
+        if (!id || (stateBook && stateBook.id === parseInt(id))) {
             return;
         }
-
-        if (bookRating === 0) {
-            setErrorMessage('Please select a rating before submitting.');
-            return;
-        }
-
-        // Get the authentication token
-        const authToken = localStorage.getItem('authToken');
-
-        // Check if user is logged in
-        if (!authToken) {
-            setErrorMessage('You must be logged in to submit a review.');
-            return;
-        }
-
-        // Disable submit button while processing
-        setIsSubmitting(true);
-
-        // Clear any existing messages
-        setSuccessMessage('');
-        setErrorMessage('');
-
-        // Submit review to the server with authentication token
-        axios.post(
-            `http://127.0.0.1:8000/api/reviewtest/${book.id}/`,
-            {
-                text: review,
-                rating: bookRating  // Make sure this is a number, not a string
-            },
-            {
-                headers: {
-                    'Authorization': `Token ${authToken}`,
-                    'Content-Type': 'application/json'  // Add this line
-                }
+        
+        const fetchBookData = async () => {
+            setLoading(true);
+            try {
+                console.log(`Fetching book data for ID: ${id}`);
+                const response = await axios.get(`http://127.0.0.1:8000/api/book/${id}/`);
+                console.log("Book data received:", response.data);
+                setBook(response.data);
+                setError(null);
+            } catch (err) {
+                console.error("Error fetching book details:", err);
+                setError("Failed to load book details");
+            } finally {
+                setLoading(false);
             }
-        )
-            .then(response => {
-                console.log("Review added", response.data);
+        };
 
-                // Clear the form after successful submission
-                setReview('');
-                setRating(0);
-                setSuccessMessage('Your review has been submitted!');
+        fetchBookData();
+    }, [id, stateBook]);
 
-                // Now fetch the updated reviews AFTER the submission is complete
-                return axios.get(`http://127.0.0.1:8000/api/reviews/${book.id}`);
-            })
-            .then(response => {
-                // Update the reviews state with new data
-                console.log("Updated reviews:", response.data);
+    // Fetch reviews for the book
+    useEffect(() => {
+        if (!id) return;
+        
+        const fetchReviews = async () => {
+            setReviewsLoading(true);
+            try {
+                console.log(`Fetching reviews for book ID: ${id}`);
+                const response = await axios.get(`http://127.0.0.1:8000/api/reviews/${id}/`);
+                console.log("Reviews received:", response.data);
                 setReviews(response.data);
-            })
-            .catch(error => {
-                console.error("Error posting review", error);
+            } catch (err) {
+                console.error("Error fetching reviews:", err);
+            } finally {
+                setReviewsLoading(false);
+            }
+        };
+        
+        fetchReviews();
+    }, [id]);
 
-                if (error.response && error.response.status === 401) {
-                    setErrorMessage('You need to log in again to submit a review.');
-                } else {
-                    setErrorMessage('Failed to submit review. Please try again.');
-                }
-            })
-            .finally(() => {
-                // Re-enable the submit button
-                setIsSubmitting(false);
-            });
+    // Toggle description view
+    const toggleDescription = () => {
+        if (showFullDescription) {
+            setDescriptionClass('bookpage-description animating-collapse');
+            setTimeout(() => {
+                setDescriptionClass('bookpage-description truncated');
+                setShowFullDescription(false);
+            }, 500);
+        } else {
+            setDescriptionClass('bookpage-description animating-expand');
+            setTimeout(() => {
+                setDescriptionClass('bookpage-description expanded');
+                setShowFullDescription(true);
+            }, 500);
+        }
     };
+
+    // Handle rating selection
+    const handleRatingClick = (rating) => {
+        setUserRating(rating);
+    };
+
+    // Handle review submission
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!userRating) {
+            alert("Please select a rating before submitting your review.");
+            return;
+        }
+
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            alert("You must be logged in to submit a review.");
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/reviews/${id}/`,
+                {
+                    rating: userRating,
+                    text: userReview
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${authToken}`
+                    }
+                }
+            );
+
+            // Add the new review to the reviews list
+            setReviews([response.data, ...reviews]);
+            
+            // Reset form
+            setUserReview('');
+            setUserRating(0);
+            
+            alert("Review submitted successfully!");
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            alert("Failed to submit review. Please try again.");
+        }
+    };
+
+    // Show loading state
+    if (loading) {
+        return (
+            <div className="bookpage-loading">
+                <div>Loading book details...</div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (error || !book) {
+        return (
+            <div className="bookpage-error">
+                <div>{error || "Book not found"}</div>
+            </div>
+        );
+    }
 
     return (
         <div className="bookpage">
+            {/* Book Header Section */}
             <div className="bookpage-header">
-                <img
+                <img 
                     className="bookpage-cover"
-                    src={`https://covers.openlibrary.org/b/id/${retrievedBook.cover}-L.jpg`}
-                    alt={retrievedBook.title || "Book Cover"}
+                    src={`https://covers.openlibrary.org/b/id/${book.cover}-L.jpg`}
+                    alt={`Cover of ${book.title}`}
                     onError={(e) => e.target.src = defaultCover}
                 />
+                
                 <div className="bookpage-info">
-                    <h1 className="bookpage-title">{retrievedBook.title}</h1>
-                    <div className="description-container">
-                        <p className={`bookpage-description ${!isDescriptionExpanded && retrievedBook.description && retrievedBook.description.length > maxLength ? 'truncated' : 'expanded'}`}>
-                            {isDescriptionExpanded
-                                ? retrievedBook.description || "No description available."
-                                : shortenText(retrievedBook.description || "")}
-                        </p>
-                        {retrievedBook.description && retrievedBook.description.length > maxLength && (
-                            <button
-                                className="view-more-btn"
-                                onClick={() => setDescriptionExpanded(!isDescriptionExpanded)}
-                                aria-expanded={isDescriptionExpanded}
+                    <h1 className="bookpage-title">{book.title}</h1>
+                    <h2 className="bookpage-author">
+                        {typeof book.author === 'object' ? book.author.name : book.author}
+                    </h2>
+                    
+                    {/* External links */}
+                    <div className="bookpage-external-links">
+                        {book.key && (
+                            <a 
+                                href={`https://openlibrary.org${book.key}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="national-library-link"
                             >
-                                {isDescriptionExpanded ? "View less" : "View more"}
+                                <span className="link-icon">📚</span>
+                                View on Open Library
+                            </a>
+                        )}
+                    </div>
+                    
+                    {/* Description section with expand/collapse functionality */}
+                    <div className="description-container">
+                        <div className={descriptionClass}>
+                            {book.description || "No description available for this book."}
+                        </div>
+                        {book.description && book.description.length > 300 && (
+                            <button 
+                                className="view-more-btn"
+                                onClick={toggleDescription}
+                            >
+                                {showFullDescription ? "View Less" : "View More"}
                             </button>
                         )}
                     </div>
-                    <p className="bookpage-author">{typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}</p>
                 </div>
             </div>
-
-            <div className="bookpage-external-links">
-                {isbn ? (
-                    <a 
-                        href={`${test}${isbn}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="national-library-link"
-                    >
-                        <span className="link-icon">📚</span>
-                        Search National Library
-                    </a>
-                ) : (
-                    <p className="library-link-unavailable">ISBN not available</p>
-                )}
-            </div>
-
-            {/* Use BookList for author's other works */}
-            {retrievedBook.author_key && (
-                <div className="author-other-books">
-                    <Booklist 
-                        title={`Books by ${typeof retrievedBook.author === 'object' ? retrievedBook.author.name : retrievedBook.author}`}
-                        apiUrl="http://127.0.0.1:8000/api/books_by_author/"
-                        params={{ key: retrievedBook.author_key }}
-                        booksToShow={5}
-                    />
-                </div>
-            )}
-
+            
+            {/* Review submission form */}
             <div className="bookpage-review">
                 <h3>Write a Review</h3>
-
-                {/* Display success or error messages */}
-                {successMessage && <div className="review-success-message">{successMessage}</div>}
-                {errorMessage && <div className="review-error-message">{errorMessage}</div>}
-
-                <textarea
-                    className="bookpage-review-input"
-                    placeholder="Write your review here..."
-                    value={review}
-                    onChange={handleReviewChange}
-                />
-                <StarRating rating={bookRating} setRating={setRating} />
-                <button
-                    className="bookpage-review-submit"
-                    onClick={handleReviewSubmit}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
-                </button>
+                
+                <form onSubmit={handleReviewSubmit}>
+                    <div className="star-rating">
+                        <label>Your Rating:</label>
+                        <div className="stars">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                    key={star}
+                                    className={`star ${star <= userRating ? 'filled' : ''}`}
+                                    onClick={() => handleRatingClick(star)}
+                                >
+                                    ★
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <textarea
+                        className="bookpage-review-input"
+                        placeholder="Share your thoughts about this book..."
+                        value={userReview}
+                        onChange={(e) => setUserReview(e.target.value)}
+                    />
+                    
+                    <button type="submit" className="bookpage-review-submit">
+                        Submit Review
+                    </button>
+                </form>
             </div>
-
+            
+            {/* Reviews section */}
             <div className="bookpage-reviews">
-                <h3>Reviews:</h3>
-                {reviews.length === 0 ? (
-                    <p>No reviews yet. Be the first to add one!</p>
-                ) : (
+                <h3>Reviews</h3>
+                
+                {reviewsLoading ? (
+                    <div className="loading-reviews">Loading reviews...</div>
+                ) : reviews.length > 0 ? (
                     reviews.map((review, index) => (
                         <div key={index} className="bookpage-review-item">
-                            <div className="review-header">
-                                <p className="review-username">
-                                    <strong>{review.username || "Anonymous"}</strong>
-                                </p>
-                                <p className="review-rating">
-                                    <strong>Rating:</strong> {review.rating}/5
-                                </p>
+                            <div className="bookpage-review-rating">
+                                <strong>{review.username}</strong>
+                                <div className="stars">
+                                    {[...Array(5)].map((_, i) => (
+                                        <span
+                                            key={i}
+                                            className={`star ${i < review.rating ? 'filled' : ''}`}
+                                        >
+                                            ★
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                            <p className="review-text">{review.text}</p>
-                            <p className="review-date">
-                                <em>Posted on: {new Date(review.creation_date).toLocaleString()}</em>
-                            </p>
+                            <p>{review.text || "(No review text provided)"}</p>
+                            <em>{new Date(review.created_at).toLocaleDateString()}</em>
                         </div>
                     ))
+                ) : (
+                    <p>No reviews yet. Be the first to review this book!</p>
                 )}
             </div>
         </div>

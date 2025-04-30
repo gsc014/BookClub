@@ -1,0 +1,151 @@
+.sidebar-widget {
+    background: var(--bg-light, #fff);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.widget-title {
+    margin: 0 0 15px;
+    font-size: 1.2rem;
+    color: var(--text-color, #333);
+    border-bottom: 1px solid var(--border-color, #eee);
+    padding-bottom: 8px;
+}
+
+.widget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.widget-loading,
+.widget-error,
+.widget-empty {
+    text-align: center;
+    padding: 12px 0;
+    color: var(--text-secondary, #666);
+    font-size: 0.9rem;
+}
+
+/* Most Liked Books styling */
+.liked-book-card {
+    position: relative;
+}
+
+.like-count {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.heart-icon {
+    font-size: 0.9rem;
+}
+
+.like-number {
+    font-weight: bold;
+}
+
+/* Most Active Users styling */
+.active-user-card {
+    background: var(--bg-card, #f9f9f9);
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid var(--border-color, #eee);
+}
+
+.user-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.username {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color, #333);
+}
+
+.review-count {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #666);
+}
+
+.latest-activity {
+    font-size: 0.8rem;
+    background-color: var(--bg-light, #fff);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 6px;
+}
+
+.latest-activity small {
+    color: var(--text-secondary, #666);
+    display: block;
+    margin-bottom: 3px;
+}
+
+.activity-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.activity-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.book-title {
+    font-weight: 600;
+    color: var(--text-color, #333);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.rating-date {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+}
+
+.rating {
+    color: var(--rating-color, #f5b400);
+    font-weight: bold;
+}
+
+.activity-date {
+    font-size: 0.75rem;
+    color: var(--text-light, #999);
+}
