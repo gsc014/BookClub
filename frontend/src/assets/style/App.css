@@ -68,6 +68,15 @@
     /* top: 140px; Adjust based on your header height + some spacing */
 }
 
+.right-side-content{
+    width: 250px; 
+    flex-shrink: 0;
+    position: absolute; /* Take it out of the normal flow */
+    /* right: max(20px, calc((100% - 1200px) / 2 + 20px)); Position it to the right edge of the container */
+    left: 60px; /* Adjust this value to position it correctly */
+    top: 35%; /* Position it below the header */
+    /* top: 140px; Adjust based on your header height + some spacing */
+}
 /* Responsive design */
 @media (max-width: 1200px) {
     .side-content {

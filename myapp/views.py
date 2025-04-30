@@ -982,3 +982,106 @@ def highest_rated_books(request):
     except Exception as e:
         print(f"Error fetching highest rated books: {str(e)}")
         return Response({"error": "Failed to retrieve highest rated books"}, status=500)
+    
+
+@api_view(['GET']) 
+def most_liked_books(request):
+    try:
+        # Get parameters
+        num_books = min(int(request.GET.get('num', 5)), 20)  # Limit to max 20 books
+        
+        # Find all lists named "Liked Books"
+        liked_lists = UserBookList.objects.filter(name="Liked Books")
+        
+        # Count occurrences of each book_id across all liked lists
+        book_counts = {}
+        for liked_list in liked_lists:
+            for book_id in liked_list.book_ids:
+                book_counts[book_id] = book_counts.get(book_id, 0) + 1
+        
+        # Sort book_ids by count (most liked first)
+        sorted_book_ids = sorted(book_counts.keys(), key=lambda x: book_counts[x], reverse=True)[:num_books]
+        
+        # Get book details for the most liked books
+        books_data = []
+        for book_id in sorted_book_ids:
+            try:
+                book = Books.objects.get(id=book_id)
+                
+                try:
+                    author = Author.objects.get(key=book.author).name
+                except Author.DoesNotExist:
+                    author = book.author
+                
+                books_data.append({
+                    "id": book.id,
+                    "key": book.key,
+                    "title": book.title,
+                    "author": author,
+                    "cover": book.cover,
+                    "likes_count": book_counts[book_id]  # Include the number of likes
+                })
+            except Books.DoesNotExist:
+                continue
+        
+        return Response(books_data)
+    
+    except Exception as e:
+        print(f"Error fetching most liked books: {str(e)}")
+        return Response({"error": "Failed to retrieve most liked books"}, status=500)
+
+
+@api_view(['GET'])
+def most_active_users(request):
+    try:
+        # Get parameters
+        num_users = min(int(request.GET.get('num', 5)), 20)  # Limit to max 20 users
+        
+        # Use raw SQL for better performance with aggregation
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT u.id, u.username, COUNT(r.id) as review_count
+                FROM auth_user u
+                INNER JOIN myapp_review r ON u.id = r.user_id
+                GROUP BY u.id, u.username
+                ORDER BY review_count DESC
+                LIMIT %s
+            """, [num_users])
+            
+            users_data = []
+            for row in cursor.fetchall():
+                user_id, username, review_count = row
+                
+                # Get user info if available
+                try:
+                    user_info = UserInfo.objects.get(user_id=user_id)
+                    bio = user_info.bio or "No bio available"
+                except UserInfo.DoesNotExist:
+                    bio = "No bio available"
+                
+                # Get user's most recent review
+                try:
+                    latest_review = Review.objects.filter(user_id=user_id).order_by('-created_at')[0]
+                    latest_book = Books.objects.get(id=latest_review.book_id)
+                    latest_activity = {
+                        "book_title": latest_book.title,
+                        "book_id": latest_book.id,
+                        "rating": latest_review.rating,
+                        "date": latest_review.created_at
+                    }
+                except (IndexError, Books.DoesNotExist):
+                    latest_activity = None
+                
+                users_data.append({
+                    "id": user_id,
+                    "username": username,
+                    "review_count": review_count,
+                    "bio": bio,
+                    "latest_activity": latest_activity
+                })
+        
+        return Response(users_data)
+    
+    except Exception as e:
+        print(f"Error fetching most active users: {str(e)}")
+        return Response({"error": "Failed to retrieve most active users"}, status=500)
