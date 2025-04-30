@@ -1,54 +1,30 @@
 .top-rated-container {
-<<<<<<< HEAD
-    background: var(--bg-light);
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-    width: 100%;
-    max-width: 300px;
-=======
     background: var(--bg-light, #fff);
     border-radius: 8px;
     padding: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-bottom: 20px;
     width: 100%;
->>>>>>> fee2aadaecde27b3c623d583582ab601eafe53fd
 }
 
 .top-rated-title {
     margin: 0 0 15px;
     font-size: 1.2rem;
-<<<<<<< HEAD
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
-=======
     color: var(--text-color, #333);
     border-bottom: 1px solid var(--border-color, #eee);
->>>>>>> fee2aadaecde27b3c623d583582ab601eafe53fd
     padding-bottom: 8px;
 }
 
 .top-rated-list {
     display: flex;
     flex-direction: column;
-<<<<<<< HEAD
-    gap: 10px;
-=======
     gap: 12px;
->>>>>>> fee2aadaecde27b3c623d583582ab601eafe53fd
 }
 
 .top-rated-loading,
 .top-rated-error,
 .top-rated-empty {
     text-align: center;
-<<<<<<< HEAD
-    padding: 15px;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-=======
     padding: 12px 0;
     color: var(--text-secondary, #666);
     font-size: 0.9rem;
@@ -84,5 +60,4 @@
 .rating-count {
     color: var(--text-secondary, #666);
     font-size: 0.75rem;
->>>>>>> fee2aadaecde27b3c623d583582ab601eafe53fd
 }
