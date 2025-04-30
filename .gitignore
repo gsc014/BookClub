@@ -15,6 +15,7 @@ dist-ssr
 
 *.db
 open_lib.db
+db.sqlite3
 
 .coverage
 
