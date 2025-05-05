@@ -76,24 +76,24 @@ const Bookpage = () => {
 
     // Fetch reviews for the book
     useEffect(() => {
-        if (!id) return;
-        
-        const fetchReviews = async () => {
-            setReviewsLoading(true);
-            try {
-                console.log(`Fetching reviews for book ID: ${id}`);
-                const response = await axios.get(`http://127.0.0.1:8000/api/reviews/${id}/`);
-                console.log("Reviews received:", response.data);
-                setReviews(response.data);
-            } catch (err) {
-                console.error("Error fetching reviews:", err);
-            } finally {
-                setReviewsLoading(false);
-            }
-        };
-        
         fetchReviews();
     }, [id]);
+
+    const fetchReviews = async () => {
+        if (!id) return;
+        
+        setReviewsLoading(true);
+        try {
+            console.log(`Fetching reviews for book ID: ${id}`);
+            const response = await axios.get(`http://127.0.0.1:8000/api/reviews/${id}/`);
+            console.log("Reviews received:", response.data);
+            setReviews(response.data);
+        } catch (err) {
+            console.error("Error fetching reviews:", err);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
 
     // Toggle description view
     const toggleDescription = () => {
@@ -133,8 +133,9 @@ const Bookpage = () => {
         }
 
         try {
+            // Changed to use the correct endpoint from your URLs
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/reviews/${id}/`,
+                `http://127.0.0.1:8000/api/reviewtest/${id}/`,
                 {
                     rating: userRating,
                     text: userReview
@@ -147,14 +148,31 @@ const Bookpage = () => {
                 }
             );
 
-            // Add the new review to the reviews list
-            setReviews([response.data, ...reviews]);
+            console.log("Review response:", response.data);
+            
+            // Since the backend only returns a success message and not the review object,
+            // we need to create the review object ourselves
+            const username = localStorage.getItem('username');
+            const newReview = {
+                rating: userRating,
+                text: userReview,
+                username: username || "You", // Fallback if username isn't stored
+                created_at: new Date().toISOString(),
+                book_id: parseInt(id)
+            };
+            
+            // Add the new review to the beginning of the reviews list
+            setReviews([newReview, ...reviews]);
             
             // Reset form
             setUserReview('');
             setUserRating(0);
             
-            alert("Review submitted successfully!");
+            // Refresh reviews from server to get the complete data
+            fetchReviews();
+            
+            // alert("Review submitted successfully!");
+            
         } catch (error) {
             console.error("Error submitting review:", error);
             alert("Failed to submit review. Please try again.");
@@ -286,7 +304,7 @@ const Bookpage = () => {
                                 </div>
                             </div>
                             <p>{review.text || "(No review text provided)"}</p>
-                            <em>{new Date(review.created_at).toLocaleDateString()}</em>
+                            <em>{new Date(review.creation_date).toLocaleDateString()}</em>
                         </div>
                     ))
                 ) : (
