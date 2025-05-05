@@ -22,6 +22,24 @@ const Bookpage = () => {
     const [userRating, setUserRating] = useState(0);
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [descriptionClass, setDescriptionClass] = useState('bookpage-description truncated');
+    const [isbn, setIsbn] = useState('');
+
+    const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
+
+    const fetchIsbn = () => {
+        if (!book || !book.key) return;
+        
+        console.log(`Fetching ISBN for book key: ${book.key}`);
+        axios.get(`http://127.0.0.1:8000/api/isbn/${book.key}`)
+            .then(response => {
+                console.log("ISBN received:", response.data);
+                setIsbn(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching ISBN:', error);
+                // Don't show an error to the user, just log it
+            });
+    };
 
     // Fetch book data if not provided via state
     useEffect(() => {
@@ -48,6 +66,13 @@ const Bookpage = () => {
 
         fetchBookData();
     }, [id, stateBook]);
+
+    // Fetch ISBN when book data is available
+    useEffect(() => {
+        if (book && book.key) {
+            fetchIsbn();
+        }
+    }, [book]);
 
     // Fetch reviews for the book
     useEffect(() => {
@@ -173,16 +198,18 @@ const Bookpage = () => {
                     
                     {/* External links */}
                     <div className="bookpage-external-links">
-                        {book.key && (
+                        {isbn ? (
                             <a 
-                                href={`https://openlibrary.org${book.key}`} 
+                                href={`${test}${isbn}`}
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="national-library-link"
                             >
                                 <span className="link-icon">📚</span>
-                                View on Open Library
+                                View on National Library
                             </a>
+                        ) : (
+                            <span className="no-isbn">ISBN not available</span>
                         )}
                     </div>
                     
