@@ -5,7 +5,7 @@ import Bookcard from './bookcard';
 import './style/bookcard.css';
 import './style/searchresults.css';
 
-const SearchResults = ({ results, pagination, query }) => {
+const SearchResults = () => {
     const location = useLocation();
     // Get results from location state
     const initialResults = location.state?.initialResults || [];

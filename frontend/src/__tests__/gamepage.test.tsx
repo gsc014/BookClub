@@ -24,6 +24,8 @@ const mockSecondSetOfBooksUnshuffled = [ // Keep an unshuffled reference
     { id: '5', title: 'Wrong Book 3', description: 'Desc 5', is_correct: false },
     { id: '6', title: 'Wrong Book 4', description: 'Desc 6', is_correct: false },
 ];
+const mockMinimalBookData = [{ id: '1', title: 'Any Book', description: 'Any Desc', is_correct: true }];
+
 
 const initialHighScore = 5;
 const mockAuthToken = 'game-test-token';
@@ -36,6 +38,8 @@ describe('GamePage Component', () => {
     // Store original methods
     const originalLocalStorage = { ...window.localStorage };
     let mathRandomSpy: MockInstance;
+    let consoleErrorSpy: MockInstance;
+
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -50,6 +54,7 @@ describe('GamePage Component', () => {
         // Mock Math.random - Return different values to simulate *some* shuffling
         // but still keep it somewhat predictable if needed. 0.1 forces a specific order.
         mathRandomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.1);
+        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         // Default Mocks for API calls
         // Use copies of the *unshuffled* data. The component will shuffle them.
@@ -81,12 +86,76 @@ describe('GamePage Component', () => {
         Object.keys(originalLocalStorage).forEach(key => { window.localStorage.setItem(key, originalLocalStorage[key]); });
     });
 
+    it('logs error if fetching high score fails', async () => {
+        const highScoreError = new Error('High score API down');
+        // Mock only the high score fetch to fail
+        mockedAxios.get.mockImplementation(async (url) => {
+            if (url === highScoreUrl) {
+                throw highScoreError; // Reject high score fetch
+            }
+            if (url === randomBookUrl) {
+                // Use minimal book data just to allow rendering
+                return { data: JSON.parse(JSON.stringify(mockMinimalBookData)) }; // Books succeed
+            }
+            throw new Error(`Unhandled GET request: ${url}`);
+        });
+
+        render(<GamePage />);
+
+        // Wait for the component to attempt fetching and handle the error
+        await waitFor(() => {
+            // Verify console.error was called for the high score fetch
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching high score:', highScoreError);
+        });
+
+        // Check API call was made
+        await waitFor(() => {
+           expect(mockedAxios.get).toHaveBeenCalledWith(highScoreUrl, apiHeaders);
+        });
+
+         // Check that the book fetch was also attempted (it should still run)
+        expect(mockedAxios.get).toHaveBeenCalledWith(randomBookUrl);
+    });
+
+    it('logs error if updating high score fails', async () => {
+        const lowInitialHighScore = 0;
+        const updateError = new Error('Update failed');
+        // Mock GETs to succeed with low initial score
+        mockedAxios.get.mockImplementation(async (url) => {
+            if (url === highScoreUrl) return { data: { high_score: lowInitialHighScore } };
+            if (url === randomBookUrl) return { data: JSON.parse(JSON.stringify(mockInitialBooksUnshuffled)) };
+            throw new Error(`Unhandled GET request: ${url}`);
+        });
+        // Mock POST to fail
+        mockedAxios.post.mockRejectedValueOnce(updateError);
+
+        render(<GamePage />);
+        // Wait for initial load (high score and books)
+        await waitFor(() => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument());
+        await screen.findByText(`High Score: ${lowInitialHighScore}`); // Ensure HS loaded
+
+        // Find the correct button based on the initially fetched books
+        const correctButton = await screen.findByRole('button', { name: mockInitialBooksUnshuffled.find(b => b.is_correct)!.title });
+        fireEvent.click(correctButton);
+
+        // Wait for the POST attempt and the error handling
+        await waitFor(() => {
+            // Ensure post was called before checking console error
+            expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+            expect(mockedAxios.post).toHaveBeenCalledWith(highScoreUrl, { high_score: 1 }, apiHeaders);
+            // Verify console.error was called for the update failure
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error updating high score:', updateError);
+        });
+    });
+
+
+
     it('renders loading state initially and fetches data', async () => {
         // Make initial book fetch take longer
         mockedAxios.get.mockImplementation(async (url) => {
-             if (url === highScoreUrl) return { data: { high_score: initialHighScore } };
-             if (url === randomBookUrl) return new Promise(() => {}); // Pending promise
-             throw new Error(`Unhandled GET request: ${url}`);
+            if (url === highScoreUrl) return { data: { high_score: initialHighScore } };
+            if (url === randomBookUrl) return new Promise(() => { }); // Pending promise
+            throw new Error(`Unhandled GET request: ${url}`);
         });
 
         render(<GamePage />);
@@ -96,7 +165,7 @@ describe('GamePage Component', () => {
             expect(mockedAxios.get).toHaveBeenCalledWith(highScoreUrl, apiHeaders);
             expect(mockedAxios.get).toHaveBeenCalledWith(randomBookUrl);
         });
-         expect(mockedAxios.get).toHaveBeenCalledTimes(2); // Ensure exactly 2 calls were made initially
+        expect(mockedAxios.get).toHaveBeenCalledTimes(2); // Ensure exactly 2 calls were made initially
     });
 
     it('renders game elements after successful data fetch', async () => {
@@ -123,11 +192,11 @@ describe('GamePage Component', () => {
     it('handles error during book fetch', async () => {
         const errorMsg = 'Failed to fetch books. Please try again later.';
         mockedAxios.get.mockImplementation(async (url) => {
-             if (url === highScoreUrl) return { data: { high_score: initialHighScore } };
-             if (url === randomBookUrl) throw new Error('Network Error');
-             throw new Error(`Unhandled GET request: ${url}`);
+            if (url === highScoreUrl) return { data: { high_score: initialHighScore } };
+            if (url === randomBookUrl) throw new Error('Network Error');
+            throw new Error(`Unhandled GET request: ${url}`);
         });
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
         render(<GamePage />);
 
@@ -165,8 +234,8 @@ describe('GamePage Component', () => {
         // Wait for the *new* book description and buttons to appear
         const correctBookSecond = mockSecondSetOfBooksUnshuffled.find(b => b.is_correct);
         await waitFor(() => {
-             expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-             expect(screen.getByText(correctBookSecond!.description)).toBeInTheDocument();
+            expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+            expect(screen.getByText(correctBookSecond!.description)).toBeInTheDocument();
         });
         expect(screen.getByRole('button', { name: mockSecondSetOfBooksUnshuffled[0].title })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: mockSecondSetOfBooksUnshuffled[1].title })).toBeInTheDocument();
@@ -221,9 +290,9 @@ describe('GamePage Component', () => {
         const lowInitialHighScore = 0;
         // Mock high score fetch to return 0
         mockedAxios.get.mockImplementation(async (url) => {
-             if (url === highScoreUrl) return { data: { high_score: lowInitialHighScore } };
-             if (url === randomBookUrl) return { data: JSON.parse(JSON.stringify(mockInitialBooksUnshuffled)) };
-             throw new Error(`Unhandled GET request: ${url}`);
+            if (url === highScoreUrl) return { data: { high_score: lowInitialHighScore } };
+            if (url === randomBookUrl) return { data: JSON.parse(JSON.stringify(mockInitialBooksUnshuffled)) };
+            throw new Error(`Unhandled GET request: ${url}`);
         });
 
         render(<GamePage />);
@@ -249,10 +318,10 @@ describe('GamePage Component', () => {
                 apiHeaders
             );
         });
-         expect(mockedAxios.get).toHaveBeenCalledTimes(3); // HS + Books1 + Books2
+        expect(mockedAxios.get).toHaveBeenCalledTimes(3); // HS + Books1 + Books2
     });
 
-     it('does NOT update high score state or call API when streak does not exceed high score', async () => {
+    it('does NOT update high score state or call API when streak does not exceed high score', async () => {
         // Uses default high score of 5 from beforeEach
 
         render(<GamePage />);
@@ -273,6 +342,6 @@ describe('GamePage Component', () => {
 
         // Ensure high score POST API was NOT called
         expect(mockedAxios.post).not.toHaveBeenCalled();
-         expect(mockedAxios.get).toHaveBeenCalledTimes(3); // HS + Books1 + Books2
-     });
+        expect(mockedAxios.get).toHaveBeenCalledTimes(3); // HS + Books1 + Books2
+    });
 });

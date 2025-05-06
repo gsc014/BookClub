@@ -183,6 +183,12 @@
 .confirm-delete-btn:hover {
     background-color: #aa0000;
 }
+.form-error-message {
+    color: red;
+    display: block;
+    margin-top: 8px;
+}
+
 
 .form-error {
     background-color: #fff0f0;

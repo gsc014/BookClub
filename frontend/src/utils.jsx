@@ -80,15 +80,40 @@ export function displayProfile() {
 }
 
 // Modified handleLogin to support profile redirection
+// export function handleLogin() {
+//     if (loggedIn) {
+//         // Instead of showing the profile form, redirect to profile page
+//         const username = getCurrentUsername();
+//         if (username) {
+//             window.location.href = `/profile/${username}`;
+//         }
+//     } else {
+//         if (hide) {
+//             closeTabs();
+//         } else {
+//             showLogInTab();
+//         }
+//     }
+// }
+// Refactored handleLogin in utils.jsx
 export function handleLogin() {
-    if (loggedIn) {
-        // Instead of showing the profile form, redirect to profile page
+    // Directly check auth status using the reliable function
+    if (isLoggedIn()) {
         const username = getCurrentUsername();
         if (username) {
             window.location.href = `/profile/${username}`;
+        } else {
+             console.error("Logged in but cannot get username for redirection.");
+             // Optional: Fallback behavior like showing login again or an error
+             // showLogInTab();
         }
     } else {
-        if (hide) {
+        // Check actual DOM state instead of relying on the 'hide' variable
+        const loginForm = document.getElementById("login-form");
+        // You might need to check other forms too if they define "shown" state
+        const isTabVisible = loginForm && loginForm.style.opacity === '1';
+
+        if (isTabVisible) {
             closeTabs();
         } else {
             showLogInTab();
@@ -229,13 +254,14 @@ export function isLoggedIn() {
     const token = localStorage.getItem('authToken');
     const user = localStorage.getItem('user');
     
-    if (token && user) {
-        // Update the loggedIn variable to match our storage state
-        loggedIn = true;
-        return true;
-    }
+    // if (token && user) {
+    //     // Update the loggedIn variable to match our storage state
+    //     loggedIn = true;
+    //     return true;
+    // }
     
-    return loggedIn;  // This will be false unless specifically set elsewhere
+    // return loggedIn;  // This will be false unless specifically set elsewhere
+    return !!(token && user)
 }
 
 // Function to get current username

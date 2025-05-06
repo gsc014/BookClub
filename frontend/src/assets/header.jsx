@@ -62,18 +62,21 @@ const Header = () => {
                         id="Game"
                         className="icon jump"
                         onClick={goToGame}
+                        alt="Game Page"
                     />
                 <img
                     src={userImage}
                     id="User"
                     className="icon jump"
                     onClick={handleLogin}
+                    alt="User Login/Profile"
                 />
                 <img
                     src={settingsIcon}
                     id="Settings"
                     className="icon spin"
                     onClick={goToSettings}
+                    alt="Settings Page"
                 />
             </div>
         </header>

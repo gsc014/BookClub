@@ -1,69 +1,381 @@
+// Remove the triple-slash directive if tsconfig.json is configured
+// /// <reference types="vitest/globals" />
+
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+// Import vi explicitly if needed, though globals should make it available
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import SearchResults from '../assets/searchresults.jsx'; // adjust path if needed
+import axios from 'axios';
+import { useLocation } from 'react-router-dom';
+// Adjust paths based on your actual file structure
+import SearchResults from '../assets/searchresults'; // Assuming it's in assets
+import Bookcard from '../assets/bookcard'; // Assuming it's in assets
 
-// Mock the Bookcard component because you just want to test SearchResults
-vi.mock('../assets/bookcard.jsx', () => ({
-    default: ({ book }: { book: { title: string } }) => <div data-testid="bookcard">{book.title}</div>,
-  }));
-  
+// --- Mocks ---
 
-describe('SearchResults', () => {
-  const mockBooks = Array.from({ length: 15 }, (_, i) => ({
-    id: i + 1,
-    title: `Book ${i + 1}`,
-  }));
+// Mock axios - The module mock itself
+vi.mock('axios');
+// Get a typed reference to the mocked module
+// Use vi.mocked() for typed access - Requires tsconfig setup
+const mockedAxios = vi.mocked(axios, true); // Pass `true` for deep mocks if needed, usually not for axios top-level methods
 
-  it('renders search results title', () => {
-    render(<SearchResults results={mockBooks} />);
-    expect(screen.getByText(/Search Results/i)).toBeInTheDocument();
-  });
+// Mock react-router-dom's useLocation hook
+vi.mock('react-router-dom', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('react-router-dom')>();
+    return {
+        ...actual,
+        useLocation: vi.fn(), // Mock useLocation specifically
+    };
+});
+// Get a typed reference to the mocked hook
+const mockedUseLocation = vi.mocked(useLocation);
 
-  it('renders initial 10 results per page', () => {
-    render(<SearchResults results={mockBooks} />);
-    const bookcards = screen.getAllByTestId('bookcard');
-    expect(bookcards.length).toBe(10);
-  });
+// Mock the Bookcard component
+// Adjust the path here if Bookcard is elsewhere, e.g., '../components/bookcard'
+vi.mock('../assets/bookcard', () => ({
+    default: vi.fn(({ book }) => (
+        <div data-testid={`bookcard-${book.id}`}>
+            <h3>{book.title}</h3>
+            <p>{book.author}</p>
+        </div>
+    ))
+}));
+// Get a typed reference to the mocked component
+const MockedBookcard = vi.mocked(Bookcard);
 
-  it('changes results per page', () => {
-    render(<SearchResults results={mockBooks} />);
+// --- Test Suite ---
 
-    const select = screen.getByLabelText(/Results per page/i);
-    fireEvent.change(select, { target: { value: '5' } });
+describe('SearchResults Component', () => {
 
-    const bookcards = screen.getAllByTestId('bookcard');
-    expect(bookcards.length).toBe(5);
-  });
+    // Default mock location state
+    const mockLocationStateBase: Omit<ReturnType<typeof useLocation>, 'state'> = { // Use Omit for base type
+        pathname: '/search',
+        search: '',
+        hash: '',
+        key: 'defaultKey',
+    };
 
-  it('navigates to next and previous pages', () => {
-    render(<SearchResults results={mockBooks} />);
+    // Helper to set up the mock location for a test
+    const setupMockLocation = (state: any) => {
+        mockedUseLocation.mockReturnValue({
+            ...mockLocationStateBase,
+            state: state,
+        });
+    };
 
-    const nextButton = screen.getByText(/Next/i);
-    fireEvent.click(nextButton);
+    // Reset mocks and DOM before each test
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Reset axios mocks specifically for safety
+        mockedAxios.get.mockReset();
+        mockedAxios.post.mockReset(); // If you used post anywhere
+        // Default successful response for GET
+        mockedAxios.get.mockResolvedValue({ data: { results: [], pagination: { total_books: 0, total_pages: 1 } } });
+    });
 
-    expect(screen.getByText(/Page 2 of 2/i)).toBeInTheDocument();
+    afterEach(() => {
+        cleanup(); // Unmount components rendered with `render`
+    });
 
-    const prevButton = screen.getByText(/Previous/i);
-    fireEvent.click(prevButton);
+    // --- Test Cases ---
 
-    expect(screen.getByText(/Page 1 of 2/i)).toBeInTheDocument();
-  });
+    it('renders loading state initially when filter is provided', () => {
+        setupMockLocation({ initialFilter: 'Fantasy', isSearchQuery: false });
+        render(<SearchResults />);
+        expect(screen.getByText(/Loading.../i)).toBeInTheDocument();
+    });
 
-  it('disables Previous button on first page', () => {
-    render(<SearchResults results={mockBooks} />);
-    const prevButton = screen.getByText(/Previous/i);
-    expect(prevButton).toBeDisabled();
-  });
 
-  it('disables Next button on last page', () => {
-    render(<SearchResults results={mockBooks} />);
-    const nextButton = screen.getByText(/Next/i);
+        it('displays initial results and filter from location state immediately, then updates from API', async () => { // Updated test name
+        const locationStateResults = [
+            { id: 'loc1', title: 'State Book 1', author: 'State Author' },
+            { id: 'loc2', title: 'State Book 2', author: 'State Author' },
+        ];
+        const locationStateFilter = 'From State';
 
-    // Click Next to go to the last page
-    fireEvent.click(nextButton);
+        setupMockLocation({
+            initialResults: locationStateResults,
+            initialFilter: locationStateFilter,
+            isSearchQuery: true,
+        });
 
-    expect(nextButton).toBeDisabled();
-  });
+        // Mock the subsequent API fetch triggered by the other useEffect
+        const apiResults = [{id: 'api1', title: 'API Book'}];
+        mockedAxios.get.mockResolvedValueOnce({
+             data: { results: apiResults, pagination: { total_books: 1, total_pages: 1 } }
+        });
+
+        render(<SearchResults />);
+
+        // --- Assertions ---
+
+        // 1. Check heading immediately (uses initialFilter state set sync)
+        expect(screen.getByRole('heading', { name: /"From State" Search Results/i })).toBeInTheDocument();
+
+        // 2. Check that the initial books were rendered AT SOME POINT.
+        //    We can check the MockedBookcard call count which happens synchronously on first render.
+        //    NOTE: Checking for the elements themselves right now will fail because of loading state.
+        expect(MockedBookcard).toHaveBeenCalledTimes(locationStateResults.length);
+        expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: locationStateResults[0] }), {});
+        expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: locationStateResults[1] }), {});
+
+
+        // 3. *** FIX: Wait for the loading spinner (from the second effect) to disappear ***
+        await waitFor(() => {
+            expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
+        });
+
+        // 4. NOW check that the component eventually renders the books fetched from the API
+        expect(await screen.findByTestId('bookcard-api1')).toBeInTheDocument();
+        expect(screen.getByText(apiResults[0].title)).toBeInTheDocument(); // Check content within mock
+
+        // 5. Ensure initial books (from location.state) are gone after API fetch overrides state
+        expect(screen.queryByTestId(`bookcard-${locationStateResults[0].id}`)).not.toBeInTheDocument();
+        expect(screen.queryByTestId(`bookcard-${locationStateResults[1].id}`)).not.toBeInTheDocument();
+
+        // 6. Verify the API fetch was attempted by the second useEffect
+        expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+           expect.stringContaining('/api/search/'), // Or /api/filter/
+           expect.objectContaining({
+               params: expect.objectContaining({ q: locationStateFilter }) // Or filter:
+           })
+       );
+
+        // 7. Verify final count of Bookcard renders (initial + update)
+        // The mock might be called again during the re-render with API data
+         expect(MockedBookcard).toHaveBeenCalledTimes(locationStateResults.length + apiResults.length);
+
+    });
+    it('renders error and logs console error for unexpected API response format', async () => {
+        const filterTerm = 'Test Filter';
+        setupMockLocation({ initialFilter: filterTerm, isSearchQuery: false }); // Trigger filter fetch
+
+        // Mock API response with invalid format (missing 'results' array)
+        const invalidResponseData = { message: "Data found, but not in expected format" };
+        // const invalidResponseData = null; // Another possible invalid format
+        // const invalidResponseData = {}; // Another possible invalid format
+        mockedAxios.get.mockResolvedValueOnce({ data: invalidResponseData });
+
+        // Spy is set up in beforeEach
+        render(<SearchResults />);
+
+        // Wait for loading to disappear and the specific error message to appear
+        const expectedErrorMessage = "Invalid data format received from server";
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+        expect(await screen.findByText(expectedErrorMessage)).toBeInTheDocument();
+        expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
+
+        // Check that console.error was called with the specific message and the invalid data
+        await waitFor(() => {
+            expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                "Unexpected API response format:",
+                invalidResponseData // Check that the actual received data was logged
+            );
+        });
+
+        // Ensure no book cards were rendered
+        expect(MockedBookcard).not.toHaveBeenCalled();
+
+        // Verify the API call was made
+        expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+             expect.stringContaining('/api/filter/'), // Based on isSearchQuery: false
+             expect.objectContaining({
+                 params: expect.objectContaining({ filter: filterTerm })
+             })
+         );
+    });
+
+
+
+    it('renders error message if fetching fails', async () => {
+        const errorMessage = 'Network Error';
+        setupMockLocation({ initialFilter: 'Sci-Fi', isSearchQuery: false });
+        mockedAxios.get.mockRejectedValueOnce(new Error(errorMessage)); // Simulate fetch failure
+
+        render(<SearchResults />);
+
+        expect(await screen.findByText(/Failed to load books. Please try again./i)).toBeInTheDocument();
+    });
+
+    it('renders "No books found" message when API returns empty results', async () => {
+        setupMockLocation({ initialFilter: 'Obscure Genre', isSearchQuery: false });
+        mockedAxios.get.mockResolvedValueOnce({ data: { results: [], pagination: { total_books: 0, total_pages: 1 } } });
+
+        render(<SearchResults />);
+
+        expect(await screen.findByText(/No books found matching your criteria/i)).toBeInTheDocument();
+    });
+
+    it('fetches and renders books for a search query', async () => {
+        const searchTerm = 'Dune';
+        const mockSearchResults = [
+            { id: 1, title: 'Dune', author: 'Frank Herbert' },
+            { id: 2, title: 'Dune Messiah', author: 'Frank Herbert' },
+        ];
+        setupMockLocation({ initialFilter: searchTerm, isSearchQuery: true });
+        mockedAxios.get.mockResolvedValueOnce({
+            data: { results: mockSearchResults, pagination: { total_books: 2, total_pages: 1 } }
+        });
+
+        render(<SearchResults />);
+
+        expect(await screen.findByText('Dune')).toBeInTheDocument();
+        expect(screen.getByText('Dune Messiah')).toBeInTheDocument();
+        expect(screen.getByText(/"Dune" Search Results \(2\)/i)).toBeInTheDocument();
+
+        expect(MockedBookcard).toHaveBeenCalledTimes(2);
+        expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: mockSearchResults[0] }), {});
+        expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: mockSearchResults[1] }), {});
+
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+            'http://127.0.0.1:8000/api/search/',
+            expect.objectContaining({
+                params: { q: searchTerm, page: 1, per_page: 10 }
+            })
+        );
+    });
+
+    it('fetches and renders books for a filter query', async () => {
+        const filterTerm = 'Fantasy';
+        const mockFilterResults = [
+            { id: 3, title: 'The Hobbit', author: 'J.R.R. Tolkien' },
+        ];
+        setupMockLocation({ initialFilter: filterTerm, isSearchQuery: false });
+        mockedAxios.get.mockResolvedValueOnce({
+            data: { results: mockFilterResults, pagination: { total_books: 1, total_pages: 1 } }
+        });
+
+        render(<SearchResults />);
+
+        expect(await screen.findByText('The Hobbit')).toBeInTheDocument();
+        expect(screen.getByText(/"Fantasy" Search Results \(1\)/i)).toBeInTheDocument();
+
+        expect(MockedBookcard).toHaveBeenCalledTimes(1);
+        expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: mockFilterResults[0] }), {});
+
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+            'http://127.0.0.1:8000/api/filter/',
+            expect.objectContaining({
+                params: { filter: filterTerm, page: 1, per_page: 10 }
+            })
+        );
+    });
+
+    it('renders pagination controls when totalPages > 1', async () => {
+        setupMockLocation({ initialFilter: 'History', isSearchQuery: false });
+        mockedAxios.get.mockResolvedValueOnce({
+            data: { results: [{id: 1, title: 'Book 1', author: 'Author 1'}], pagination: { total_books: 15, total_pages: 2 } }
+        });
+
+        render(<SearchResults />);
+
+        expect(await screen.findByText(/Page 1 of 2/i)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Previous/i })).toBeDisabled();
+        expect(screen.getByRole('button', { name: /Next/i })).toBeEnabled();
+    });
+
+    it('fetches next page when "Next" button is clicked', async () => {
+        const user = userEvent.setup();
+        const filterTerm = 'Travel';
+        setupMockLocation({ initialFilter: filterTerm, isSearchQuery: false });
+
+        mockedAxios.get.mockResolvedValueOnce({
+            data: { results: [{ id: 1, title: 'Book 1', author: 'A1'}], pagination: { total_books: 12, total_pages: 2 } }
+        });
+         mockedAxios.get.mockResolvedValueOnce({
+            data: { results: [{ id: 2, title: 'Book 2', author: 'A2'}], pagination: { total_books: 12, total_pages: 2 } }
+        });
+
+        render(<SearchResults />);
+
+        const nextButton = await screen.findByRole('button', { name: /Next/i });
+        expect(nextButton).toBeEnabled();
+        expect(screen.getByText(/Page 1 of 2/i)).toBeInTheDocument();
+
+        // Clear mock history from initial render fetch
+        mockedAxios.get.mockClear();
+
+        await user.click(nextButton);
+
+        expect(await screen.findByText(/Page 2 of 2/i)).toBeInTheDocument();
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+            'http://127.0.0.1:8000/api/filter/',
+            expect.objectContaining({
+                params: { filter: filterTerm, page: 2, per_page: 10 }
+            })
+        );
+         expect(screen.getByRole('button', { name: /Previous/i })).toBeEnabled();
+         expect(screen.getByRole('button', { name: /Next/i })).toBeDisabled();
+    });
+
+     it('fetches previous page when "Previous" button is clicked', async () => {
+         const user = userEvent.setup();
+         const filterTerm = 'Cooking';
+         setupMockLocation({ initialFilter: filterTerm, isSearchQuery: false });
+
+         mockedAxios.get.mockResolvedValueOnce({ data: { results: [{id: 1}], pagination: { total_books: 15, total_pages: 2 } } }); // Page 1
+         mockedAxios.get.mockResolvedValueOnce({ data: { results: [{id: 2}], pagination: { total_books: 15, total_pages: 2 } } }); // Page 2
+         mockedAxios.get.mockResolvedValueOnce({ data: { results: [{id: 3}], pagination: { total_books: 15, total_pages: 2 } } }); // Page 1 (after prev)
+
+         render(<SearchResults />);
+
+         const nextButton = await screen.findByRole('button', { name: /Next/i });
+         await user.click(nextButton);
+         const prevButton = await screen.findByRole('button', { name: /Previous/i });
+         expect(await screen.findByText(/Page 2 of 2/i)).toBeInTheDocument();
+
+          mockedAxios.get.mockClear();
+
+         await user.click(prevButton);
+
+         expect(await screen.findByText(/Page 1 of 2/i)).toBeInTheDocument();
+         expect(mockedAxios.get).toHaveBeenCalledWith(
+             'http://127.0.0.1:8000/api/filter/',
+             expect.objectContaining({
+                 params: { filter: filterTerm, page: 1, per_page: 10 }
+             })
+         );
+          expect(screen.getByRole('button', { name: /Previous/i })).toBeDisabled();
+          expect(screen.getByRole('button', { name: /Next/i })).toBeEnabled();
+     });
+
+
+    it('fetches new results when "Results per page" is changed', async () => {
+        const user = userEvent.setup();
+        const filterTerm = 'Art';
+        setupMockLocation({ initialFilter: filterTerm, isSearchQuery: false });
+
+        mockedAxios.get.mockResolvedValueOnce({
+            data: { results: [...Array(10).fill(0).map((_,i)=>({id: i, title: `Art ${i}`, author: 'A'}))], pagination: { total_books: 30, total_pages: 3 } }
+        });
+        mockedAxios.get.mockResolvedValueOnce({
+             data: { results: [...Array(20).fill(0).map((_,i)=>({id: i+100, title: `Art ${i+100}`, author: 'A'}))], pagination: { total_books: 30, total_pages: 2 } }
+        });
+
+        render(<SearchResults />);
+
+        const select = await screen.findByLabelText(/Results per page:/i);
+        expect(await screen.findByText(/Page 1 of 3/i)).toBeInTheDocument();
+
+        mockedAxios.get.mockClear();
+
+        await user.selectOptions(select, '20');
+
+        await waitFor(() => {
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                'http://127.0.0.1:8000/api/filter/',
+                expect.objectContaining({
+                    params: { filter: filterTerm, page: 1, per_page: 20 }
+                })
+            );
+        });
+        expect(await screen.findByText(/Page 1 of 2/i)).toBeInTheDocument();
+    });
+
 });

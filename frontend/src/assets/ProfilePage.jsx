@@ -402,17 +402,7 @@ function ProfilePage() {
         );
     }
     
-    // Render no data state
-    if (!profileData) {
-        return (
-            <div className="profile-page error">
-                <h2>No Profile Data</h2>
-                <p>Could not retrieve profile information.</p>
-                <button onClick={() => navigate('/')}>Return to Home</button>
-            </div>
-        );
-    }
-
+    
     // Current user for permission checks
     const currentUser = getCurrentUsername();
     const isOwnProfile = currentUser === username;
@@ -438,7 +428,7 @@ function ProfilePage() {
                     </button>
 
                     {showResults && (
-                        <div className="profile-search-results">
+                        <div className="profile-search-results" data-testid="profile-search-results">
                             {isSearching ? (
                                 <div className="search-loading">Searching...</div>
                             ) : searchResults.length > 0 ? (
