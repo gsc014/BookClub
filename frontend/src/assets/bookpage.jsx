@@ -8,10 +8,10 @@ const Bookpage = () => {
     // Get the book ID from URL params and any state passed during navigation
     const { id } = useParams();
     const location = useLocation();
-    
+
     // Get book data from state if available
     const stateBook = location.state?.book || null;
-    
+
     // State variables
     const [book, setBook] = useState(stateBook);
     const [reviews, setReviews] = useState([]);
@@ -28,7 +28,7 @@ const Bookpage = () => {
 
     const fetchIsbn = () => {
         if (!book || !book.key) return;
-        
+
         console.log(`Fetching ISBN for book key: ${book.key}`);
         axios.get(`http://127.0.0.1:8000/api/isbn/${book.key}`)
             .then(response => {
@@ -47,7 +47,7 @@ const Bookpage = () => {
         if (!id || (stateBook && stateBook.id === parseInt(id))) {
             return;
         }
-        
+
         const fetchBookData = async () => {
             setLoading(true);
             try {
@@ -81,7 +81,7 @@ const Bookpage = () => {
 
     const fetchReviews = async () => {
         if (!id) return;
-        
+
         setReviewsLoading(true);
         try {
             console.log(`Fetching reviews for book ID: ${id}`);
@@ -96,6 +96,7 @@ const Bookpage = () => {
     };
 
     // Toggle description view
+
     const toggleDescription = () => {
         if (showFullDescription) {
             setDescriptionClass('bookpage-description animating-collapse');
@@ -112,6 +113,7 @@ const Bookpage = () => {
         }
     };
 
+
     // Handle rating selection
     const handleRatingClick = (rating) => {
         setUserRating(rating);
@@ -120,7 +122,7 @@ const Bookpage = () => {
     // Handle review submission
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!userRating) {
             alert("Please select a rating before submitting your review.");
             return;
@@ -149,7 +151,7 @@ const Bookpage = () => {
             );
 
             console.log("Review response:", response.data);
-            
+
             // Since the backend only returns a success message and not the review object,
             // we need to create the review object ourselves
             const username = localStorage.getItem('username');
@@ -160,24 +162,25 @@ const Bookpage = () => {
                 created_at: new Date().toISOString(),
                 book_id: parseInt(id)
             };
-            
+
             // Add the new review to the beginning of the reviews list
             setReviews([newReview, ...reviews]);
-            
+
             // Reset form
             setUserReview('');
             setUserRating(0);
-            
+
             // Refresh reviews from server to get the complete data
             fetchReviews();
-            
+
             // alert("Review submitted successfully!");
-            
+
         } catch (error) {
             console.error("Error submitting review:", error);
             alert("Failed to submit review. Please try again.");
         }
     };
+
 
     // Show loading state
     if (loading) {
@@ -201,25 +204,25 @@ const Bookpage = () => {
         <div className="bookpage">
             {/* Book Header Section */}
             <div className="bookpage-header">
-                <img 
+                <img
                     className="bookpage-cover"
                     src={`https://covers.openlibrary.org/b/id/${book.cover}-L.jpg`}
                     alt={`Cover of ${book.title}`}
                     onError={(e) => e.target.src = defaultCover}
                 />
-                
+
                 <div className="bookpage-info">
                     <h1 className="bookpage-title">{book.title}</h1>
                     <h2 className="bookpage-author">
                         {typeof book.author === 'object' ? book.author.name : book.author}
                     </h2>
-                    
+
                     {/* External links */}
                     <div className="bookpage-external-links">
                         {isbn ? (
-                            <a 
+                            <a
                                 href={`${test}${isbn}`}
-                                target="_blank" 
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="national-library-link"
                             >
@@ -230,14 +233,14 @@ const Bookpage = () => {
                             <span className="no-isbn">ISBN not available</span>
                         )}
                     </div>
-                    
+
                     {/* Description section with expand/collapse functionality */}
                     <div className="description-container">
-                        <div className={descriptionClass}>
+                        <div className={descriptionClass} data-testid="book-description">
                             {book.description || "No description available for this book."}
                         </div>
                         {book.description && book.description.length > 300 && (
-                            <button 
+                            <button
                                 className="view-more-btn"
                                 onClick={toggleDescription}
                             >
@@ -247,11 +250,11 @@ const Bookpage = () => {
                     </div>
                 </div>
             </div>
-            
+
             {/* Review submission form */}
             <div className="bookpage-review">
                 <h3>Write a Review</h3>
-                
+
                 <form onSubmit={handleReviewSubmit}>
                     <div className="star-rating">
                         <label>Your Rating:</label>
@@ -267,24 +270,24 @@ const Bookpage = () => {
                             ))}
                         </div>
                     </div>
-                    
+
                     <textarea
                         className="bookpage-review-input"
                         placeholder="Share your thoughts about this book..."
                         value={userReview}
                         onChange={(e) => setUserReview(e.target.value)}
                     />
-                    
+
                     <button type="submit" className="bookpage-review-submit">
                         Submit Review
                     </button>
                 </form>
             </div>
-            
+
             {/* Reviews section */}
             <div className="bookpage-reviews">
                 <h3>Reviews</h3>
-                
+
                 {reviewsLoading ? (
                     <div className="loading-reviews">Loading reviews...</div>
                 ) : reviews.length > 0 ? (
