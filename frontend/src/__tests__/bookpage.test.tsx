@@ -211,33 +211,6 @@ describe('Bookpage Component', () => {
             expect(mockedAxios.get).toHaveBeenCalledWith(bookApiUrl);
         });
 
-
-
-        // it('fetches and displays book details, reviews, and ISBN successfully', async () => {
-        //     // Default mocks in beforeEach handle success
-        //     renderWithRouter(<Bookpage />);
-
-        //     // Wait for book details
-        //     expect(await screen.findByRole('heading', { name: mockBookData.title })).toBeInTheDocument();
-        //     expect(screen.getByRole('heading', { name: mockBookData.author })).toBeInTheDocument();
-        //     expect(screen.getByAltText(`Cover of ${mockBookData.title}`)).toHaveAttribute('src', `https://covers.openlibrary.org/b/id/${mockBookData.cover}-L.jpg`);
-
-        //     // Wait for reviews
-        //     expect(await screen.findByText(mockReviewsData[0].text)).toBeInTheDocument();
-        //     expect(screen.getByText(mockReviewsData[1].text)).toBeInTheDocument();
-        //     expect(screen.queryByText(/Loading reviews.../i)).not.toBeInTheDocument();
-
-        //     // Wait for ISBN link
-        //     const isbnLink = await screen.findByRole('link', { name: /view on national library/i });
-        //     expect(isbnLink).toBeInTheDocument();
-        //     expect(isbnLink).toHaveAttribute('href', expect.stringContaining(mockIsbnData));
-
-        //     // Verify all API calls
-        //     expect(mockedAxios.get).toHaveBeenCalledWith(bookApiUrl);
-        //     expect(mockedAxios.get).toHaveBeenCalledWith(reviewsApiUrl);
-        //     expect(mockedAxios.get).toHaveBeenCalledWith(isbnApiUrl);
-        // });
-
         it('renders error message if book fetch fails', async () => {
             const error = new Error('Book not found');
             // Mock ONLY book fetch to fail
@@ -256,7 +229,6 @@ describe('Bookpage Component', () => {
             // Reviews/ISBN might not be fetched or rendered depending on timing
             expect(screen.queryByText(/Reviews/i)).not.toBeInTheDocument();
         });
-
 
         it('handles ISBN fetch error gracefully (shows fallback)', async () => {
             const isbnError = new Error('ISBN lookup failed');
@@ -284,60 +256,32 @@ describe('Bookpage Component', () => {
     });
 
     // --- Description Toggle ---
-    // --- NEW TESTS FOR DESCRIPTION TOGGLE ---
     describe('Description Toggle', () => {
-
-        const shortDescription = "This description is short.";
-        const longDescription = "This is the start of a very long description that definitely exceeds the character limit. ".repeat(15) + " This is the end.";
-        // Helper to find the description element
-        const findDescriptionElement = async () => {
-            const element = await screen.findByText(/This is the start of a very long description/, { exact: false });
-            return element.parentElement?.classList.contains('bookpage-description') ? element.parentElement : element;
-        };
-
-        // --- NO global fake timers for this block ---
-        // We will activate them only within specific tests where needed
-
-        it('does not render toggle button if description is short', async () => {
-            // Mock book fetch to return short description
-            mockedAxios.get.mockImplementation(async (url) => {
-                if (url === bookApiUrl) return { data: { ...mockBookData, description: shortDescription } };
-                if (url === reviewsApiUrl) return { data: [] };
-                if (url === isbnApiUrl) return { data: '' };
-                throw new Error(`Unhandled GET: ${url}`);
-            });
-
+        it('toggles description from truncated to expanded and back', async () => {
+            mockedAxios.get.mockResolvedValueOnce({ data: mockBookLongDescription });
             renderWithRouter(<Bookpage />);
 
-            // Wait for description to render - This uses real time initially
-            expect(await screen.findByText(shortDescription)).toBeInTheDocument();
+            const toggleButton = await screen.findByRole('button', { name: /View More/i });
+            const descriptionDiv = screen.getByTestId('book-description');
 
-            // Button should not be present
+            // Expand description
+            fireEvent.click(toggleButton);
+            expect(descriptionDiv).toHaveClass('animating-expand');
+            await waitFor(() => expect(descriptionDiv).toHaveClass('expanded'));
+
+            // Collapse description
+            fireEvent.click(toggleButton);
+            expect(descriptionDiv).toHaveClass('animating-collapse');
+            await waitFor(() => expect(descriptionDiv).toHaveClass('truncated'));
+        });
+
+        it('does not show toggle button for short descriptions', async () => {
+            mockedAxios.get.mockResolvedValueOnce({ data: mockBookShortDescription });
+            renderWithRouter(<Bookpage />);
+            expect(await screen.findByText(mockBookShortDescription.description!)).toBeInTheDocument();
             expect(screen.queryByRole('button', { name: /View More/i })).not.toBeInTheDocument();
-            expect(screen.queryByRole('button', { name: /View Less/i })).not.toBeInTheDocument();
         });
-
-        it('renders toggle button and truncated description initially for long description', async () => {
-            // Mock book fetch to return long description
-            mockedAxios.get.mockImplementation(async (url) => {
-                if (url === bookApiUrl) return { data: { ...mockBookData, description: longDescription } };
-                if (url === reviewsApiUrl) return { data: [] };
-                if (url === isbnApiUrl) return { data: '' };
-                throw new Error(`Unhandled GET: ${url}`);
-            });
-
-            renderWithRouter(<Bookpage />);
-
-            // Wait for elements using real time
-            const viewMoreButton = await screen.findByRole('button', { name: /View More/i });
-            expect(viewMoreButton).toBeInTheDocument();
-
-            const descriptionElement = await findDescriptionElement();
-            expect(descriptionElement).toHaveClass('truncated');
-        });
-
-
-    }); // End Description Toggle describe
+    });
 
     // --- Review Form ---
     describe('Review Form', () => {
@@ -348,7 +292,6 @@ describe('Bookpage Component', () => {
             await user.type(reviewInput, 'Typing a review');
             expect(reviewInput).toHaveValue('Typing a review');
         });
-
 
         it('shows alert if submitting without selecting a rating', async () => {
             const user = userEvent.setup();
@@ -378,8 +321,22 @@ describe('Bookpage Component', () => {
             expect(mockedAxios.post).not.toHaveBeenCalled();
         });
 
+        it('submits a review successfully', async () => {
+            mockedAxios.post.mockResolvedValueOnce({ data: { message: 'Review submitted' } });
+            renderWithRouter(<Bookpage />);
+            await submitReview('Great book!', 5);
+            expect(mockedAxios.post).toHaveBeenCalledWith(
+                expect.stringContaining(`/api/reviewtest/${mockParams.id}/`), // Updated endpoint
+                { rating: 5, text: 'Great book!' },
+                expect.objectContaining({
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Token ${mockAuthToken}`,
+                    },
+                })
+            );
+        });
 
-        // Keep tests for 401 and generic errors on submit
         it('shows alert and logs console error for error on review submit', async () => {
             const reviewText = 'Another failure attempt.';
             const rating = 3;
@@ -389,7 +346,6 @@ describe('Bookpage Component', () => {
             // Mock POST to reject with a generic error
             mockedAxios.post.mockRejectedValueOnce(genericError);
 
-            // FIX: Remove the 'book' prop
             renderWithRouter(<Bookpage />);
 
             // Attempt to submit
@@ -409,31 +365,36 @@ describe('Bookpage Component', () => {
             // Check submit button is re-enabled (assuming isSubmitting state works)
             expect(screen.getByRole('button', { name: /Submit Review/i })).toBeEnabled();
         });
+    });
 
-    }); // End Review Form describe
+    // --- ISBN Fetch ---
+    describe('ISBN Fetch', () => {
+        it('displays fallback when ISBN fetch fails', async () => {
+            mockedAxios.get.mockImplementation((url) => {
+                if (url.includes(`/api/book/${mockBookData.id}/`)) return Promise.resolve({ data: mockBookData });
+                if (url.includes(`/api/isbn/${mockBookData.key}`)) return Promise.reject(new Error('ISBN fetch failed'));
+                return Promise.resolve({ data: [] });
+            });
+            renderWithRouter(<Bookpage />);
+            expect(await screen.findByText(/ISBN not available/i)).toBeInTheDocument();
+        });
+    });
 
     const renderAndWaitForBookpage = async (bookData: BookData): Promise<RenderResult> => {
         mockedAxios.get.mockImplementation((url: string) => {
-            // console.log(`[AXIOS MOCK] GET request to: ${url}`); // For debugging
             if (url.includes(`/api/book/${bookData.id}/`)) {
-                // This case should ideally not be hit if stateBook is correctly passed and used
-                // console.log(`[AXIOS MOCK] Responding to /api/book/${bookData.id}/`);
                 return Promise.resolve({ data: bookData });
             }
             if (bookData.key && url.includes(`/api/isbn/${bookData.key}`)) {
-                // console.log(`[AXIOS MOCK] Responding to /api/isbn/${bookData.key}`);
                 return Promise.resolve({ data: '1234567890ABC' });
             }
             if (url.includes(`/api/reviews/${bookData.id}/`)) {
-                // console.log(`[AXIOS MOCK] Responding to /api/reviews/${bookData.id}/`);
                 return Promise.resolve({ data: [] });
             }
-            // console.error(`[AXIOS MOCK] Unhandled GET request: ${url}`);
             return Promise.reject(new Error(`Unhandled axios GET request in mock: ${url}`));
         });
 
         let renderResult: RenderResult;
-        // Wrap render in act because component useEffects might update state
         await act(async () => {
              renderResult = render(
                 <MemoryRouter initialEntries={[{ pathname: `/book/${bookData.id}`, state: { book: bookData } }]}>
@@ -444,96 +405,8 @@ describe('Bookpage Component', () => {
             );
         });
 
-        // Wait for an element that signals the component has likely finished its initial async setup.
-        // The description div is a good candidate.
-        // `findBy*` queries return a promise and are wrapped in `waitFor` internally.
         await screen.findByTestId('book-description');
-        
-        // Sometimes, explicitly running all pending timers *after* initial async effects
-        // can help if those effects themselves schedule timers.
-        // This is more of a "just in case" for complex scenarios.
-        // act(() => {
-        //   jest.runAllTimers();
-        // });
-
-        return renderResult!; // Assert renderResult is assigned
+        return renderResult!;
     };
-
-
-
-
-    // test('toggles description from truncated to expanded and back', async () => {
-    //     await renderAndWaitForBookpage(mockBookLongDescription);
-
-    //     // By this point, initial rendering and useEffects should have completed.
-    //     const descriptionDiv = screen.getByTestId('book-description'); // Use getBy* as it should be present
-    //     expect(descriptionDiv).toHaveClass('bookpage-description', 'truncated');
-    //     const toggleButton = screen.getByRole('button', { name: /view more/i });
-    //     expect(toggleButton).toBeInTheDocument();
-
-    //     // 1. Click "View More"
-    //     act(() => {
-    //         fireEvent.click(toggleButton);
-    //     });
-
-    //     // Immediate class change (animation starts)
-    //     expect(descriptionDiv).toHaveClass('bookpage-description', 'animating-expand');
-    //     expect(toggleButton).toHaveTextContent(/view less/i); // showFullDescription becomes true in toggleDescription
-
-    //     // Advance timers to trigger the setTimeout callback
-    //     act(() => {
-    //         vi.advanceTimersByTime(500);
-    //     });
-
-    //     // Class after timeout: Description expanded
-    //     // Need to use waitFor if the class change isn't instantaneous with timer advancement in test env
-    //     await waitFor(() => {
-    //         expect(descriptionDiv).toHaveClass('bookpage-description', 'expanded');
-    //     });
-    //     expect(descriptionDiv).not.toHaveClass('truncated');
-    //     expect(descriptionDiv).not.toHaveClass('animating-expand');
-    //     expect(toggleButton).toHaveTextContent(/view less/i);
-
-    //     // 2. Click "View Less"
-    //     act(() => {
-    //         fireEvent.click(toggleButton);
-    //     });
-
-    //     expect(descriptionDiv).toHaveClass('bookpage-description', 'animating-collapse');
-    //     expect(toggleButton).toHaveTextContent(/view more/i); // showFullDescription becomes false
-
-    //     act(() => {
-    //         vi.advanceTimersByTime(500);
-    //     });
-
-    //     await waitFor(() => {
-    //         expect(descriptionDiv).toHaveClass('bookpage-description', 'truncated');
-    //     });
-    //     expect(descriptionDiv).not.toHaveClass('expanded');
-    //     expect(descriptionDiv).not.toHaveClass('animating-collapse');
-    //     expect(toggleButton).toHaveTextContent(/view more/i);
-    // });
-
-    // test('does not show "View More" button if description is short', async () => {
-    //     await renderAndWaitForBookpage(mockBookShortDescription);
-
-    //     const descriptionDiv = screen.getByTestId('book-description'); // Should exist
-    //     expect(descriptionDiv).toHaveTextContent(mockBookShortDescription.description as string);
-    //     expect(descriptionDiv).toHaveClass('bookpage-description', 'truncated');
-
-    //     // Use queryBy* for elements that should NOT be present
-    //     expect(screen.queryByRole('button', { name: /view more/i })).not.toBeInTheDocument();
-    // });
-
-    // test('shows default message and no "View More" button if description is null', async () => {
-    //     await renderAndWaitForBookpage(mockBookNoDescription);
-
-    //     const descriptionDiv = screen.getByTestId('book-description'); // Should exist
-    //     expect(descriptionDiv).toHaveTextContent("No description available for this book.");
-    //     expect(descriptionDiv).toHaveClass('bookpage-description', 'truncated');
-
-    //     expect(screen.queryByRole('button', { name: /view more/i })).not.toBeInTheDocument();
-    // });
-
-}); // End Description Toggle describe
+});
 
