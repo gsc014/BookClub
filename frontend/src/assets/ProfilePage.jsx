@@ -125,7 +125,7 @@ function ProfilePage() {
 
     const search_book = (id) => {
         console.log("Navigating to book with ID:", id);
-        navigate('/books/' + id, { state: { book: { id } } });
+        navigate('/books/' + id);
     }
 
     const remove_saved_book = (id) => {

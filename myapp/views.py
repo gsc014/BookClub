@@ -210,6 +210,9 @@ def random_book(request):
                     "first_published": row[6],
                     "cover": row[7]
                 })
+                
+            if not books_data:
+                return Response([], status=200)
             
             return Response(books_data[0] if num_books == 1 else books_data)
     
@@ -228,6 +231,10 @@ def random_book(request):
         for book in books
     ]
     
+    if not books_data:
+        return Response([], status=200)
+
+
     return Response(books_data[0] if num_books == 1 and books_data else books_data)
 
 @api_view(['GET'])
@@ -410,7 +417,7 @@ def retrieve_book_info(request, book_id):
 @api_view(['GET'])
 def get_books_by_author(request):
     author_key = request.GET.get('key', '')
-    print("author key", author_key)
+    # print("author key", author_key)
     if not author_key:
         return Response({"error": "No author key provided"}, status=400)
     
@@ -464,33 +471,28 @@ def add_review(request, book_id1):
         print(f"Error creating review: {e}")  # Add this line for better debugging
         return Response({"error": str(e)}, status=500)
 
-
 @api_view(['GET'])
 def get_reviews(request, bid):
     try:
         reviews = Review.objects.filter(book_id=bid).order_by('-created_at')
-        
-        # Include username in the response
+
+        if not reviews.exists():
+            return Response(status=204)
+
         reviews_data = []
         for review in reviews:
-            # Get the username safely, handling the case where user might be None
-            try:
-                username = review.user.username if review.user else "Anonymous"
-            except AttributeError:
-                username = "Anonymous"
-                
-            # Add all review data to the response
+            username = getattr(review.user, "username", "Anonymous") or "Anonymous"
             reviews_data.append({
                 'id': review.id,
                 'rating': review.rating,
                 'text': review.text,
                 'username': username,
-                'creation_date': review.created_at  # Make sure this field name matches your model
+                'creation_date': review.created_at
             })
-            
+
         return Response(reviews_data)
+
     except Exception as e:
-        # Log the exception for debugging
         print(f"Error getting reviews: {str(e)}")
         return Response({"error": str(e)}, status=500)
 
@@ -1008,10 +1010,11 @@ def most_liked_books(request):
             try:
                 book = Books.objects.get(id=book_id)
                 
-                try:
-                    author = Author.objects.get(key=book.author).name
-                except Author.DoesNotExist:
-                    author = book.author
+                author = book.author
+                author_obj = Author.objects.filter(key=book.author).first()
+                if author_obj:
+                    author = author_obj.name
+
                 
                 books_data.append({
                     "id": book.id,
