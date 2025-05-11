@@ -11,7 +11,7 @@ const Bookpage = () => {
 
     // Get book data from state if available
     const stateBook = location.state?.book || null;
-
+    console.log("stateook", stateBook);
     // State variables
     const [book, setBook] = useState(stateBook);
     const [reviews, setReviews] = useState([]);
@@ -27,7 +27,9 @@ const Bookpage = () => {
     const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
 
     const fetchIsbn = () => {
-        if (!book || !book.key) return;
+        
+        if (!book || !book.key)
+         return;
 
         console.log(`Fetching ISBN for book key: ${book.key}`);
         axios.get(`http://127.0.0.1:8000/api/isbn/${book.key}`)
@@ -43,10 +45,6 @@ const Bookpage = () => {
 
     // Fetch book data if not provided via state
     useEffect(() => {
-        // If we don't have a book ID or we already have the book from state, don't fetch
-        if (!id || (stateBook && stateBook.id === parseInt(id))) {
-            return;
-        }
 
         const fetchBookData = async () => {
             setLoading(true);
@@ -66,7 +64,7 @@ const Bookpage = () => {
 
         fetchBookData();
     }, [id, stateBook]);
-
+    console.log("this is the final", book);
     // Fetch ISBN when book data is available
     useEffect(() => {
         if (book && book.key) {

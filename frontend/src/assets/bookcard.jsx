@@ -17,6 +17,7 @@ const Bookcard = ({ book, isSmall = false }) => {
     const [likeStatus, setLikeStatus] = useState(null);
 
     const handleClick = () => {
+        console.log("got book", book);
         navigate(`/books/${book.id}`, {state: { book }});
     };
 

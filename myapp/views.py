@@ -359,8 +359,10 @@ def retrieve_book_info(request, book_id):
 
         try:
             author = Author.objects.get(key=book.author).name
+            print("gsdahjdk",type(author),author)
         except Author.DoesNotExist:
             author = book.author
+            print("ncxnvxcnm",type(author),author)
         
         book_data = {
             "id": book.id,
