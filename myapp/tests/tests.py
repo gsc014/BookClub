@@ -119,6 +119,31 @@ class BookTests(APITestCase):
             })
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
         
+    def test_search_books_out_of_range_page(self):
+        """
+        Test that search_books falls back to the last available page
+        if requested page number is too high.
+        """
+        for i in range(15):
+            Books.objects.create(
+                title=f"Test Book {i}",
+                author="Author",
+                cover=123,
+                key=f"key{i}"
+            )
+
+        url = reverse('search_books')
+        response = self.client.get(url, {'q': 'Test Book', 'page': 999, 'per_page': 5})
+        
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        
+        self.assertEqual(data['pagination']['total_pages'], 3)
+        self.assertEqual(data['pagination']['current_page'], 3)
+        self.assertLessEqual(len(data['results']), 5)
+
+        
     def test_search_books_invalid_page_and_per_page(self):
         '''Ensure non-integer pagination params are handled gracefully'''
         response = self.client.get('/api/search/', {
@@ -135,12 +160,12 @@ class BookTests(APITestCase):
 
             
     def test_search_filter_returns_400_when_missing_param(self):
-        response = self.client.get(reverse('search_filter'))  # no ?filter= param
+        response = self.client.get(reverse('search_filter'))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['error'], "Filter parameter is required")
 
     def test_search_filter_returns_400_when_param_is_empty(self):
-        response = self.client.get(reverse('search_filter') + '?filter=')  # empty string
+        response = self.client.get(reverse('search_filter') + '?filter=')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['error'], "Filter parameter is required")
         
@@ -201,6 +226,39 @@ class BookTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(isinstance(response.data, list))
         self.assertLessEqual(len(response.data), 3)
+        
+    def test_random_book_no_results(self):
+        '''
+        Test random_book returns empty list when no books match criteria
+        '''
+        Books.objects.all().delete()  # Ensure no books exist
+
+        url = reverse('random_book')
+        response = self.client.get(url, {'num': 1})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, [])
+
+    def test_random_book_single_valid(self):
+        '''
+        Test random_book returns a single book dict when num=1 and match found
+        '''
+        Books.objects.create(
+            key='OL1M',
+            title='Test Book',
+            description='A book',
+            subjects='Fiction',
+            author='Author',
+            cover=123,
+            first_published=2000
+        )
+
+        url = reverse('random_book')
+        response = self.client.get(url, {'num': 1})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.data, dict)
+        self.assertEqual(response.data['title'], 'Test Book')
 
         
         
@@ -215,6 +273,52 @@ class BookTests(APITestCase):
         })
         
         self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_filter_valueerror(self):
+        '''
+        testing search filter whilst hitting the valueerror exception
+        '''
+        url = reverse('search_filter')
+        
+        response = self.client.get(url,{
+            'filter':'documentary',
+            'page':'abc',
+            'per_page':'xyz'
+        })
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    
+    def test_filter_out_of_range_page(self):
+        '''
+        needed to reach the out of range page statement.
+        '''
+        for i in range(3):
+            Books.objects.create(
+                key=f'OL{i}M',
+                title=f'Fantasy Book {i}',
+                author='Author X',
+                subjects='Fantasy',
+                cover=None,
+                first_published=2000 + i
+            )
+
+        url = reverse('search_filter')
+        response = self.client.get(url, {
+            'filter': 'Fantasy',
+            'page': '9999',
+            'per_page': '1'
+        })
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        self.assertEqual(data['pagination']['total_pages'], 3)
+        self.assertEqual(data['pagination']['current_page'], 3)
+        self.assertEqual(len(data['results']), 1)
+
+
         
     def test_autocomplete(self):
         '''
@@ -340,6 +444,23 @@ class ReviewTests(APITestCase):
         })
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         
+    def test_get_books_by_author(self):
+        url = reverse('books_by_author')
+        
+        response = self.client.get(url,{
+            'key': 12345678
+        })
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        
+    def test_get_books_by_author_with_excludeid(self):
+        url = reverse('books_by_author')
+        
+        response = self.client.get(url,{
+            'key': 12345678,
+            'exclude_id': 12345678
+        })
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+    
     def test_highest_rated_books(self):
         # Create author
         author = Author.objects.create(key='author_key', name='John Doe')
@@ -717,6 +838,8 @@ class UserProfileTests(APITestCase):
             'blocked_genres':['']
         })
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+    
+
         
     def test_block_genre_success(self):
         url = reverse('block_genre')
@@ -1111,6 +1234,17 @@ class ModelTests(TestCase):
         book.save()
         self.assertIsNone(book.cover)
         self.assertIsNone(book.description)
+
+    def test_author_key_uniqueness(self):
+        Author.objects.create(key='unique_key', name='Author One')
+        with self.assertRaises(Exception):  # or IntegrityError if you want to be specific
+            Author.objects.create(key='unique_key', name='Author Two')
+            
+    def test_author_model(self):
+        author = Author.objects.create(key='auth_001', name='George Orwell')
+        self.assertEqual(author.key, 'auth_001')
+        self.assertEqual(author.name, 'George Orwell')
+
 
 
 

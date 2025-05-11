@@ -8,14 +8,15 @@ from django.shortcuts import render, get_object_or_404
 from .models import Review, UserInfo, UserBookList, NewTable, Books, Author
 import random
 from django.http import JsonResponse
-from django.db import connections
+from django.db import connection
 from django.contrib.auth import logout as django_logout
 from rest_framework.authtoken.models import Token
 import logging
 from django.core.paginator import Paginator
-from django.db.models import Q, Min, Max
+from django.db.models import Min, Max
+from django.core.cache import cache
+import time
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
@@ -112,22 +113,16 @@ def search_books(request):
     if not query:
         return Response({"error": "No query provided"}, status=400)
     
-    # Change from regex word boundary to simple contains
-    # This matches the behavior of autocomplete
-    books = Books.objects.filter(title__icontains=query)
+    books = Books.objects.filter(title__icontains=query).order_by('id')
     
-    # Set up pagination
     paginator = Paginator(books, per_page)
     total_books = paginator.count
     
-    # Handle page number being out of range
     if page > paginator.num_pages and paginator.num_pages > 0:
         page = paginator.num_pages
     
-    # Get current page
     current_page = paginator.get_page(page)
     
-    # Format book data
     results = [
         {
             "id": book.id,
@@ -139,7 +134,6 @@ def search_books(request):
         for book in current_page
     ]
     
-    # Return properly structured response
     return Response({
         "results": results,
         "query": query,
@@ -153,7 +147,6 @@ def search_books(request):
         }
     })
 
-from django.db import connection
 
 @api_view(['GET'])
 def random_book(request):
@@ -162,7 +155,6 @@ def random_book(request):
     except (TypeError, ValueError):
         num_books = 1
 
-    # Get min and max ID values for books with both descriptions and covers
     min_id = Books.objects.filter(
         description__isnull=False,
         cover__isnull=False
@@ -173,19 +165,16 @@ def random_book(request):
         cover__isnull=False
     ).aggregate(Max('id'))['id__max'] or 1000
     
-    # We'll need more random IDs since we're filtering more strictly now
     sample_size = min(5 * num_books, max_id - min_id + 1)
     random_ids = random.sample(range(min_id, max_id + 1), sample_size)
     
-    # Get books with those IDs that have descriptions AND covers
     books = Books.objects.filter(
         id__in=random_ids, 
         description__isnull=False,
-        cover__isnull=False,  # Only return books with covers
-        cover__gt=0           # Make sure cover IDs are valid positive numbers
+        cover__isnull=False,
+        cover__gt=0
     )[:num_books]
     
-    # If we didn't get enough books, use the more expensive fallback
     if len(books) < num_books:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -216,7 +205,6 @@ def random_book(request):
             
             return Response(books_data[0] if num_books == 1 else books_data)
     
-    # Format the book data
     books_data = [
         {
             "id": book.id,
@@ -231,8 +219,8 @@ def random_book(request):
         for book in books
     ]
     
-    if not books_data:
-        return Response([], status=200)
+    # if not books_data:
+    #     return Response([], status=200)
 
 
     return Response(books_data[0] if num_books == 1 and books_data else books_data)
@@ -240,33 +228,25 @@ def random_book(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def recommended_book(request):
-    from django.core.cache import cache
-    import time
-    
     user = request.user
     
-    # Get number of books to return
     try:
         num_books = int(request.GET.get('num', 1))
     except (TypeError, ValueError):
         num_books = 1
     
-    # Use caching to speed up repeated requests
-    cache_key = f'recommended_books_{user.id}_{num_books}_{int(time.time() / 300)}'  # Cache key changes every 5 minutes
+    cache_key = f'recommended_books_{user.id}_{num_books}_{int(time.time() / 300)}'
     cached_result = cache.get(cache_key)
     if cached_result:
         return Response(cached_result[0] if num_books == 1 and cached_result else cached_result)
     
-    # Get blocked genres with one query
     genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
     blocked_genres = []
     if genre_list and genre_list.book_ids:
         blocked_genres = [genre.lower() for genre in genre_list.book_ids]
         print("Blocked genres:", blocked_genres)
     
-    # If no blocked genres, use efficient random book selection
     if not blocked_genres:
-        # Use the same efficient approach from random_book but require covers
         min_id = Books.objects.filter(
             description__isnull=False,
             cover__isnull=False,
@@ -279,11 +259,9 @@ def recommended_book(request):
             cover__gt=0
         ).aggregate(Max('id'))['id__max'] or 1000
         
-        # Get random IDs (5x what we need to handle missing records)
         sample_size = min(5 * num_books, max_id - min_id + 1)
         random_ids = random.sample(range(min_id, max_id + 1), sample_size)
         
-        # Get books with those IDs that have descriptions AND covers
         books = list(Books.objects.filter(
             id__in=random_ids, 
             description__isnull=False,
@@ -291,7 +269,6 @@ def recommended_book(request):
             cover__gt=0
         )[:num_books])
         
-        # Format the results
         result_books = [
             {
                 "id": book.id,
@@ -306,17 +283,12 @@ def recommended_book(request):
             for book in books
         ]
         
-        # Cache the result for 5 minutes
         cache.set(cache_key, result_books, 300)
         return Response(result_books[0] if num_books == 1 and result_books else result_books)
 
-    # For filtering with blocked genres, use an efficient database-level approach
+   
+    sample_size = min(2000, Books.objects.count()) 
     
-    # 1. Get a sample of candidate books (much larger than what we need)
-    # This is more efficient than scanning the entire table
-    sample_size = min(2000, Books.objects.count())  # Increased sample size since we're filtering more
-    
-    # Use min/max ID approach for better performance, requiring covers
     min_id = Books.objects.filter(
         description__isnull=False,
         cover__isnull=False,
@@ -329,10 +301,8 @@ def recommended_book(request):
         cover__gt=0
     ).aggregate(Max('id'))['id__max'] or 1000
     
-    # Get random IDs (much more than we need)
     candidate_ids = random.sample(range(min_id, max_id + 1), min(sample_size, max_id - min_id + 1))
     
-    # 2. Get books with those IDs that have descriptions AND covers
     candidate_books = Books.objects.filter(
         id__in=candidate_ids, 
         description__isnull=False,
@@ -340,14 +310,12 @@ def recommended_book(request):
         cover__gt=0
     )
     
-    # 3. Filter out books with blocked genres at database level
     filtered_books = []
     for book in candidate_books:
         if not book.subjects:
             filtered_books.append(book)
             if len(filtered_books) >= num_books:
                 break
-            continue
             
         subjects = book.subjects.lower()
         should_include = True
@@ -391,9 +359,7 @@ def retrieve_book_info(request, book_id):
 
         try:
             author = Author.objects.get(key=book.author).name
-            print("author is ", author)
         except Author.DoesNotExist:
-            print("Author not found")
             author = book.author
         
         book_data = {
@@ -805,26 +771,20 @@ def add_book(request, book_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_saved_books(request):
-    # Check if we're requesting another user's lists
     target_username = request.query_params.get('username')
     list_name = request.query_params.get('name')
     
-    # Determine which user's lists we want to see
     if target_username and target_username != request.user.username:
-        # Looking at another user's lists
         try:
             target_user = User.objects.get(username=target_username)
-            # Only allow viewing "Liked Books" for other users
             if list_name != "Liked Books":
                 return Response({"error": "You can only view other users' liked books"}, status=403)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
         user = target_user
     else:
-        # Looking at our own lists
         user = request.user
 
-    # Get the requested list
     book_list = get_object_or_404(UserBookList, user_id=user, name=list_name)
     
     books_data = []
@@ -834,9 +794,7 @@ def get_saved_books(request):
 
             try:
                 author = Author.objects.get(key=book.author).name
-                print("author is ", author)
             except Author.DoesNotExist:
-                print("Author not found")
                 author = book.author
         
 
@@ -844,8 +802,8 @@ def get_saved_books(request):
                 "id": book.id,
                 "key": book.key,
                 "title": book.title,
-                "author": author,  # Adding author for better display
-                "cover": book.cover     # Adding cover for thumbnail display
+                "author": author, 
+                "cover": book.cover 
             }
 
             
@@ -866,10 +824,8 @@ def block_genre(request):
     user = request.user
     genre_list = UserBookList.objects.filter(user_id=user, name="Blocked Books").first()
     if not genre_list:
-        # Create a new list if it doesn't exist
         genre_list = UserBookList.objects.create(user_id=user, name="Blocked Books", book_ids=[])
     
-    # Update with the complete list (this replaces the existing list)
     genre_list.book_ids = genres
     genre_list.save()
     return Response({"message": "Genres updated successfully.", "blocked_genres": genres})
@@ -1022,7 +978,7 @@ def most_liked_books(request):
                     "title": book.title,
                     "author": author,
                     "cover": book.cover,
-                    "likes_count": book_counts[book_id]  # Include the number of likes
+                    "likes_count": book_counts[book_id]
                 })
             except Books.DoesNotExist:
                 continue
