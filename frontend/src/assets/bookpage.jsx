@@ -5,14 +5,11 @@ import './style/bookpage.css';
 import defaultCover from './pictures/no-results.png';
 
 const Bookpage = () => {
-    // Get the book ID from URL params and any state passed during navigation
     const { id } = useParams();
     const location = useLocation();
 
-    // Get book data from state if available
     const stateBook = location.state?.book || null;
     console.log("stateook", stateBook);
-    // State variables
     const [book, setBook] = useState(stateBook);
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(!stateBook);
@@ -39,23 +36,18 @@ const Bookpage = () => {
             })
             .catch(error => {
                 console.error('Error fetching ISBN:', error);
-                // Don't show an error to the user, just log it
             });
     };
 
-    // Fetch book data if not provided via state
     useEffect(() => {
 
         const fetchBookData = async () => {
             setLoading(true);
             try {
-                console.log(`Fetching book data for ID: ${id}`);
                 const response = await axios.get(`http://127.0.0.1:8000/api/book/${id}/`);
-                console.log("Book data received:", response.data);
                 setBook(response.data);
                 setError(null);
             } catch (err) {
-                console.error("Error fetching book details:", err);
                 setError("Failed to load book details");
             } finally {
                 setLoading(false);
@@ -65,14 +57,12 @@ const Bookpage = () => {
         fetchBookData();
     }, [id, stateBook]);
     console.log("this is the final", book);
-    // Fetch ISBN when book data is available
     useEffect(() => {
         if (book && book.key) {
             fetchIsbn();
         }
     }, [book]);
 
-    // Fetch reviews for the book
     useEffect(() => {
         fetchReviews();
     }, [id]);
@@ -93,7 +83,6 @@ const Bookpage = () => {
         }
     };
 
-    // Toggle description view
 
     const toggleDescription = () => {
         if (showFullDescription) {
@@ -112,12 +101,10 @@ const Bookpage = () => {
     };
 
 
-    // Handle rating selection
     const handleRatingClick = (rating) => {
         setUserRating(rating);
     };
 
-    // Handle review submission
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
 
@@ -150,28 +137,21 @@ const Bookpage = () => {
 
             console.log("Review response:", response.data);
 
-            // Since the backend only returns a success message and not the review object,
-            // we need to create the review object ourselves
             const username = localStorage.getItem('username');
             const newReview = {
                 rating: userRating,
                 text: userReview,
-                username: username || "You", // Fallback if username isn't stored
+                username: username || "You", 
                 created_at: new Date().toISOString(),
                 book_id: parseInt(id)
             };
 
-            // Add the new review to the beginning of the reviews list
             setReviews([newReview, ...reviews]);
 
-            // Reset form
             setUserReview('');
             setUserRating(0);
 
-            // Refresh reviews from server to get the complete data
             fetchReviews();
-
-            // alert("Review submitted successfully!");
 
         } catch (error) {
             console.error("Error submitting review:", error);
@@ -180,7 +160,6 @@ const Bookpage = () => {
     };
 
 
-    // Show loading state
     if (loading) {
         return (
             <div className="bookpage-loading">
@@ -189,7 +168,6 @@ const Bookpage = () => {
         );
     }
 
-    // Show error state
     if (error || !book) {
         return (
             <div className="bookpage-error">
