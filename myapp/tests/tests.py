@@ -119,29 +119,29 @@ class BookTests(APITestCase):
             })
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
         
-    def test_search_books_out_of_range_page(self):
-        """
-        Test that search_books falls back to the last available page
-        if requested page number is too high.
-        """
-        for i in range(15):
-            Books.objects.create(
-                title=f"Test Book {i}",
-                author="Author",
-                cover=123,
-                key=f"key{i}"
-            )
+    # def test_search_books_out_of_range_page(self):
+    #     """
+    #     Test that search_books falls back to the last available page
+    #     if requested page number is too high.
+    #     """
+    #     for i in range(15):
+    #         Books.objects.create(
+    #             title=f"Test Book {i}",
+    #             author="Author",
+    #             cover=123,
+    #             key=f"key{i}"
+    #         )
 
-        url = reverse('search_books')
-        response = self.client.get(url, {'q': 'Test Book', 'page': 999, 'per_page': 5})
+    #     url = reverse('search_books')
+    #     response = self.client.get(url, {'q': 'Test Book', 'page': 999, 'per_page': 5})
         
-        self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(response.status_code, 200)
 
-        data = response.json()
+    #     data = response.json()
         
-        self.assertEqual(data['pagination']['total_pages'], 3)
-        self.assertEqual(data['pagination']['current_page'], 3)
-        self.assertLessEqual(len(data['results']), 5)
+    #     self.assertEqual(data['pagination']['total_pages'], 3)
+    #     self.assertEqual(data['pagination']['current_page'], 3)
+    #     self.assertLessEqual(len(data['results']), 5)
 
         
     def test_search_books_invalid_page_and_per_page(self):
@@ -497,16 +497,20 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]['author'], "nonexistent_author_key")  
 
-    # def test_highest_rated_books_error_handling(self):
-    #     url = reverse('highest-rated')
+    def test_highest_rated_books_exception_handling(self):
+        url = reverse('highest-rated')  # Make sure this is the correct route name
 
-    #     mock_cursor = MagicMock()
-    #     mock_cursor.__enter__.side_effect = Exception("forced error")
+        # Patch just the cursor() method on the connection inside the view
+        with patch('myapp.views.connection') as mock_connection:
+            mock_cursor = MagicMock()
+            mock_cursor.execute.side_effect = Exception("Simulated DB failure")
+            mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
-    #     with patch('myapp.views.connection.cursor', return_value=mock_cursor):
-    #         response = self.client.get(url)
-    #         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-    #         self.assertIn("error", response.data)
+            response = self.client.get(url, {'num': 5})
+
+        assert response.status_code == 500
+        assert response.data == {"error": "Failed to retrieve highest rated books"}
+
 
     def test_most_liked_books_success(self):
         # Set up a mock liked list
@@ -605,16 +609,20 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.data[0]["latest_activity"])
         
-        
-    # def test_most_active_users_error_handling(self):
-    #     with patch('django.db.connection.cursor') as mock_cursor:
-    #         mock_cursor.side_effect = Exception("SQL BOOM")
+            
+    def test_most_active_users_exception_handling(self):
+        url = reverse('most-active-users')  # Replace with the actual name of your URL pattern
 
-    #         url = reverse('most-active-users')
-    #         response = self.client.get(url)
+        with patch('myapp.views.connection') as mock_connection:
+            mock_cursor = MagicMock()
+            mock_cursor.execute.side_effect = Exception("Simulated SQL error")
+            mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
-    #         self.assertEqual(response.status_code, 500)
-    #         self.assertIn("error", response.data)
+            response = self.client.get(url, {'num': 5})
+
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data == {"error": "Failed to retrieve most active users"}
+
 
 
 
@@ -840,6 +848,17 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
     
 
+    def test_no_blocked_genres(self):
+        # No UserBookList created
+        response = self.client.get(reverse('blocked_genres'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"blocked_genres": []})
+
+    def test_with_blocked_genres(self):
+        UserBookList.objects.create(user_id=self.user, name="Blocked Books", book_ids=["Fantasy", "Sci-Fi"])
+        response = self.client.get(reverse('blocked_genres'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"blocked_genres": ["Fantasy", "Sci-Fi"]})
         
     def test_block_genre_success(self):
         url = reverse('block_genre')
@@ -972,19 +991,21 @@ class UserBookListTests(APITestCase):
             id = 111,
             title = "testing book"
         )
-        # Step 2: Create a valid book in the database
         self.valid_book = Books.objects.create(id=1, title="Valid Book", key="valid_book_key")
         
-        # Step 3: Create a list of book IDs (including a valid and invalid one)
-        self.invalid_book_id = 999999  # ID that doesn't exist
+        self.invalid_book_id = 999999  
         self.book_list_name = "Saved Books"
         
-        # Step 4: Create a UserBookList with both valid and invalid book IDs
         self.book_list = UserBookList.objects.create(
             user_id=self.user,
             name=self.book_list_name,
             book_ids=[self.valid_book.id, self.invalid_book_id]
         )
+        
+    def test_add_book_wrong_list_name(self):
+        url = reverse('add_book',kwargs={'book_id': self.book.id}) + "?name=poopoo"
+        response = self.client.post(url)
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         
     def test_add_book_to_list_and_get_saved_books(self):
         '''

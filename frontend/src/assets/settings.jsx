@@ -369,7 +369,7 @@ const Settings = () => {
         return <div className="settings-page loading">Loading your settings...</div>;
     }
 
-    console.log('Settings Component Render - formError:', formError, 'showUsernameForm:', showUsernameForm);
+    // console.log('Settings Component Render - formError:', formError, 'showUsernameForm:', showUsernameForm);
 
     return (
         <div className="settings-page">
