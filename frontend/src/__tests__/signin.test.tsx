@@ -1,49 +1,35 @@
-// src/__tests__/signin.test.tsx (or .jsx)
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach, Mocked, MockInstance } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mocked} from 'vitest';
 import axios, { AxiosStatic } from 'axios';
 
-// Component to test
-import Signin from '../assets/signin'; // Adjust path if necessary
+import Signin from '../assets/signin';
 
-// Mock utility functions
 import { closeTabs, showLogInTab, successfulSignin } from '../utils';
 
-// --- Mocks ---
-
-// Mock axios
 vi.mock('axios');
 const mockedAxios = axios as Mocked<AxiosStatic>;
 
-// Mock the utils module
 vi.mock('../utils.jsx', () => ({
     closeTabs: vi.fn(),
     showLogInTab: vi.fn(),
     successfulSignin: vi.fn(),
-    // Add other exports if needed by other mocks/components
-    // showSignInTab: vi.fn(),
-    // successfulLogin: vi.fn(),
 }));
 
-// Mock image import
 vi.mock('../assets/pictures/close.png', () => ({ default: 'close.png' }));
 
-// --- Test Suite ---
 
 describe('Signin Component', () => {
     const usernameInputLabel = /username/i;
-    const passwordInputLabel = /^password$/i; // Use regex boundaries for exact match
-    const confirmPasswordInputLabel = /confirm password/i;
-    const signupButtonName = /sign up/i; // Matches the main button
-    const loginButtonName = /log in/i; // Matches the switch button
-    const closeButtonAltText = /close sign up form/i; // Matches alt text added to component
+    const passwordInputLabel = /^password$/i; 
+    const signupButtonName = /sign up/i; 
+    const loginButtonName = /log in/i; 
+    const closeButtonAltText = /close sign up form/i;
     const signupUrl = 'http://127.0.0.1:8000/api/signup/';
     const loginUrl = 'http://127.0.0.1:8000/api/login/';
 
     beforeEach(() => {
-        // Reset mocks before each test
         vi.clearAllMocks();
     });
 
@@ -51,18 +37,14 @@ describe('Signin Component', () => {
         render(<Signin />);
 
         expect(screen.getByRole('heading', { name: signupButtonName })).toBeInTheDocument();
-        // Find by label text
         expect(screen.getByLabelText(usernameInputLabel)).toBeInTheDocument();
-        expect(screen.getByLabelText(passwordInputLabel)).toBeInTheDocument();
-        expect(screen.getByLabelText(confirmPasswordInputLabel)).toBeInTheDocument();
-        // Find buttons
+        const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+        expect(passwordInputs).toHaveLength(2);
         expect(screen.getByRole('button', { name: signupButtonName })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: loginButtonName })).toBeInTheDocument();
-        // Find close icon by alt text
         expect(screen.getByAltText(closeButtonAltText)).toBeInTheDocument();
 
-        // Error/Success messages should not be present initially
-        expect(screen.queryByRole('alert')).not.toBeInTheDocument(); // Check common roles first
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument(); 
         expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
         expect(screen.queryByText(/success/i)).not.toBeInTheDocument();
     });
@@ -70,8 +52,9 @@ describe('Signin Component', () => {
     it('updates input fields on change', () => {
         render(<Signin />);
         const usernameInput = screen.getByLabelText(usernameInputLabel);
-        const passwordInput = screen.getByLabelText(passwordInputLabel);
-        const confirmPasswordInput = screen.getByLabelText(confirmPasswordInputLabel);
+        const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+        const passwordInput = passwordInputs[0];
+        const confirmPasswordInput = passwordInputs[1];
 
         fireEvent.change(usernameInput, { target: { value: 'newuser' } });
         fireEvent.change(passwordInput, { target: { value: 'newpass123' } });
@@ -106,24 +89,20 @@ describe('Signin Component', () => {
         const testUsername = 'newuser';
         const testPassword = 'password123';
 
-        // Mock successful responses for both calls
         mockedAxios.post
-            .mockResolvedValueOnce({ data: mockSignupResponse }) // First call (signup)
-            .mockResolvedValueOnce({ data: mockLoginResponse }); // Second call (login)
+            .mockResolvedValueOnce({ data: mockSignupResponse }) 
+            .mockResolvedValueOnce({ data: mockLoginResponse });
 
         render(<Signin />);
 
-        // Fill form
         fireEvent.change(screen.getByLabelText(usernameInputLabel), { target: { value: testUsername } });
-        fireEvent.change(screen.getByLabelText(passwordInputLabel), { target: { value: testPassword } });
-        fireEvent.change(screen.getByLabelText(confirmPasswordInputLabel), { target: { value: testPassword } });
+        const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+        fireEvent.change(passwordInputs[0], { target: { value: testPassword } });
+        fireEvent.change(passwordInputs[1], { target: { value: testPassword } });
 
-        // Submit
         fireEvent.click(screen.getByRole('button', { name: signupButtonName }));
 
-        // Wait for async operations and check calls
         await waitFor(() => {
-            // Check signup call
             expect(mockedAxios.post).toHaveBeenCalledWith(
                 signupUrl,
                 { username: testUsername, password1: testPassword, password2: testPassword },
@@ -131,11 +110,9 @@ describe('Signin Component', () => {
             );
         });
 
-        // Check success message appears
         expect(await screen.findByText('Signup successful! You can now log in.')).toBeInTheDocument();
 
         await waitFor(() => {
-             // Check login call
              expect(mockedAxios.post).toHaveBeenCalledWith(
                  loginUrl,
                  { username: testUsername, password: testPassword },
@@ -143,20 +120,17 @@ describe('Signin Component', () => {
              );
         });
 
-         // Check total calls
          expect(mockedAxios.post).toHaveBeenCalledTimes(2);
 
-        // Check utility function calls
         await waitFor(() => {
             expect(successfulSignin).toHaveBeenCalledTimes(1);
-            expect(successfulSignin).toHaveBeenCalledWith(mockLoginResponse); // Check payload
+            expect(successfulSignin).toHaveBeenCalledWith(mockLoginResponse);
         });
         await waitFor(() => {
              expect(closeTabs).toHaveBeenCalledTimes(1);
         });
 
 
-        // Ensure no error message
         expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
     });
 
@@ -165,33 +139,27 @@ describe('Signin Component', () => {
         const mockErrorResponse = {
             response: { data: { error: signupErrorMessage } }
         };
-        // Mock only the first call to fail
         mockedAxios.post.mockRejectedValueOnce(mockErrorResponse);
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         render(<Signin />);
 
-        // Fill form
         fireEvent.change(screen.getByLabelText(usernameInputLabel), { target: { value: 'existinguser' } });
-        fireEvent.change(screen.getByLabelText(passwordInputLabel), { target: { value: 'password' } });
-        fireEvent.change(screen.getByLabelText(confirmPasswordInputLabel), { target: { value: 'password' } });
+        const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+        fireEvent.change(passwordInputs[0], { target: { value: 'password' } });
+        fireEvent.change(passwordInputs[1], { target: { value: 'password' } });
 
-        // Submit
         fireEvent.click(screen.getByRole('button', { name: signupButtonName }));
 
-        // Wait for error message
         expect(await screen.findByText(signupErrorMessage)).toBeInTheDocument();
 
-        // Check API call (only signup should be attempted)
         expect(mockedAxios.post).toHaveBeenCalledTimes(1);
         expect(mockedAxios.post).toHaveBeenCalledWith(signupUrl, expect.anything(), expect.anything());
 
-        // Ensure success path was not taken
         expect(screen.queryByText(/success/i)).not.toBeInTheDocument();
         expect(successfulSignin).not.toHaveBeenCalled();
         expect(closeTabs).not.toHaveBeenCalled();
 
-        // Check console log
         expect(consoleErrorSpy).toHaveBeenCalledWith('Signup error:', mockErrorResponse.response.data);
         consoleErrorSpy.mockRestore();
     });
@@ -203,70 +171,56 @@ describe('Signin Component', () => {
              response: { data: { error: loginErrorMessage } }
          };
 
-         // Mock signup success, login failure
          mockedAxios.post
-             .mockResolvedValueOnce({ data: mockSignupResponse }) // Signup OK
-             .mockRejectedValueOnce(mockLoginErrorResponse); // Login fails
+             .mockResolvedValueOnce({ data: mockSignupResponse }) 
+             .mockRejectedValueOnce(mockLoginErrorResponse); 
 
          const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
          render(<Signin />);
 
-         // Fill form
          fireEvent.change(screen.getByLabelText(usernameInputLabel), { target: { value: 'gooduser' } });
-         fireEvent.change(screen.getByLabelText(passwordInputLabel), { target: { value: 'goodpass' } });
-         fireEvent.change(screen.getByLabelText(confirmPasswordInputLabel), { target: { value: 'goodpass' } });
+         const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+         fireEvent.change(passwordInputs[0], { target: { value: 'goodpass' } });
+         fireEvent.change(passwordInputs[1], { target: { value: 'goodpass' } });
 
-         // Submit
          fireEvent.click(screen.getByRole('button', { name: signupButtonName }));
 
-         // Wait for error message (from the login failure)
          expect(await screen.findByText(loginErrorMessage)).toBeInTheDocument();
 
-         // Check API calls (both should have been made)
          expect(mockedAxios.post).toHaveBeenCalledTimes(2);
          expect(mockedAxios.post).toHaveBeenCalledWith(signupUrl, expect.anything(), expect.anything());
          expect(mockedAxios.post).toHaveBeenCalledWith(loginUrl, expect.anything(), expect.anything());
 
-         // Ensure success message might appear briefly but error overrides
-         // Don't assert absence of success message as timing is tricky
-
-         // Ensure final success path was not taken
          expect(successfulSignin).not.toHaveBeenCalled();
          expect(closeTabs).not.toHaveBeenCalled();
 
-         // Check console log for the login error
-         expect(consoleErrorSpy).toHaveBeenCalledWith('Signup error:', mockLoginErrorResponse.response.data); // Component logs login error under 'Signup error' context
+         expect(consoleErrorSpy).toHaveBeenCalledWith('Signup error:', mockLoginErrorResponse.response.data);
          consoleErrorSpy.mockRestore();
      });
 
     it('displays generic error message on network or unexpected signup error', async () => {
         const networkError = new Error('Network failed');
-        mockedAxios.post.mockRejectedValueOnce(networkError); // Fails on first call
+        mockedAxios.post.mockRejectedValueOnce(networkError);
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         render(<Signin />);
 
-        // Fill form
         fireEvent.change(screen.getByLabelText(usernameInputLabel), { target: { value: 'user' } });
-        fireEvent.change(screen.getByLabelText(passwordInputLabel), { target: { value: 'pass' } });
-        fireEvent.change(screen.getByLabelText(confirmPasswordInputLabel), { target: { value: 'pass' } });
+        const passwordInputs = screen.getAllByLabelText(passwordInputLabel);
+        fireEvent.change(passwordInputs[0], { target: { value: 'pass' } });
+        fireEvent.change(passwordInputs[1], { target: { value: 'pass' } });
 
-        // Submit
         fireEvent.click(screen.getByRole('button', { name: signupButtonName }));
 
-        // Wait for the generic error message
         expect(await screen.findByText(/An unexpected error occurred/i)).toBeInTheDocument();
 
-        // Check API call (only signup attempt)
         expect(mockedAxios.post).toHaveBeenCalledTimes(1);
 
-        // Ensure success path not taken
         expect(screen.queryByText(/success/i)).not.toBeInTheDocument();
         expect(successfulSignin).not.toHaveBeenCalled();
         expect(closeTabs).not.toHaveBeenCalled();
 
-        // Check console log
         expect(consoleErrorSpy).toHaveBeenCalledWith('Unexpected error:', networkError);
         consoleErrorSpy.mockRestore();
     });

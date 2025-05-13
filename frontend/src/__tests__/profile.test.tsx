@@ -1,19 +1,17 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from '@testing-library/react';  // Import testing utilities
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';  // Import test functions
-import Profile from '../assets/profile.jsx';  // Import the Profile component
-import { closeTabs, logout } from '../utils.jsx';  // Import mock functions directly
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import Profile from '../assets/profile.jsx';
+import { logout } from '../utils.jsx';
 
-// Mocking the functions used in Profile component
 vi.mock('../utils.jsx', () => ({
-  closeTabs: vi.fn(),  // Mocking the closeTabs function
-  logout: vi.fn(),     // Mocking the logout function
+  closeTabs: vi.fn(),
+  logout: vi.fn(),
 }));
 
 describe('Profile Component', () => {
   
   beforeEach(() => {
-    // Mock localStorage.getItem to simulate a logged-in user
     const user = {
       username: 'testuser',
       email: 'test@example.com',
@@ -30,7 +28,6 @@ describe('Profile Component', () => {
 
   it('displays user data correctly when stored in localStorage', () => {
     render(<Profile />);
-
     expect(screen.getByText('Username: testuser')).toBeInTheDocument();
     expect(screen.getByText('Email: test@example.com')).toBeInTheDocument();
     expect(screen.getByText('Books Read: 5')).toBeInTheDocument();
@@ -40,10 +37,8 @@ describe('Profile Component', () => {
   it('calls logout when the logout button is clicked', () => {
     render(<Profile />);
     const logoutButton = screen.getByText(/log out/i);
-
     fireEvent.click(logoutButton);
-
-    expect(logout).toHaveBeenCalled(); // Check if the mock function was called
+    expect(logout).toHaveBeenCalled();
   });
 
 });

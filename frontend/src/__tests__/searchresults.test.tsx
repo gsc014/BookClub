@@ -1,39 +1,24 @@
-// Remove the triple-slash directive if tsconfig.json is configured
-// /// <reference types="vitest/globals" />
-
-import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-// Import vi explicitly if needed, though globals should make it available
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-// Adjust paths based on your actual file structure
-import SearchResults from '../assets/searchresults'; // Assuming it's in assets
-import Bookcard from '../assets/bookcard'; // Assuming it's in assets
+import SearchResults from '../assets/searchresults';
+import Bookcard from '../assets/bookcard'; 
 
-// --- Mocks ---
-
-// Mock axios - The module mock itself
 vi.mock('axios');
-// Get a typed reference to the mocked module
-// Use vi.mocked() for typed access - Requires tsconfig setup
-const mockedAxios = vi.mocked(axios, true); // Pass `true` for deep mocks if needed, usually not for axios top-level methods
+const mockedAxios = vi.mocked(axios, true);
 
-// Mock react-router-dom's useLocation hook
 vi.mock('react-router-dom', async (importOriginal) => {
     const actual = await importOriginal<typeof import('react-router-dom')>();
     return {
         ...actual,
-        useLocation: vi.fn(), // Mock useLocation specifically
+        useLocation: vi.fn(),
     };
 });
-// Get a typed reference to the mocked hook
 const mockedUseLocation = vi.mocked(useLocation);
 
-// Mock the Bookcard component
-// Adjust the path here if Bookcard is elsewhere, e.g., '../components/bookcard'
 vi.mock('../assets/bookcard', () => ({
     default: vi.fn(({ book }) => (
         <div data-testid={`bookcard-${book.id}`}>
@@ -42,22 +27,15 @@ vi.mock('../assets/bookcard', () => ({
         </div>
     ))
 }));
-// Get a typed reference to the mocked component
 const MockedBookcard = vi.mocked(Bookcard);
 
-// --- Test Suite ---
-
 describe('SearchResults Component', () => {
-
-    // Default mock location state
-    const mockLocationStateBase: Omit<ReturnType<typeof useLocation>, 'state'> = { // Use Omit for base type
+    const mockLocationStateBase: Omit<ReturnType<typeof useLocation>, 'state'> = {
         pathname: '/search',
         search: '',
         hash: '',
         key: 'defaultKey',
     };
-
-    // Helper to set up the mock location for a test
     const setupMockLocation = (state: any) => {
         mockedUseLocation.mockReturnValue({
             ...mockLocationStateBase,
@@ -65,21 +43,16 @@ describe('SearchResults Component', () => {
         });
     };
 
-    // Reset mocks and DOM before each test
     beforeEach(() => {
         vi.clearAllMocks();
-        // Reset axios mocks specifically for safety
         mockedAxios.get.mockReset();
-        mockedAxios.post.mockReset(); // If you used post anywhere
-        // Default successful response for GET
+        mockedAxios.post.mockReset();
         mockedAxios.get.mockResolvedValue({ data: { results: [], pagination: { total_books: 0, total_pages: 1 } } });
     });
 
     afterEach(() => {
-        cleanup(); // Unmount components rendered with `render`
+        cleanup();
     });
-
-    // --- Test Cases ---
 
     it('renders loading state initially when filter is provided', () => {
         setupMockLocation({ initialFilter: 'Fantasy', isSearchQuery: false });
@@ -88,7 +61,7 @@ describe('SearchResults Component', () => {
     });
 
 
-        it('displays initial results and filter from location state immediately, then updates from API', async () => { // Updated test name
+        it('displays initial results and filter from location state immediately, then updates from API', async () => { 
         const locationStateResults = [
             { id: 'loc1', title: 'State Book 1', author: 'State Author' },
             { id: 'loc2', title: 'State Book 2', author: 'State Author' },
@@ -101,7 +74,6 @@ describe('SearchResults Component', () => {
             isSearchQuery: true,
         });
 
-        // Mock the subsequent API fetch triggered by the other useEffect
         const apiResults = [{id: 'api1', title: 'API Book'}];
         mockedAxios.get.mockResolvedValueOnce({
              data: { results: apiResults, pagination: { total_books: 1, total_pages: 1 } }
@@ -109,44 +81,31 @@ describe('SearchResults Component', () => {
 
         render(<SearchResults />);
 
-        // --- Assertions ---
-
-        // 1. Check heading immediately (uses initialFilter state set sync)
         expect(screen.getByRole('heading', { name: /"From State" Search Results/i })).toBeInTheDocument();
 
-        // 2. Check that the initial books were rendered AT SOME POINT.
-        //    We can check the MockedBookcard call count which happens synchronously on first render.
-        //    NOTE: Checking for the elements themselves right now will fail because of loading state.
         expect(MockedBookcard).toHaveBeenCalledTimes(locationStateResults.length);
         expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: locationStateResults[0] }), {});
         expect(MockedBookcard).toHaveBeenCalledWith(expect.objectContaining({ book: locationStateResults[1] }), {});
 
-
-        // 3. *** FIX: Wait for the loading spinner (from the second effect) to disappear ***
         await waitFor(() => {
             expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
         });
 
-        // 4. NOW check that the component eventually renders the books fetched from the API
         expect(await screen.findByTestId('bookcard-api1')).toBeInTheDocument();
-        expect(screen.getByText(apiResults[0].title)).toBeInTheDocument(); // Check content within mock
+        expect(screen.getByText(apiResults[0].title)).toBeInTheDocument();
 
-        // 5. Ensure initial books (from location.state) are gone after API fetch overrides state
         expect(screen.queryByTestId(`bookcard-${locationStateResults[0].id}`)).not.toBeInTheDocument();
         expect(screen.queryByTestId(`bookcard-${locationStateResults[1].id}`)).not.toBeInTheDocument();
 
-        // 6. Verify the API fetch was attempted by the second useEffect
         expect(mockedAxios.get).toHaveBeenCalledTimes(1);
         expect(mockedAxios.get).toHaveBeenCalledWith(
-           expect.stringContaining('/api/search/'), // Or /api/filter/
+           expect.stringContaining('/api/search/'),
            expect.objectContaining({
-               params: expect.objectContaining({ q: locationStateFilter }) // Or filter:
+               params: expect.objectContaining({ q: locationStateFilter })
            })
        );
 
-        // 7. Verify final count of Bookcard renders (initial + update)
-        // The mock might be called again during the re-render with API data
-         expect(MockedBookcard).toHaveBeenCalledTimes(locationStateResults.length + apiResults.length);
+        expect(MockedBookcard).toHaveBeenCalledTimes(locationStateResults.length + apiResults.length);
 
     });
     it('renders error and logs console error for unexpected API response format', async () => {

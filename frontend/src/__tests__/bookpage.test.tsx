@@ -1,66 +1,55 @@
-// src/__tests__/bookpage.test.tsx
-
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup, act, RenderResult } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { describe, it, expect, beforeEach, afterEach, vi, MockInstance } from 'vitest';
 import axios from 'axios';
-import { useLocation, useParams, BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom'; // Need BrowserRouter for Link
+import { useLocation, useParams, BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
 
-// --- Mock react-router-dom ---
 interface LocationState {
-    book: RetrievedBook | null; // Allow RetrievedBook type or null
+    book: RetrievedBook | null;
 }
-const mockParams = { id: '123' }; // Default book ID from URL
-const mockLocationState: LocationState = { book: null }; // Default empty location state
+const mockParams = { id: '123' };
+const mockLocationState: LocationState = { book: null };
 vi.mock('react-router-dom', async (importActual) => {
     const actual = await importActual<typeof import('react-router-dom')>();
     return {
         ...actual,
         useParams: vi.fn(() => mockParams),
-        useLocation: vi.fn(() => ({ // Mock location object structure
+        useLocation: vi.fn(() => ({
             pathname: `/books/${mockParams.id}`,
             search: '',
             hash: '',
-            state: mockLocationState, // Use variable for state
+            state: mockLocationState,
             key: 'testKey',
         })),
     };
 });
 
-// --- Mock Axios ---
 vi.mock('axios');
 const mockedAxios = vi.mocked(axios, true);
 
-// --- Mock Assets ---
 vi.mock('../assets/pictures/no-results.png', () => ({ default: 'defaultCover.png' }));
 
-// Component to test
-import Bookpage from '../assets/bookpage'; // Adjust path if needed
+import Bookpage from '../assets/bookpage';
 
-// --- Test Data ---
-const bookId = mockParams.id; // Use ID from params mock
-interface Book { id: number | string; title: string; author: string; } // Keep Book type
+const bookId = mockParams.id;
+interface Book { id: number | string; title: string; author: string; }
 interface RetrievedBook extends Book { description: string; cover: string; key: string; error?: string; }
 
 const mockBookData = {
     id: bookId,
     title: 'The Test Book',
     author: 'Tester Q. Author',
-    description: 'This is the full description of the test book. '.repeat(20), // Make it long
-    cover: '98765', // Example cover ID
-    key: 'OL987M', // Example OpenLibrary key needed for ISBN fetch
+    description: 'This is the full description of the test book. '.repeat(20),
+    cover: '98765',
+    key: 'OL987M',
 };
 interface BookData {
     id: number;
-    key: string; // Important for fetchIsbn
+    key: string;
     title: string;
-    description: string | null; // Can be string or null
-    // Add any other properties your component might expect from a book object
-    // For example:
-    // author_name?: string[];
-    // cover_i?: number;
+    description: string | null;
 }
 const createLongString = (length: number): string => 'a'.repeat(length);
 
@@ -68,14 +57,14 @@ const mockBookLongDescription: BookData = {
     id: 1,
     key: 'OL123M',
     title: 'Test Book with Long Description',
-    description: createLongString(301), // Longer than 300 chars
+    description: createLongString(301),
 };
 
 const mockBookShortDescription: BookData = {
     id: 2,
     key: 'OL456M',
     title: 'Test Book with Short Description',
-    description: createLongString(100), // Shorter than 300 chars
+    description: createLongString(100),
 };
 
 const mockBookNoDescription: BookData = {
@@ -85,7 +74,6 @@ const mockBookNoDescription: BookData = {
     description: null,
 };
 
-
 const mockReviewsData = [
     { id: 1, username: 'reviewer1', rating: 5, text: 'Amazing read!', created_at: '2024-01-10T10:00:00Z' },
     { id: 2, username: 'reviewer2', rating: 3, text: 'It was okay.', created_at: '2024-01-09T14:30:00Z' },
@@ -93,19 +81,15 @@ const mockReviewsData = [
 const mockIsbnData = '978-3-16-148410-0';
 const mockAuthToken = 'bookpage-token';
 
-// --- API URLs ---
 const bookApiUrl = `http://127.0.0.1:8000/api/book/${bookId}/`;
 const reviewsApiUrl = `http://127.0.0.1:8000/api/reviews/${bookId}/`;
-const isbnApiUrl = `http://127.0.0.1:8000/api/isbn/${mockBookData.key}`; // Use key from mockBookData
-const reviewSubmitUrl = `http://127.0.0.1:8000/api/reviews/${bookId}/`; // POST URL
+const isbnApiUrl = `http://127.0.0.1:8000/api/isbn/${mockBookData.key}`;
+const reviewSubmitUrl = `http://127.0.0.1:8000/api/reviews/${bookId}/`;
 
-// Helper to render with Router context
 const renderWithRouter = (ui: React.ReactElement) => {
     return render(ui, { wrapper: BrowserRouter });
 };
 
-
-// --- Test Suite ---
 describe('Bookpage Component', () => {
     let alertSpy: MockInstance;
     let consoleErrorSpy: MockInstance;
@@ -132,7 +116,7 @@ describe('Bookpage Component', () => {
         vi.spyOn(window.localStorage.__proto__, 'removeItem');
 
         alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}); // Properly define as spy
+        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         mockedAxios.get.mockImplementation((url: string) => {
             if (url.includes(`/api/book/${mockBookData.id}/`)) return Promise.resolve({ data: mockBookData });
@@ -150,14 +134,12 @@ describe('Bookpage Component', () => {
         cleanup();
     });
 
-    // --- Rendering and Initial Load ---
     describe('Initial Rendering and Data Loading', () => {
         it('shows loading state initially if no book data in location state', () => {
-            mockLocationState.book = null; // Ensure no state book
-            // Prevent book fetch resolve
+            mockLocationState.book = null;
             mockedAxios.get.mockImplementation(async (url) => {
                 if (url === bookApiUrl) return new Promise(() => { });
-                return { data: [] }; // Allow others
+                return { data: [] };
             });
             renderWithRouter(<Bookpage />);
             expect(screen.getByText(/Loading book details.../i)).toBeInTheDocument();
@@ -166,10 +148,9 @@ describe('Bookpage Component', () => {
 
         it('renders error message if book fetch fails', async () => {
             const error = new Error('Book not found');
-            // Mock ONLY book fetch to fail
             mockedAxios.get.mockImplementation(async (url) => {
                 if (url === bookApiUrl) throw error;
-                if (url === reviewsApiUrl) return { data: [] }; // Allow others to proceed or fail
+                if (url === reviewsApiUrl) return { data: [] };
                 if (url === isbnApiUrl) return { data: '' };
                 throw new Error(`Unhandled GET: ${url}`);
             });
@@ -178,13 +159,11 @@ describe('Bookpage Component', () => {
 
             expect(await screen.findByText(/Failed to load book details/i)).toBeInTheDocument();
             expect(screen.queryByText(/Loading book details.../i)).not.toBeInTheDocument();
-            // Reviews/ISBN might not be fetched or rendered depending on timing
             expect(screen.queryByText(/Reviews/i)).not.toBeInTheDocument();
         });
 
         it('handles ISBN fetch error gracefully (shows fallback)', async () => {
             const isbnError = new Error('ISBN lookup failed');
-            // Mock ONLY ISBN fetch to fail
             mockedAxios.get.mockImplementation(async (url) => {
                 if (url === bookApiUrl) return { data: { ...mockBookData } };
                 if (url === reviewsApiUrl) return { data: [...mockReviewsData] };
@@ -194,18 +173,13 @@ describe('Bookpage Component', () => {
 
             renderWithRouter(<Bookpage />);
 
-            // Wait for book details and reviews
             expect(await screen.findByRole('heading', { name: mockBookData.title })).toBeInTheDocument();
             expect(await screen.findByText(mockReviewsData[0].text)).toBeInTheDocument();
-
-            // Check ISBN fallback text is shown
             expect(await screen.findByText(/ISBN not available/i)).toBeInTheDocument();
-            // Check link is NOT shown
             expect(screen.queryByRole('link', { name: /view on national library/i })).not.toBeInTheDocument();
         });
     });
 
-    // --- Description Toggle ---
     describe('Description Toggle', () => {
         it('toggles description from truncated to expanded and back', async () => {
             mockedAxios.get.mockResolvedValueOnce({ data: mockBookLongDescription });
@@ -214,12 +188,10 @@ describe('Bookpage Component', () => {
             const toggleButton = await screen.findByRole('button', { name: /View More/i });
             const descriptionDiv = screen.getByTestId('book-description');
 
-            // Expand description
             fireEvent.click(toggleButton);
             expect(descriptionDiv).toHaveClass('animating-expand');
             await waitFor(() => expect(descriptionDiv).toHaveClass('expanded'));
 
-            // Collapse description
             fireEvent.click(toggleButton);
             expect(descriptionDiv).toHaveClass('animating-collapse');
             await waitFor(() => expect(descriptionDiv).toHaveClass('truncated'));
@@ -233,7 +205,6 @@ describe('Bookpage Component', () => {
         });
     });
 
-    // --- Review Form ---
     describe('Review Form', () => {
         it('updates review text input on change', async () => {
             const user = userEvent.setup();
@@ -246,32 +217,30 @@ describe('Bookpage Component', () => {
         it('shows alert if submitting without selecting a rating', async () => {
             const user = userEvent.setup();
             renderWithRouter(<Bookpage />);
-            // Wait for form elements
             const reviewInput = await screen.findByPlaceholderText(/Share your thoughts/i);
             const submitButton = screen.getByRole('button', { name: /Submit Review/i });
 
-            await user.type(reviewInput, 'Some text'); // Add text
-            await user.click(submitButton); // Click submit without rating
+            await user.type(reviewInput, 'Some text');
+            await user.click(submitButton);
 
             expect(alertSpy).toHaveBeenCalledTimes(1);
             expect(alertSpy).toHaveBeenCalledWith("Please select a rating before submitting your review.");
-            expect(mockedAxios.post).not.toHaveBeenCalled(); // API not called
+            expect(mockedAxios.post).not.toHaveBeenCalled();
         });
 
         it('shows alert if submitting without being logged in', async () => {
             const user = userEvent.setup();
-            localStorage.removeItem('authToken'); // Log out
-            vi.spyOn(window.localStorage.__proto__, 'getItem').mockReturnValue(null); // Ensure mock reflects logged out
+            localStorage.removeItem('authToken');
+            vi.spyOn(window.localStorage.__proto__, 'getItem').mockReturnValue(null);
 
             renderWithRouter(<Bookpage />);
 
-            // Inline steps for submitting a review
             const reviewInput = await screen.findByPlaceholderText(/Share your thoughts/i);
             const stars = await screen.findAllByText(/★/i);
             const submitButton = screen.getByRole('button', { name: /Submit Review/i });
 
             await user.type(reviewInput, 'Review text');
-            await user.click(stars[3]); // Select 4 stars (0-indexed)
+            await user.click(stars[3]);
             await user.click(submitButton);
 
             expect(alertSpy).toHaveBeenCalledTimes(1);
@@ -289,11 +258,11 @@ describe('Bookpage Component', () => {
             const submitButton = screen.getByRole('button', { name: /Submit Review/i });
 
             await user.type(reviewInput, 'Great book!');
-            await user.click(stars[4]); // Select 5 stars (0-indexed)
+            await user.click(stars[4]);
             await user.click(submitButton);
 
             expect(mockedAxios.post).toHaveBeenCalledWith(
-                expect.stringContaining(`/api/reviewtest/${mockParams.id}/`), // Updated endpoint
+                expect.stringContaining(`/api/reviewtest/${mockParams.id}/`),
                 { rating: 5, text: 'Great book!' },
                 expect.objectContaining({
                     headers: {
@@ -311,13 +280,12 @@ describe('Bookpage Component', () => {
 
             renderWithRouter(<Bookpage />);
 
-            // Inline steps for submitting a review
             const reviewInput = await screen.findByPlaceholderText(/Share your thoughts/i);
             const stars = await screen.findAllByText(/★/i);
             const submitButton = screen.getByRole('button', { name: /Submit Review/i });
 
             await user.type(reviewInput, 'Another failure attempt.');
-            await user.click(stars[2]); // Select 3 stars (0-indexed)
+            await user.click(stars[2]);
             await user.click(submitButton);
 
             await waitFor(() => {
@@ -326,7 +294,6 @@ describe('Bookpage Component', () => {
         });
     });
 
-    // --- ISBN Fetch ---
     describe('ISBN Fetch', () => {
         it('displays fallback when ISBN fetch fails', async () => {
             mockedAxios.get.mockImplementation((url) => {
@@ -395,7 +362,7 @@ describe('Bookpage Component - Remaining Coverage', () => {
         });
         (useParams as any).mockReturnValue(mockParams);
 
-        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}); // Create console error spy
+        consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     describe('fetchIsbn Function', () => {
@@ -420,21 +387,16 @@ describe('Bookpage Component - Remaining Coverage', () => {
         });
     });
 
-    // Fix for the StateBook Handling test section in bookpage.test.tsx
-
     describe('StateBook Handling', () => {
         it('uses stateBook if provided and matches the URL id', async () => {
-            // Use numeric id that matches mockParams.id
             const numericId = parseInt(mockParams.id);
             mockLocationState.book = { ...mockBookData, id: numericId };
             
-            // Reset axios mocks to track calls
             mockedAxios.get.mockClear();
             
-            // Mock different axios responses for different endpoints
             mockedAxios.get.mockImplementation((url) => {
                 if (url.includes(`/api/book/${mockParams.id}/`)) {
-                    return Promise.resolve({ data: mockLocationState.book }); // Return stateBook data
+                    return Promise.resolve({ data: mockLocationState.book });
                 }
                 if (url.includes(`/api/reviews/${mockParams.id}/`)) {
                     return Promise.resolve({ data: mockReviewsData });
@@ -447,10 +409,8 @@ describe('Bookpage Component - Remaining Coverage', () => {
             
             renderWithRouter(<Bookpage />);
 
-            // Ensure the book data is rendered
             expect(await screen.findByRole('heading', { name: mockBookData.title })).toBeInTheDocument();
 
-            // Assert that reviews and ISBN fetches are still called
             const reviewCalls = mockedAxios.get.mock.calls.filter(call => 
                 typeof call[0] === 'string' && call[0].includes(`/api/reviews/${mockParams.id}/`)
             );
@@ -463,7 +423,6 @@ describe('Bookpage Component - Remaining Coverage', () => {
         });
 
         it('fetches book data if stateBook id does not match URL id', async () => {
-            // Important: Make sure mockedAxios.get correctly returns Promises for all URLs
             mockedAxios.get.mockImplementation((url) => {
                 if (url.includes(`/api/book/${mockParams.id}/`)) {
                     return Promise.resolve({ data: mockBookData });
@@ -471,31 +430,24 @@ describe('Bookpage Component - Remaining Coverage', () => {
                 if (url.includes(`/api/reviews/${mockParams.id}/`)) {
                     return Promise.resolve({ data: mockReviewsData });
                 }
-                if (url.includes(`/api/isbn/`)) {  // Handle any ISBN URL, even if key changes
+                if (url.includes(`/api/isbn/`)) {
                     return Promise.resolve({ data: mockIsbnData });
                 }
-                // Default case for any other URL
                 return Promise.resolve({ data: {} });
             });
             
-            // Set a book state with mismatched ID
-            mockLocationState.book = { ...mockBookData, id: 999 }; // Mismatched id
+            mockLocationState.book = { ...mockBookData, id: 999 };
             
             renderWithRouter(<Bookpage />);
 
-            // Ensure the book data is rendered - wait for it to appear
             expect(await screen.findByRole('heading', { name: mockBookData.title })).toBeInTheDocument();
 
-            // Assert that the book data fetch is called
             expect(mockedAxios.get).toHaveBeenCalledWith(bookApiUrl);
 
-            // The reviews and ISBN tests might be more reliable with waitFor
             await waitFor(() => {
                 expect(mockedAxios.get).toHaveBeenCalledWith(reviewsApiUrl);
             });
             
-            // Check that an ISBN call was made - but be flexible about the exact key
-            // since it might come from the new book data
             const isbnCalls = mockedAxios.get.mock.calls.filter(call => 
                 typeof call[0] === 'string' && call[0].includes(`/api/isbn/`)
             );
