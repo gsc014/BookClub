@@ -11,3 +11,4 @@ export { default as GamePage } from './gamepage.jsx';
 export { default as TopRatedBooks } from './toprated';
 export { default as MostLikedBooks } from './mostLikedBooks';
 export { default as MostActiveUsers } from './mostActiveUsers';
+export { default as GameListPage } from './gamepagelist.jsx';

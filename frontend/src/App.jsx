@@ -6,13 +6,14 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useEffect } from 'react';
 import { checkInitialAuthState, getAuthHeaders, isLoggedIn } from './utils';
 
-import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage} from './assets';
+import { Header, Searchbar, Booklist, Login, Signin, Welcome, Profile, Settings, Bookpage, GameListPage } from './assets';
 import TopRatedBooks from './assets/toprated';
 import MostLikedBooks from './assets/mostLikedBooks';
 import MostActiveUsers from './assets/mostActiveUsers';
 import ProfilePage from './assets/ProfilePage';
 import SearchResults from './assets/searchresults';
 import GamePage from './assets/gamepage';
+import GameRouter from './assets/gamerouter';
 
 // Updated ProtectedRoute component with verbose logging
 const ProtectedRoute = ({ children }) => {
@@ -87,10 +88,14 @@ const App = () => {
                 <Route path="/add-book/:id" element={
                     <Bookpage book={location.state?.book || []} />
                 } />
-                
-                <Route path="/game" element={
+                 <Route path="/game" element={
                     <ProtectedRoute>
-                        <GamePage />
+                        <GameListPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/games/:gameId" element={
+                    <ProtectedRoute>
+                        <GameRouter />
                     </ProtectedRoute>
                 } />
             </Routes>
