@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.db import transaction
 from unittest.mock import patch, MagicMock
-
+from django.core.cache import cache
 
 class UserTests(APITestCase):
     '''
@@ -626,6 +626,7 @@ class ReviewTests(APITestCase):
 
 
 
+
 class UserProfileTests(APITestCase):
     '''
     test for getting a user profile:
@@ -973,6 +974,36 @@ class RecommendedBookTests(APITestCase):
         response2 = self.client.get(self.url + "?num=2")
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response1.data, response2.data)
+
+    def test_books_with_no_subjects_are_included(self):
+        # Clear the cache and database state
+        cache.clear()
+        Books.objects.all().delete()
+
+        # Add a book with no subjects
+        book = Books.objects.create(
+            key="book_no_subjects",
+            title="No Subject Book",
+            description="No subject",
+            subjects=None,
+            author="Mystery Author",
+            first_published=2000,
+            cover=99
+        )
+
+        # Block a genre so the fallback path is triggered
+        UserBookList.objects.create(user_id=self.user, name="Blocked Books", book_ids=["Fiction"])
+
+        # Patch random.sample to ensure our book is selected
+        from unittest.mock import patch
+        with patch('random.sample', return_value=[book.id]):
+            response = self.client.get(self.url + "?num=1")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], book.id)
+
+
+
 
 
 

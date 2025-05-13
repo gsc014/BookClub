@@ -109,7 +109,7 @@ const Signin = () => {
                     />
                     <div className="cut" />
                     <label htmlFor="password2" className="placeholder">
-                        Confirm Password
+                        Password
                     </label>
                 </div>
                 <button className="submit button" type="submit">
