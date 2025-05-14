@@ -72,6 +72,11 @@ Follow these steps to get a local copy of the project up and running:
     and press the link that pops up in the terminal:
     http://localhost:5173/
 
+9. **If the Database is not available**
+    you can download the database
+    from this link:
+    https://universitetetitromso-my.sharepoint.com/:u:/g/personal/agu078_uit_no/EWSpiCis85tDulFQM9y2DewBF40NWnsoFe09IiZN38kF1Q?e=vYSEhi
+    
 ## Maintainers 👨‍💻
 * Gard Schive
 * Lukas Voldset
