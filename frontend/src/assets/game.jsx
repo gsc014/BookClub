@@ -39,6 +39,7 @@ const Game = () => {
     return (
         <div>
             <img src={cover} alt="Random" style={{ filter: blurlevel }} />
+            <br />
             <label htmlFor="BookName">Book Name:</label><br />
             <input 
                 type="text" 

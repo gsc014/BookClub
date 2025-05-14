@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './style/bookpage.css';
 import defaultCover from './pictures/no-results.png';
+import { showLogInTab } from '../utils.jsx';
 
 const Bookpage = () => {
     const { id } = useParams();
@@ -106,7 +107,8 @@ const Bookpage = () => {
         }
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            alert("You must be logged in to submit a review.");
+            // alert("You must be logged in to submit a review.");
+            showLogInTab();
             return;
         }
         try {
