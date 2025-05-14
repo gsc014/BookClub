@@ -174,7 +174,7 @@ describe('Bookpage Component', () => {
             expect(screen.queryByText(/Reviews/i)).not.toBeInTheDocument();
         });
 
-        it('handles ISBN fetch error gracefully (shows fallback)', async () => {
+        it('handles ISBN fetch error(shows fallback)', async () => {
             const isbnError = new Error('ISBN lookup failed');
             mockedAxios.get.mockImplementation(async (url) => {
                 if (url === bookApiUrl) return { data: { ...mockBookData } };
@@ -317,7 +317,7 @@ describe('Bookpage Component', () => {
             expect(await screen.findByText(/ISBN not available/i)).toBeInTheDocument();
         });
 
-        it('handles invalid ISBN fetch gracefully', async () => {
+        it('handles invalid ISBN fetch', async () => {
             mockedAxios.get.mockImplementation((url) => {
                 if (url.includes(`/api/book/${mockBookData.id}/`)) return Promise.resolve({ data: mockBookData });
                 if (url.includes(`/api/isbn/${mockBookData.key}`)) return Promise.reject(new Error('Invalid ISBN fetch'));
@@ -386,7 +386,7 @@ describe('Bookpage Component - Remaining Coverage', () => {
             expect(mockedAxios.get).not.toHaveBeenCalledWith(isbnApiUrl);
         });
 
-        it('handles invalid ISBN fetch gracefully', async () => {
+        it('handles invalid ISBN fetch', async () => {
             const isbnError = new Error('Invalid ISBN fetch');
             mockedAxios.get.mockImplementation((url) => {
                 if (url.includes(`/api/book/${mockBookData.id}/`)) return Promise.resolve({ data: mockBookData });
