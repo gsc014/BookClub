@@ -176,14 +176,17 @@ const Settings = () => {
         )
             .then(response => {
                 setFormSuccess('Email updated successfully! Please log in again with your new email.');
+
                 const userData = JSON.parse(localStorage.getItem('user') || '{}');
                 userData.email = newEmail;
                 localStorage.setItem('user', JSON.stringify(userData));
+
                 setTimeout(() => {
                     logout();
                     navigate('/');
                 }, 3000);
             })
+            
             .catch(err => {
                 setFormError(err.response?.data?.error || 'Failed to update email');
             });
