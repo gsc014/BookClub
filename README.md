@@ -66,7 +66,7 @@ Follow these steps to get a local copy of the project up and running:
     
 8. **run the frontend server**
     ```bash
-    write into console
+    write into terminal
     npm run dev
 
     and press the link that pops up in the terminal:
