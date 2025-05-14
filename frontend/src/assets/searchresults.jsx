@@ -7,10 +7,8 @@ import './style/searchresults.css';
 
 const SearchResults = () => {
     const location = useLocation();
-    // Get results from location state
     const initialResults = location.state?.initialResults || [];
     const initialFilter = location.state?.initialFilter || '';
-    // Check if this is a title search or a subject filter
     const isSearchQuery = location.state?.isSearchQuery || false;
 
     const [books, setBooks] = useState(initialResults);
@@ -22,14 +20,12 @@ const SearchResults = () => {
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState(initialFilter);
 
-    // Log what data we're getting
     useEffect(() => {
         console.log("Initial filter:", initialFilter);
         console.log("Initial results:", initialResults);
         console.log("Is search query:", isSearchQuery);
     }, [initialFilter, initialResults, isSearchQuery]);
 
-    // Add this useEffect to your SearchResults component
     useEffect(() => {
         if (location.state?.initialResults?.length > 0) {
             setBooks(location.state.initialResults);
@@ -39,21 +35,14 @@ const SearchResults = () => {
         }
     }, [location.state]);
 
-    // Fetch books when page, resultsPerPage, or filter changes
     useEffect(() => {
         const fetchBooks = async () => {
             if (!filter) return;
-            
             setLoading(true);
             setError(null);
-            
             try {
-                // Use the appropriate endpoint based on whether this is a search or filter
                 const endpoint = isSearchQuery ? 'search' : 'filter';
                 const paramName = isSearchQuery ? 'q' : 'filter';
-                
-                console.log(`Fetching page ${currentPage} of ${filter} results using ${endpoint} endpoint`);
-                
                 const response = await axios.get(`http://127.0.0.1:8000/api/${endpoint}/`, {
                     params: {
                         [paramName]: filter,
@@ -61,38 +50,29 @@ const SearchResults = () => {
                         per_page: resultsPerPage
                     }
                 });
-                
-                console.log("API response:", response.data);
-                
-                // Set books from results
                 if (response.data && response.data.results) {
                     setBooks(response.data.results);
-                    
-                    // Set pagination data if available
                     if (response.data.pagination) {
                         setTotalBooks(response.data.pagination.total_books);
                         setTotalPages(response.data.pagination.total_pages);
                     }
                 } else {
-                    console.error("Unexpected API response format:", response.data);
                     setError("Invalid data format received from server");
                     setBooks([]);
                 }
             } catch (err) {
-                console.error('Error fetching books:', err);
                 setError('Failed to load books. Please try again.');
                 setBooks([]);
             } finally {
                 setLoading(false);
             }
         };
-        
         fetchBooks();
     }, [filter, currentPage, resultsPerPage, isSearchQuery]);
 
     const handleResultsPerPageChange = (event) => {
         setResultsPerPage(Number(event.target.value));
-        setCurrentPage(1); // Reset to the first page when changing results per page
+        setCurrentPage(1);
     };
 
     return (
@@ -130,7 +110,6 @@ const SearchResults = () => {
                 </div>
             )}
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
                 <div className="pagination">
                     <button 

@@ -9,8 +9,6 @@ const Settings = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [profileData, setProfileData] = useState(null);
-
-    // Form state for account management
     const [showUsernameForm, setShowUsernameForm] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [showEmailForm, setShowEmailForm] = useState(false);
@@ -22,9 +20,6 @@ const Settings = () => {
     const [newEmail, setNewEmail] = useState('');
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
-
-
-    // Genre blocking state
     const [availableGenres, setAvailableGenres] = useState([
         'Drama', 'Romance', 'History', 'Fiction', 'Comedy',
         'Horror', 'Young Adult', 'Biography', 'Economy', 'Custom'
@@ -36,16 +31,12 @@ const Settings = () => {
     const [genreUpdateSuccess, setGenreUpdateSuccess] = useState('');
 
     useEffect(() => {
-        // Check if user is logged in
         if (!isLoggedIn()) {
             navigate('/');
             return;
         }
-
-        // Fetch user data
         const username = getCurrentUsername();
         const authToken = localStorage.getItem('authToken');
-
         axios.get(`http://127.0.0.1:8000/api/profile/${username}/`, {
             headers: {
                 'Authorization': `Token ${authToken}`
@@ -56,12 +47,9 @@ const Settings = () => {
                 setLoading(false);
             })
             .catch(err => {
-                console.error('Error fetching user data:', err);
                 setError('Failed to load your profile data');
                 setLoading(false);
             });
-
-        // Fetch blocked genres
         fetchBlockedGenres();
     }, [navigate]);
 
@@ -77,9 +65,7 @@ const Settings = () => {
                     setBlockedGenres(response.data.blocked_genres);
                 }
             })
-            .catch(error => {
-                console.error('Error fetching blocked genres:', error);
-            });
+            .catch(error => {});
     };
 
     const handleLogout = () => {
@@ -91,14 +77,11 @@ const Settings = () => {
         e.preventDefault();
         setFormError(null);
         setFormSuccess(null);
-
         if (!newUsername.trim()) {
-            console.log('EMPTY USERNAME');
             setFormError('Username cannot be empty');
             setError('Username cannot be empty');
             return;
         }
-
         try {
             const authToken = localStorage.getItem('authToken');
             const response = await axios.post(
@@ -111,87 +94,36 @@ const Settings = () => {
                     }
                 }
             );
-
             setFormSuccess('Username updated successfully! Please log in again with your new username.');
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             userData.username = newUsername;
             localStorage.setItem('user', JSON.stringify(userData));
-
             setTimeout(() => {
                 logout();
                 navigate('/');
             }, 3000);
         } catch (err) {
-            console.log('API ERROR:', err.response?.data);
             setFormError(err.response?.data?.error || 'Failed to update username');
         }
     };
-
-    // const handleChangeUsername = (e) => {
-    //     e.preventDefault();
-    //     setFormError('');
-    //     setFormSuccess('');
-
-    //     if (!newUsername.trim()) {
-    //         console.log('handleChangeUsername: Setting formError to "Username cannot be empty"'); // <-- ADD LOG
-    //         setFormError('Username cannot be empty');
-    //         console.log('Form error is:', formError);
-    //         return;
-    //     }
-
-    //     const authToken = localStorage.getItem('authToken');
-
-    //     // Call API to change username
-    //     axios.post('http://127.0.0.1:8000/api/update-username/',
-    //         { new_username: newUsername },
-    //         {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Token ${authToken}`
-    //             }
-    //         }
-    //     )
-    //         .then(response => {
-    //             setFormSuccess('Username updated successfully! Please log in again with your new username.');
-    //             // Update localStorage with new username
-    //             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    //             userData.username = newUsername;
-    //             localStorage.setItem('user', JSON.stringify(userData));
-
-    //             // Log out after short delay to allow user to see success message
-    //             setTimeout(() => {
-    //                 logout();
-    //                 navigate('/');
-    //             }, 3000);
-    //         })
-    //         .catch(err => {
-    //             setFormError(err.response?.data?.error || 'Failed to update username');
-    //         });
-    // };
 
     const handleChangePassword = (e) => {
         e.preventDefault();
         setFormError('');
         setFormSuccess('');
-
         if (!currentPassword) {
             setFormError('Current password is required');
             return;
         }
-
         if (!newPassword || !confirmPassword) {
             setFormError('New password and confirmation are required');
             return;
         }
-
         if (newPassword !== confirmPassword) {
             setFormError('New passwords do not match');
             return;
         }
-
         const authToken = localStorage.getItem('authToken');
-
-        // Call API to change password
         axios.post('http://127.0.0.1:8000/api/update-password/',
             {
                 current_password: currentPassword,
@@ -209,8 +141,6 @@ const Settings = () => {
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-
-                // Log out after short delay
                 setTimeout(() => {
                     logout();
                     navigate('/');
@@ -225,15 +155,11 @@ const Settings = () => {
         e.preventDefault();
         setFormError('');
         setFormSuccess('');
-
         if (!newEmail.trim()) {
             setFormError('Email cannot be empty');
             return;
         }
-
         const authToken = localStorage.getItem('authToken');
-
-        // Call API to change email
         axios.post('http://127.0.0.1:8000/api/update-email/',
             { new_email: newEmail },
             {
@@ -245,12 +171,9 @@ const Settings = () => {
         )
             .then(response => {
                 setFormSuccess('Email updated successfully! Please log in again with your new email.');
-                // Update localStorage with new email
                 const userData = JSON.parse(localStorage.getItem('user') || '{}');
                 userData.email = newEmail;
                 localStorage.setItem('user', JSON.stringify(userData));
-
-                // Log out after short delay to allow user to see success message
                 setTimeout(() => {
                     logout();
                     navigate('/');
@@ -263,8 +186,6 @@ const Settings = () => {
 
     const handleDeleteAccount = () => {
         const authToken = localStorage.getItem('authToken');
-
-        // Call API to delete account
         axios.delete('http://127.0.0.1:8000/api/delete-account/', {
             headers: {
                 'Content-Type': 'application/json',
@@ -272,11 +193,8 @@ const Settings = () => {
             }
         })
             .then(response => {
-                // Clear local auth state
                 localStorage.removeItem('user');
                 localStorage.removeItem('authToken');
-
-                // Redirect to home with a message
                 navigate('/', { state: { message: 'Your account has been successfully deleted' } });
             })
             .catch(err => {
@@ -286,26 +204,18 @@ const Settings = () => {
 
     const handleAddBlockedGenre = (e) => {
         e.preventDefault();
-
         let genreToAdd = newBlockedGenre;
-
-        // Handle custom genre option
         if (newBlockedGenre === 'Custom' && customGenre.trim()) {
             genreToAdd = customGenre.trim();
         }
-
         if (!genreToAdd || blockedGenres.includes(genreToAdd)) {
             return;
         }
-
         const updatedBlockedGenres = [...blockedGenres, genreToAdd];
-        console.log('Updated blocked genres:', updatedBlockedGenres);
         setBlockedGenres(updatedBlockedGenres);
         setNewBlockedGenre('');
         setCustomGenre('');
         setGenreUpdateSuccess(`Successfully blocked "${genreToAdd}" genre`);
-
-        // Update on server
         updateBlockedGenresOnServer(updatedBlockedGenres);
     };
 
@@ -313,10 +223,7 @@ const Settings = () => {
         const updatedBlockedGenres = blockedGenres.filter(g => g !== genre);
         setBlockedGenres(updatedBlockedGenres);
         setGenreUpdateSuccess(`Successfully unblocked "${genre}" genre`);
-
-        // Update on server
         const authToken = localStorage.getItem('authToken');
-        console.log('Removing genre:', genre);
         axios.post(
             `http://127.0.0.1:8000/api/unblock-genre/`,
             {
@@ -329,21 +236,16 @@ const Settings = () => {
                 }
             }
         )
-            .then(response => {
-                console.log("Genre unblocked:", response.data);
-            })
-            .catch(error => {
-                console.error("Error unblocking genre:", error);
-            });
+            .then(response => {})
+            .catch(error => {});
     };
 
     const updateBlockedGenresOnServer = (genres) => {
         const authToken = localStorage.getItem('authToken');
-
         axios.post(
             `http://127.0.0.1:8000/api/block-genres/`,
             {
-                blocked_genres: genres  // Keep original capitalization
+                blocked_genres: genres
             },
             {
                 headers: {
@@ -352,15 +254,10 @@ const Settings = () => {
                 }
             }
         )
-            .then(response => {
-                console.log("Genres blocked:", response.data);
-            })
-            .catch(error => {
-                console.error("Error blocking genres:", error);
-            });
+            .then(response => {})
+            .catch(error => {});
     };
 
-    // Filter available genres to exclude already blocked ones
     const filteredAvailableGenres = availableGenres.filter(
         genre => !blockedGenres.includes(genre)
     );
@@ -368,8 +265,6 @@ const Settings = () => {
     if (loading) {
         return <div className="settings-page loading">Loading your settings...</div>;
     }
-
-    // console.log('Settings Component Render - formError:', formError, 'showUsernameForm:', showUsernameForm);
 
     return (
         <div className="settings-page">
@@ -383,9 +278,7 @@ const Settings = () => {
             {formSuccess && <div className="form-success">{formSuccess}</div>}
 
             <div className="settings-layout">
-                {/* Left Column - User Profile and Account Management */}
                 <div className="settings-left-column">
-                    {/* User Information */}
                     {profileData && (
                         <div className="settings-section user-info">
                             <h2>Profile Information</h2>
@@ -395,11 +288,8 @@ const Settings = () => {
                         </div>
                     )}
 
-                    {/* Account Management Section */}
                     <div className="settings-section account-management">
                         <h2>Account Management</h2>
-
-                        {/* Change Username */}
                         <div className="account-option">
                             <h3>Change Username</h3>
                             <button
@@ -435,8 +325,6 @@ const Settings = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* Change Password */}
                         <div className="account-option">
                             <h3>Change Password</h3>
                             <button
@@ -489,8 +377,6 @@ const Settings = () => {
                                 </form>
                             )}
                         </div>
-
-                        {/* Change Email */}
                         <div className="account-option">
                             <h3>Change Email</h3>
                             <button
@@ -523,8 +409,6 @@ const Settings = () => {
                                 </form>
                             )}
                         </div>
-
-                        {/* Delete Account */}
                         <div className="account-option delete-account">
                             <h3>Delete Account</h3>
                             <button
@@ -553,19 +437,12 @@ const Settings = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Right Column - Genre Preferences */}
                 <div className="settings-right-column">
-                    {/* App Preferences Section - Now with blocked genres */}
                     <div className="settings-section preferences">
                         <h2>Reading Preferences</h2>
-
-                        {/* Blocked Genres */}
                         <div className="preference-option">
                             <h3>Blocked Book Genres</h3>
                             {genreUpdateSuccess && <div className="form-success small">{genreUpdateSuccess}</div>}
-
-                            {/* Display current blocked genres */}
                             <div className="blocked-genres">
                                 {blockedGenres.length > 0 ? (
                                     <>
@@ -579,7 +456,6 @@ const Settings = () => {
                                                         onClick={() => handleRemoveBlockedGenre(genre)}
                                                         title="Remove genre"
                                                         aria-label={`Remove ${genre}`}
-
                                                     >
                                                         ×
                                                     </button>
@@ -591,15 +467,12 @@ const Settings = () => {
                                     <p>You're not currently blocking any genres.</p>
                                 )}
                             </div>
-
-                            {/* Add new blocked genre */}
                             <button
                                 onClick={() => setShowGenreForm(!showGenreForm)}
                                 className="toggle-form-btn"
                             >
                                 {showGenreForm ? 'Cancel' : 'Block Additional Genres'}
                             </button>
-
                             {showGenreForm && (
                                 <form onSubmit={handleAddBlockedGenre} className="account-form genre-form">
                                     <label htmlFor="newBlockedGenre">Select Genre to Block:</label>
@@ -616,8 +489,6 @@ const Settings = () => {
                                             ))}
                                         </select>
                                     </div>
-
-                                    {/* Custom genre input */}
                                     {newBlockedGenre === 'Custom' && (
                                         <div className="form-group">
                                             <label htmlFor="customGenre">Enter Custom Genre:</label>
@@ -631,7 +502,6 @@ const Settings = () => {
                                             />
                                         </div>
                                     )}
-
                                     <button
                                         type="submit"
                                         className="submit-btn"
@@ -641,7 +511,6 @@ const Settings = () => {
                                     </button>
                                 </form>
                             )}
-
                             <div className="preference-info">
                                 <p>Blocked genres won't appear in your recommendations or search results.</p>
                             </div>
@@ -649,7 +518,6 @@ const Settings = () => {
                     </div>
                 </div>
             </div>
-
             <div className="settings-actions">
                 <button className="logout-btn" onClick={handleLogout}>Log Out</button>
                 <button className="back-btn" onClick={() => navigate('/')}>Return to Home</button>

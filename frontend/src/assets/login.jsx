@@ -11,22 +11,18 @@ const Login = () => {
     const [error, setError] = useState('');
 
     const handleLogin = async (e) => {
-        e.preventDefault(); // Prevent default form submission
-    
+        e.preventDefault();
         try {
-            // Sending POST request with credentials
             const response = await axios.post(
                 'http://127.0.0.1:8000/api/login/',
                 { username, password },
                 {
                     headers: { "Content-Type": "application/json" },
-                    withCredentials: true, // Important for session management
+                    withCredentials: true,
                 }
             );
-    
             successfulLogin(response.data);
         } catch (error) {
-            // Handle errors (incorrect credentials)
             if (error.response) {
                 console.error('Login error:', error.response.data);
                 setError(error.response.data.error || 'An error occurred.');
@@ -45,7 +41,6 @@ const Login = () => {
                     src={close}
                     className="icon jump exit"
                     alt="Close login form"
-                    // onClick={() => document.getElementById('login-form').style.display = 'none'}
                     onClick={closeTabs}
                 />
             </h2>

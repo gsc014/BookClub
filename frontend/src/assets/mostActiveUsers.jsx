@@ -16,7 +16,6 @@ const MostActiveUsers = ({ limit = 5 }) => {
                 const response = await axios.get('http://127.0.0.1:8000/api/most-active-users/', {
                     params: { num: limit }
                 });
-                
                 console.log("Most active users:", response.data);
                 setUsers(response.data);
                 setLoading(false);
@@ -26,11 +25,9 @@ const MostActiveUsers = ({ limit = 5 }) => {
                 setLoading(false);
             }
         };
-
         fetchMostActiveUsers();
     }, [limit]);
 
-    // Format date to be more readable
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString();
@@ -39,7 +36,6 @@ const MostActiveUsers = ({ limit = 5 }) => {
     return (
         <div className="sidebar-widget">
             <h3 className="widget-title">Top Reviewers</h3>
-            
             {loading ? (
                 <div className="widget-loading">Loading top reviewers...</div>
             ) : error ? (
@@ -61,7 +57,6 @@ const MostActiveUsers = ({ limit = 5 }) => {
                                     </div>
                                 </div>
                             </Link>
-                            
                             {user.latest_activity && (
                                 <div className="latest-activity">
                                     <small>Recently reviewed:</small>

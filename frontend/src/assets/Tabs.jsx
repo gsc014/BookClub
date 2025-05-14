@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SubjectsHeader from './subjectheader';
-// import './style/tabs.css';
 
 const Tabs = () => {
     const navigate = useNavigate();

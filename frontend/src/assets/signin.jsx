@@ -12,10 +12,8 @@ const Signin = () => {
     const [success, setSuccess] = useState('');
 
     const handleSignup = async (e) => {
-        e.preventDefault(); // Prevent default form submission
-
+        e.preventDefault();
         try {
-            // Sending POST request for signup
             const response = await axios.post(
                 'http://127.0.0.1:8000/api/signup/',
                 { username, password1, password2 },
@@ -23,31 +21,22 @@ const Signin = () => {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-
-            console.log('Signup successful:', response.data);
             setSuccess('Signup successful! You can now log in.');
             setError('');
-
-            // Now, automatically log the user in with the same credentials
             const loginResponse = await axios.post(
                 'http://127.0.0.1:8000/api/login/',
-                { username, password: password1 },  // Use password1 since it's the user's password
+                { username, password: password1 },
                 {
                     headers: { "Content-Type": "application/json" },
-                    withCredentials: true,  // Ensure the session is maintained
+                    withCredentials: true,
                 }
             );
-
-            // Handle successful login
-            successfulSignin(loginResponse.data); // Use the successfulLogin function to manage login state
-            closeTabs(); // Close the form
-
+            successfulSignin(loginResponse.data);
+            closeTabs();
         } catch (error) {
             if (error.response) {
-                console.error('Signup error:', error.response.data);
                 setError(error.response.data.error || 'An error occurred.');
             } else {
-                console.error('Unexpected error:', error);
                 setError('An unexpected error occurred. Please try again.');
             }
         }

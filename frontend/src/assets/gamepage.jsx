@@ -68,13 +68,12 @@ const GamePage = () => {
         });
     };
 
-
     const shuffleArray = (array) => {
         return array.sort(() => Math.random() - 0.5);
     };
 
     const handleBookClick = (book) => {
-        if (buttonsDisabled || selectedBook) return; // Prevent multiple clicks or clicking after selection
+        if (buttonsDisabled || selectedBook) return;
         setButtonsDisabled(true);
         setSelectedBook(book);
         if (book.is_correct) {
@@ -104,7 +103,7 @@ const GamePage = () => {
 
         const resetBooks = books.map(book => ({ ...book, is_correct: false }));
         if (resetBooks.length > 0) {
-            resetBooks[0].is_correct = true; // Ensure the first book is correct
+            resetBooks[0].is_correct = true;
         }
         setBooks(shuffleArray(resetBooks));
     };
@@ -128,7 +127,7 @@ const GamePage = () => {
                                 key={index}
                                 onClick={() => handleBookClick(book)}
                                 className="book-button"
-                                disabled={buttonsDisabled || selectedBook === book} // Disable button if already selected
+                                disabled={buttonsDisabled || selectedBook === book}
                             >
                                 {book.title}
                             </button>

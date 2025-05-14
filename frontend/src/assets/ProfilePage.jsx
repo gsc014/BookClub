@@ -12,8 +12,6 @@ function ProfilePage() {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // Profile editing state
     const [isEditing, setIsEditing] = useState(false);
     const [editedProfile, setEditedProfile] = useState({
         bio: '',
@@ -22,29 +20,20 @@ function ProfilePage() {
     });
     const [updateError, setUpdateError] = useState('');
     const [updateSuccess, setUpdateSuccess] = useState('');
-    
-    // Books state
     const [savedBooks, setSavedBooks] = useState([]);
     const [loadingSavedBooks, setLoadingSavedBooks] = useState(true);
     const [likedBooks, setLikedBooks] = useState([]);
     const [loadingLikedBooks, setLoadingLikedBooks] = useState(true);
     const [goth, setGoth] = useState(false);
     const [otherUserLikedBooks, setOtherUserLikedBooks] = useState([]);
-
-    // Add search-related state
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef(null);
 
-    // Check auth status immediately on component render
     useEffect(() => {
-        console.log("ProfilePage mounted - auth check");
-        
-        // Redirect if not logged in
         if (!isLoggedIn()) {
-            console.log("Not logged in, redirecting to home");
             navigate('/');
             return;
         }
@@ -54,28 +43,20 @@ function ProfilePage() {
         console.log("HELLO!\n");
     }, [goth]);
 
-    // Fetch saved books
     useEffect(() => {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            console.log("No auth token found");
             return;
         }
-        
         fetchSavedBooks();
         fetchLikedBooks();
     }, []);
 
-    // Separate effect for profile data fetching
     useEffect(() => {
-        if (!isLoggedIn()) return; // Skip fetch if not logged in
-        
-        console.log("Starting profile data fetch");
+        if (!isLoggedIn()) return;
         setLoading(true);
-        
         fetchProfileData(username)
             .then(data => {
-                console.log("Profile data received:", data);
                 setProfileData(data);
                 setEditedProfile({
                     bio: data.bio || '',
@@ -83,7 +64,6 @@ function ProfilePage() {
                     birth_date: data.birth_date || ''
                 });
                 setLoading(false);
-
                 if (getCurrentUsername() === username) {
                     fetchBookList("Saved Books");
                     fetchBookList("Liked Books");
@@ -92,26 +72,20 @@ function ProfilePage() {
                 }
             })
             .catch(err => {
-                console.error('Error fetching profile:', err);
                 setError(`Failed to load profile data: ${err.message}`);
                 setLoading(false);
-                
-                // If authentication error, redirect to home
                 if (err.message.includes('Authentication failed')) {
-                    console.log("Auth error detected, redirecting");
                     navigate('/');
                 }
             });
     }, [username, navigate]);
 
-    // Close search results when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setShowResults(false);
             }
         }
-        
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
@@ -124,22 +98,16 @@ function ProfilePage() {
     };
 
     const search_book = (id) => {
-        console.log("Navigating to book with ID:", id);
         navigate('/books/' + id);
     }
 
     const remove_saved_book = (id) => {
-        console.log("Removing saved book with ID:", id);
         const authToken = localStorage.getItem('authToken');
-        
         if (!authToken) {
             alert('You must be logged in to remove a book.');
             return;
         }
-        
-        // Optimistically update the UI
         setSavedBooks(currentBooks => currentBooks.filter(book => book.id !== id));
-        
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${id}/`, 
             {},
@@ -152,32 +120,25 @@ function ProfilePage() {
             }
         )
         .then(response => {
-            console.log("Saved book removed:", response.data);
             if (response.data.status !== 'removed') {
                 fetchSavedBooks();
             }
         })
         .catch(error => {
-            console.error("Error removing saved book:", error);
             fetchSavedBooks();
         });
     };
 
     const remove_liked_book = (id) => {
-        console.log("Removing liked book with ID:", id);
         const authToken = localStorage.getItem('authToken');
-        
         if (!authToken) {
             alert('You must be logged in to remove a liked book.');
             return;
         }
-        
-        // Optimistically update the UI
         setLikedBooks(currentBooks => currentBooks.filter(book => book.id !== id));
-        
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${id}/`, 
-            {}, // Empty object as body
+            {},
             {
                 params: { name: "Liked Books" },
                 headers: {
@@ -187,13 +148,11 @@ function ProfilePage() {
             }
         )
         .then(response => {
-            console.log("Liked book removed:", response.data);
             if (response.data.status !== 'removed') {
                 fetchLikedBooks();
             }
         })
         .catch(error => {
-            console.error("Error removing liked book:", error);
             fetchLikedBooks();
         });
     };
@@ -208,7 +167,6 @@ function ProfilePage() {
     
     const handleEditToggle = () => {
         if (isEditing) {
-            // If we're canceling edit mode, reset the form
             setEditedProfile({
                 bio: profileData.bio || '',
                 location: profileData.location || '',
@@ -224,10 +182,7 @@ function ProfilePage() {
         e.preventDefault();
         setUpdateError('');
         setUpdateSuccess('');
-        
         const authToken = localStorage.getItem('authToken');
-        
-        // Call API to update profile
         axios.post('http://127.0.0.1:8000/api/update-profile/', editedProfile, {
             headers: {
                 'Content-Type': 'application/json',
@@ -236,17 +191,14 @@ function ProfilePage() {
         })
         .then(response => {
             setUpdateSuccess('Profile updated successfully!');
-            // Update local profileData state with new values
             setProfileData(prev => ({
                 ...prev,
                 ...editedProfile
             }));
-            // Exit edit mode
             setIsEditing(false);
         })
         .catch(err => {
             setUpdateError(err.response?.data?.error || 'Failed to update profile');
-            console.error('Error updating profile:', err);
         });
     };
     
@@ -254,13 +206,10 @@ function ProfilePage() {
         navigate('/settings');
     };
 
-    // Add this function to fetch the saved books
     const fetchSavedBooks = () => {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) return;
-        
         setLoadingSavedBooks(true);
-        
         axios.get('http://localhost:8000/api/book-list/', {
             params: { name: "Saved Books" },
             headers: {
@@ -269,23 +218,18 @@ function ProfilePage() {
             }
         })
         .then(response => {
-            console.log("Saved books refreshed:", response.data);
             setSavedBooks(response.data);
             setLoadingSavedBooks(false);
         })
         .catch(err => {
-            console.error("Error refreshing saved books:", err);
             setLoadingSavedBooks(false);
         });
     };
 
-    // Function to fetch liked books
     const fetchLikedBooks = () => {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) return;
-        
         setLoadingLikedBooks(true);
-        
         axios.get('http://localhost:8000/api/book-list/', {
             params: { name: "Liked Books" },
             headers: {
@@ -294,17 +238,14 @@ function ProfilePage() {
             }
         })
         .then(response => {
-            console.log("Liked books refreshed:", response.data);
             setLikedBooks(response.data);
             setLoadingLikedBooks(false);
         })
         .catch(err => {
-            console.error("Error refreshing liked books:", err);
             setLoadingLikedBooks(false);
         });
     };
 
-    // When viewing own profile
     const fetchBookList = (listName) => {
         const authToken = localStorage.getItem('authToken');
         axios.get(`http://127.0.0.1:8000/api/saved-books/?name=${listName}`, {
@@ -319,10 +260,9 @@ function ProfilePage() {
                 setLikedBooks(response.data);
             }
         })
-        .catch(error => console.error(`Error fetching ${listName}:`, error));
+        .catch(error => {});
     };
 
-    // When viewing someone else's profile
     const fetchOtherUserBookList = (username) => {
         const authToken = localStorage.getItem('authToken');
         axios.get(`http://127.0.0.1:8000/api/saved-books/?name=Liked Books&username=${username}`, {
@@ -333,14 +273,12 @@ function ProfilePage() {
         .then(response => {
             setOtherUserLikedBooks(response.data);
         })
-        .catch(error => console.error(`Error fetching user's liked books:`, error));
+        .catch(error => {});
     };
 
-    // Handle search input changes
     const handleSearchChange = (e) => {
         const query = e.target.value;
         setSearchQuery(query);
-        
         if (query.trim().length > 0) {
             setIsSearching(true);
             searchProfiles(query);
@@ -351,7 +289,6 @@ function ProfilePage() {
         }
     };
 
-    // Search for profiles
     const searchProfiles = (query) => {
         axios.get(`http://127.0.0.1:8000/api/autocomplete-profile/?query=${encodeURIComponent(query)}`)
             .then(response => {
@@ -359,19 +296,16 @@ function ProfilePage() {
                 setIsSearching(false);
             })
             .catch(error => {
-                console.error('Error searching profiles:', error);
                 setIsSearching(false);
             });
     };
 
-    // Navigate to selected profile
     const goToProfile = (username) => {
         setSearchQuery('');
         setShowResults(false);
         navigate(`/profile/${username}`);
     };
 
-    // Submit search form
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
@@ -381,7 +315,6 @@ function ProfilePage() {
         }
     };
 
-    // Render loading state
     if (loading) {
         return (
             <div className="profile-page loading">
@@ -391,7 +324,6 @@ function ProfilePage() {
         );
     }
     
-    // Render error state
     if (error) {
         return (
             <div className="profile-page error">
@@ -402,18 +334,14 @@ function ProfilePage() {
         );
     }
     
-    
-    // Current user for permission checks
     const currentUser = getCurrentUsername();
     const isOwnProfile = currentUser === username;
 
-    // Main profile render
     return (
         <div className="profile-page">
             <div className="profile-header">
                 <h1>{profileData.username}'s Profile</h1>
                 <div className="profile-actions">
-                
                 <div className="profile-search-container" ref={searchRef}>
                 <form onSubmit={handleSearchSubmit} className="profile-search-form">
                     <input
@@ -426,7 +354,6 @@ function ProfilePage() {
                     <button type="submit" className="profile-search-button">
                         <img src={search} alt="Search" />
                     </button>
-
                     {showResults && (
                         <div className="profile-search-results" data-testid="profile-search-results">
                             {isSearching ? (
@@ -520,8 +447,6 @@ function ProfilePage() {
                             <p><strong>Bio:</strong> {profileData.bio || 'No bio provided'}</p>
                             <p><strong>Location: </strong>{profileData.location || 'Not specified'}</p>
                             <p><strong>Birth Date: </strong>{profileData.birth_date ? new Date(profileData.birth_date).toLocaleDateString() : 'Not specified'}</p>
-                            
-                            {/* Show private information only if viewing own profile */}
                             {isOwnProfile && (
                                 <>
                                     <h3>Account Details</h3>
@@ -533,8 +458,6 @@ function ProfilePage() {
                         </div>
                     )}
                 </div>
-
-                {/* Only show Saved Books on own profile */}
                 {isOwnProfile && (
                     <div className="profile-section">
                         <h2>Saved Books</h2>
@@ -546,8 +469,8 @@ function ProfilePage() {
                                     <li key={book.id} className="saved-book">
                                         {book.title} {book.author && `by ${book.author}`}
                                         <div className="book-actions">
-                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                            <img src={bin} className='goth_moom' onClick={() => remove_saved_book(book.id)} alt="Remove" />
+                                            <img src={search} className='img_style' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='img_style' onClick={() => remove_saved_book(book.id)} alt="Remove" />
                                         </div>
                                     </li>
                                 ))}
@@ -557,8 +480,6 @@ function ProfilePage() {
                         )}
                     </div>
                 )}
-
-                {/* Only show Liked Books on own profile */}
                 {isOwnProfile && (
                     <div className="profile-section">
                         <h2>Liked Books</h2>
@@ -570,8 +491,8 @@ function ProfilePage() {
                                     <li key={book.id} className="liked-book">
                                         {book.title} {book.author && `by ${book.author}`}
                                         <div className="book-actions">
-                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
-                                            <img src={bin} className='goth_moom' onClick={() => remove_liked_book(book.id)} alt="Remove" />
+                                            <img src={search} className='img_style' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={bin} className='img_style' onClick={() => remove_liked_book(book.id)} alt="Remove" />
                                         </div>
                                     </li>
                                 ))}
@@ -581,8 +502,6 @@ function ProfilePage() {
                         )}
                     </div>
                 )}
-
-                {/* Other User's Liked Books Section - shown when viewing other profiles */}
                 {!isOwnProfile && (
                     <div className="profile-section">
                         <h2>{username}'s Liked Books</h2>
@@ -592,7 +511,7 @@ function ProfilePage() {
                                     <li key={book.id} className="liked-book">
                                         {book.title} {book.author && `by ${book.author}`}
                                         <div className="book-actions">
-                                            <img src={search} className='goth_moom' onClick={() => search_book(book.id)} alt="View details" />
+                                            <img src={search} className='img_style' onClick={() => search_book(book.id)} alt="View details" />
                                         </div>
                                     </li>
                                 ))}

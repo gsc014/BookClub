@@ -22,22 +22,15 @@ const Bookcard = ({ book, isSmall = false }) => {
     };
 
     const likeBook = (e) => {
-        // Prevent the click from propagating to the parent div
         e.stopPropagation();
-        
         const authToken = localStorage.getItem('authToken');
-        
-        // Check if user is logged in
         if (!authToken) {
             alert('You must be logged in to like a book.');
             return;
         }
-
-        // setLikeStatus('liking');
-
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${book.id}/`, 
-            {}, // Empty object as body
+            {},
             {
                 params: { name: "Liked Books" },
                 headers: {
@@ -54,37 +47,25 @@ const Bookcard = ({ book, isSmall = false }) => {
             else {
                 setIsLiked(true);
             }
-            // setLikeStatus('liked');
-            
-            // Optional: Show a temporary success message
             setTimeout(() => setLikeStatus(null), 2000);
         })
         .catch(error => {
             console.error("Error saving book:", error);
             setLikeStatus('error');
-            
-            // Optional: Show a temporary error message
             setTimeout(() => setLikeStatus(null), 2000);
         });
     };
 
     const saveBook = (e) => {
-        // Prevent the click from propagating to the parent div
         e.stopPropagation();
-        
         const authToken = localStorage.getItem('authToken');
-        
-        // Check if user is logged in
         if (!authToken) {
             alert('You must be logged in to save a book.');
             return;
         }
-
-        // setSaveStatus('saving');
-
         axios.post(
             `http://127.0.0.1:8000/api/add-book/${book.id}/`, 
-            {}, // Empty object as body
+            {},
             {
                 params: { name: "Saved Books" },
                 headers: {
@@ -101,26 +82,20 @@ const Bookcard = ({ book, isSmall = false }) => {
             else {
                 setIsSaved(true);
             }
-            // setSaveStatus('saved');
-            
-            // Optional: Show a temporary success message
             setTimeout(() => setSaveStatus(null), 2000);
         })
         .catch(error => {
             console.error("Error saving book:", error);
             setSaveStatus('error');
-            
-            // Optional: Show a temporary error message
             setTimeout(() => setSaveStatus(null), 2000);
         });
     };
 
     const handleInfoClick = (e) => {
-        e.stopPropagation(); // Prevent triggering the parent onClick
+        e.stopPropagation();
         navigate(`/books/${book.id}`, {state: { book }});
     };
 
-    // Return small version of card if isSmall prop is true
     if (isSmall) {
         return (
             <div className="book-card-small" onClick={handleClick}>
@@ -149,18 +124,15 @@ const Bookcard = ({ book, isSmall = false }) => {
         );
     }
 
-    // Return regular card
     return (
         <div className="book-card" onClick={handleClick}>
             <img 
                 src={`https://covers.openlibrary.org/w/olid/${book.key}-M.jpg`}
                 alt={book.title || "Book Cover"}
                 className="book-cover"
-                onError={(e) => e.target.src = defaultCover} // Fallback if image fails to load
+                onError={(e) => e.target.src = defaultCover}
             />
             <h3>{book.title}</h3>
-            
-            {/* Save button with status feedback */}
             <div className="book-actions">
             <button 
                     className={`save-button icon_bookcard jump ${isLiked ? 'liked' : ''} ${likeStatus}`}

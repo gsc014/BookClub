@@ -14,7 +14,6 @@ const Profile = () => {
     });
 
     useEffect(() => {
-        // Retrieve user data from localStorage if logged in
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             setUser(JSON.parse(storedUser));

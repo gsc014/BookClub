@@ -1,28 +1,14 @@
-// src/assets/header.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import './style/header_style.css';
-
 import userImage from './pictures/user.png';
 import settingsIcon from './pictures/settings_icon.png';
 import gameIcon from './pictures/game_icon.png';
-import bookLogo from './pictures/book_logo.png'; // Add this import for the logo
-
-// Keep only used imports from utils
+import bookLogo from './pictures/book_logo.png';
 import { handleLogin } from '../utils.jsx';
 
-// Remove unused function changeColor
-// function changeColor(isLightmode) { ... }
-
 const Header = () => {
-    // Remove unused state
-    // const [isLightmode, setDarkmode] = useState(false);
-
     const navigate = useNavigate();
-
-    // Remove unused function toggleMode
-    // const toggleMode = () => { ... };
 
     const goToSettings = () => {
         navigate('/settings');
@@ -51,12 +37,6 @@ const Header = () => {
                 Book Club
             </div>
             <div id="useful_buttons">
-                {/* <img
-                    src={isLightmode ? dark_mode : light_mode}
-                    id="dark_mode"
-                    className="icon jump"
-                    onClick={toggleMode}
-                /> */}
                 <img
                         src={gameIcon}
                         id="Game"

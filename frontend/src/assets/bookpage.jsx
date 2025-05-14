@@ -24,10 +24,8 @@ const Bookpage = () => {
     const test = "https://bibsok.no/?mode=vt&pubsok_txt_0=";
 
     const fetchIsbn = () => {
-        
         if (!book || !book.key)
          return;
-
         console.log(`Fetching ISBN for book key: ${book.key}`);
         axios.get(`http://127.0.0.1:8000/api/isbn/${book.key}`)
             .then(response => {
@@ -40,7 +38,6 @@ const Bookpage = () => {
     };
 
     useEffect(() => {
-
         const fetchBookData = async () => {
             setLoading(true);
             try {
@@ -53,7 +50,6 @@ const Bookpage = () => {
                 setLoading(false);
             }
         };
-
         fetchBookData();
     }, [id, stateBook]);
     console.log("this is the final", book);
@@ -69,7 +65,6 @@ const Bookpage = () => {
 
     const fetchReviews = async () => {
         if (!id) return;
-
         setReviewsLoading(true);
         try {
             console.log(`Fetching reviews for book ID: ${id}`);
@@ -82,7 +77,6 @@ const Bookpage = () => {
             setReviewsLoading(false);
         }
     };
-
 
     const toggleDescription = () => {
         if (showFullDescription) {
@@ -100,27 +94,22 @@ const Bookpage = () => {
         }
     };
 
-
     const handleRatingClick = (rating) => {
         setUserRating(rating);
     };
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
-
         if (!userRating) {
             alert("Please select a rating before submitting your review.");
             return;
         }
-
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
             alert("You must be logged in to submit a review.");
             return;
         }
-
         try {
-            // Changed to use the correct endpoint from your URLs
             const response = await axios.post(
                 `http://127.0.0.1:8000/api/reviewtest/${id}/`,
                 {
@@ -134,9 +123,7 @@ const Bookpage = () => {
                     }
                 }
             );
-
             console.log("Review response:", response.data);
-
             const username = localStorage.getItem('username');
             const newReview = {
                 rating: userRating,
@@ -145,20 +132,15 @@ const Bookpage = () => {
                 created_at: new Date().toISOString(),
                 book_id: parseInt(id)
             };
-
             setReviews([newReview, ...reviews]);
-
             setUserReview('');
             setUserRating(0);
-
             fetchReviews();
-
         } catch (error) {
             console.error("Error submitting review:", error);
             alert("Failed to submit review. Please try again.");
         }
     };
-
 
     if (loading) {
         return (
@@ -178,7 +160,6 @@ const Bookpage = () => {
 
     return (
         <div className="bookpage">
-            {/* Book Header Section */}
             <div className="bookpage-header">
                 <img
                     className="bookpage-cover"
@@ -193,7 +174,6 @@ const Bookpage = () => {
                         {typeof book.author === 'object' ? book.author.name : book.author}
                     </h2>
 
-                    {/* External links */}
                     <div className="bookpage-external-links">
                         {isbn ? (
                             <a
@@ -210,7 +190,6 @@ const Bookpage = () => {
                         )}
                     </div>
 
-                    {/* Description section with expand/collapse functionality */}
                     <div className="description-container">
                         <div className={descriptionClass} data-testid="book-description">
                             {book.description || "No description available for this book."}
@@ -227,7 +206,6 @@ const Bookpage = () => {
                 </div>
             </div>
 
-            {/* Review submission form */}
             <div className="bookpage-review">
                 <h3>Write a Review</h3>
 
@@ -260,7 +238,6 @@ const Bookpage = () => {
                 </form>
             </div>
 
-            {/* Reviews section */}
             <div className="bookpage-reviews">
                 <h3>Reviews</h3>
 
