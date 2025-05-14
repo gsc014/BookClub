@@ -55,9 +55,22 @@ Follow these steps to get a local copy of the project up and running:
     ```bash
     python manage.py runserver
 
-6. **open browser**
+6. **now go to the frontend server**
     ```bash
-    open your browser to http://127.0.0.1:8000 to view application
+    Go to /frontend/ folder
+
+7. **requirements for running frontend server**
+    ```bash
+    Install npm
+    npm install
+    
+8. **run the frontend server**
+    ```bash
+    write into console
+    npm run dev
+
+    and press the link that pops up in the terminal:
+    http://localhost:5173/
 
 ## Maintainers 👨‍💻
 * Gard Schive

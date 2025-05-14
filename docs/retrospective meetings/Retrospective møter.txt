@@ -1,0 +1,81 @@
+Retrospective møter
+
+OPPSUMMERINGSMØTE UKE 5
+Brainstorming og research til tech-stack/oppsett av database
+
+OPPSUMMERINGSMØTE UKE 6
+Gard og Lukas:Jobbet med innsamling for databasen, parsing av database og oppsett av django og jobb med basic utseende av nettside
+Alex og Samuel:
+Oversatte fra HTML/basic JS til react.
+
+OPPSUMMERINGSMØTE UKE 7
+
+Fortsatt mye brainstorming av utseende + Views og models testing set up + funksjonalitet av nettsiden, vanskelig å gjøre noe uten en ordentlig database.
+
+OPPSUMMERINGSMØTE UKE 8
+
+Samuel og Alex: Fikset søkeresultater og searching funksjonaliteter og basic interactions med nettsiden, lagde tester til searching med Lukas
+Lukas:
+Jobbet med cookie og lagring av brukerinformasjon til settings etc.
+Gard:
+Faktisk ferdig med databasen med bøker
+
+OPPSUMMERINGS UKE 9
+Lukas: Satte opp ting vi trenger for ordentlig deployment av serveren vi fikk tildelt.
+Samuel: Videre utvikling av søking, nå søking etter sjanger + testing
+Alex: Pagination for søking, tar alt for lang tid, backend pagination også kreves + testing 
+Gard: Informasjon om brukeren, egen page og table i database + testing
+
+OPPSUMMERINGSMØTE UKE 10
+Gard: Videreutviklet på brukerinformasjonen, kan edite brukeren nå passord/username etc.
+Samuel: set up tests for reviews
+Alex og Lukas: Tester for Bookpage + bookpage design
+
+OPPSUMMERINGSMØTE UKE 11
+Lukas:
+Mer profil funksjonalitet, endre email + fikse litt på UI til profilen + tester
+Gard:
+Også profil greier, personlig informasjon om bruker som lokasjon, alder etc + tester
+Samuel:
+Fikset på reviews, både backend i database og litt frontend
+Alex:
+Lagde table for isbn nummer og leste dokumentasjon til nasjonalbibliotek API + testing for fetching av ISBN
+
+OPPSUMMERINGSMØTE UKE 12
+Samuel og Lukas:
+Diskuterte og satte opp funksjonaliteter som routing og faktisk page for spill + testing
+Alex:
+Koblet en søkelink til nasjonalbiblioteket på bookpage, hjalp gard med refactoring av tests
+Gard:
+Jobbet med databasen til å fikse med user settings og boklistene brukere skal kunne lage, mer småendringer på feks view more knappen + refactor frontend tests
+
+OPPSUMMERINGSMØTE UKE 13
+Gard:
+La til blocked filter til å blokke vekk spesifikke bøker/sjangere ved søking
+Alex og Lukas og Samuel:
+Fortsatte med testing.
+
+OPPSUMMERINGSMØTE UKE 14
+Samuel:
+Fikset på authentication og la til security for funksjonaliteter som krever innlogging.
+Alex:
+Skrev tester av endpointsa
+Gard:
+La til covers for bøkene og fikset slik at man kan bare se egne lister på profilen sin
+Lukas:
+Jobbet også med testing, spesifikt frontend via Vita, fikset også videre på spill funksjonalitet
+
+OPPSUMMERINGSMØTE UKE 15-16
+Alle: Påskeferie
+
+OPPSUMMERINGSMØTE UKE 17
+
+Alex og Lukas:
+Testing, ferdig med backend testing og fortsatte med frontend testing
+Gard: 
+Fikset å søke etter brukere, mekket på recommended books, bug fixing
+Samuel:
+Rapport og administrative deler, scenarios, personas, etc
+
+Oppsummeringsmøte uke 18
+Alle: Rapport

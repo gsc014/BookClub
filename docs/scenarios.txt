@@ -1,0 +1,178 @@
+Scenarios:
+
+Scenarios provide a narrative context for how users interact with the system to achieve a goal.
+
+
+
+    Scenario 1: Finding and Reviewing a Book
+
+        Actor: Ingrid, a registered user.
+
+        Goal: Ingrid just finished reading "Naiv. Super." by Erlend Loe and wants to write a review for it.
+
+        Steps:
+
+            Ingrid opens the application/website.
+
+            She logs in using her username and password.
+
+            She uses the search bar at the top and types "Naiv Super".
+
+            A list of results appears. She clicks on the entry for "Naiv. Super." by Erlend Loe.
+
+            She lands on the book's detail page, seeing the cover, synopsis, and existing reviews.
+
+            She scrolls down to the "Write a Review" section.
+
+            She types her thoughts about the book into the text box (e.g., "A charming and thought-provoking read about finding meaning in simplicity...").
+
+            (If applicable) She selects a star rating (e.g., 4 out of 5 stars).
+
+            She clicks the "Submit Review" button.
+
+            The page refreshes (or updates dynamically), and her review now appears in the list of reviews for "Naiv. Super.".
+
+            Later, she navigates to her profile page and sees "Naiv. Super." listed under her reviewed books.
+
+
+
+
+    Scenario 2: Checking Book Availability at the National Library
+
+        Actor: Bjørn, a user (doesn't need to be logged in for this).
+
+        Goal: Bjørn is interested in reading "Sult" (Hunger) by Knut Hamsun and wants to see if he can borrow it from the National Library.
+
+        Steps:
+
+            Bjørn opens the application/website.
+
+            He searches for "Sult Knut Hamsun".
+
+            He clicks on the correct book entry in the search results.
+
+            On the book detail page for "Sult", he reads the synopsis and some reviews.
+
+            He notices a button labeled "Search in Nasjonalbiblioteket" (or similar).
+
+            He clicks the button.
+
+            A new browser tab opens (or the current tab redirects) to the National Norwegian Library's search page (nb.no). 
+            The search results page is pre-populated based on the book's details (e.g., title "Sult", author "Knut Hamsun", or maybe its ISBN).
+
+            Bjørn can now see the library's listings and availability information for "Sult".
+
+
+
+
+    Scenario 3: Browsing Own Reviews
+
+        Actor: Astrid, a registered user.
+
+        Goal: Astrid wants to remember what she thought about a book she reviewed a few months ago.
+
+        Steps:
+
+            Astrid logs into her account.
+
+            She clicks on her username or a "Profile" link in the navigation.
+
+            She lands on her profile page.
+
+            She scrolls down to the section titled "My Reviews" (or similar).
+
+            She sees a list of books she has reviewed, possibly with her rating and the date reviewed.
+
+            She finds the book she was looking for and clicks on it (or reads the review snippet directly on her profile).
+
+            She successfully recalls her opinion on the book.
+
+
+
+    Scenario 4: Viewing others booklists
+
+        Actor: Samuel, a registered user.
+
+        Goal: Samuel wants to view his pal Gard's "Political books" booklist.
+
+        Steps:
+
+            Samuel logs onto his account.
+
+            He searches for Gard's account.
+
+            He lands on Gard's profile.
+
+            He scrolls down to Gard's booklists and finds the one labelled "Political books".
+
+            He clicks on the booklist and is given the list of interactable books.
+
+            He can now see which political books Gard is interested in.
+
+
+
+
+    Scenario 5: Playing fun book-related games
+
+        Actor: Lukas, a certified gamer and registered user.
+
+        Goal: Lukas wants to test himself on his book trivia skills
+
+        Steps:
+
+            Lukas logs onto his account.
+
+            He clicks the games button on the frontpage.
+
+            He chooses his favourite game from the list, the cover guessing game.
+
+            He plays until he achieves a new high score.
+
+            He checks out his profile and sees his high score listed. 
+
+
+
+
+    Scenario 6: Restricted access
+
+        Actor: Alex, a stalker and non-registered user.
+
+        Goal: Alex wants to find out Gard's personal info, like where he lives.
+
+        Steps:
+
+            Alex navigates to the webpage without logging in.
+
+            He searches up Gard.
+
+            He clicks on Gard's profile.
+
+            The webpage provides only the non-personal related information
+
+            Alex is not provided personal information that he can use for further stalking.
+
+
+
+
+    Scenario 7: A disgruntled reader
+
+        Actor: Gard, a non-registered user.
+
+        Goal: Write disparaging and uninformative reviews, spam.
+
+        Steps:
+
+            Gard enters the webpage, not logged in.
+
+            He searches up "Sult" by Knut Hamsun.
+
+            He clicks on the book from the suggestions list.
+
+            He writes a scummy and meaningless text into the review and gives it 0 stars.
+
+            The webpage prompts him to log in/sign up to be able to post the review.
+
+            Noting anti-spam measures, Gard leaves the website, hopefully having learned a lesson.
+
+
+
