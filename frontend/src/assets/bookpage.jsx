@@ -107,7 +107,7 @@ const Bookpage = () => {
         }
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            // alert("You must be logged in to submit a review.");
+            alert("You must be logged in to submit a review.");
             showLogInTab();
             return;
         }

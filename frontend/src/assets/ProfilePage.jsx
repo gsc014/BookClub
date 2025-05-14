@@ -72,9 +72,11 @@ function ProfilePage() {
                 }
             })
             .catch(err => {
+                console.error('Error fetching profile:', err);
                 setError(`Failed to load profile data: ${err.message}`);
                 setLoading(false);
                 if (err.message.includes('Authentication failed')) {
+                    console.log("Auth error detected, redirecting");
                     navigate('/');
                 }
             });
@@ -125,6 +127,7 @@ function ProfilePage() {
             }
         })
         .catch(error => {
+            console.error("Error removing saved book:", error);
             fetchSavedBooks();
         });
     };
