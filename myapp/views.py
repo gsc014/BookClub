@@ -2,14 +2,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import check_password
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from django.shortcuts import render, get_object_or_404
-from .models import Review, UserInfo, UserBookList, NewTable, Books, Author
+from django.contrib.auth import authenticate, login, logout as django_logout
+from django.shortcuts import get_object_or_404
+from .models import Review, UserInfo, UserBookList, NewTable, Books, Author, User
 import random
-from django.http import JsonResponse
 from django.db import connection
-from django.contrib.auth import logout as django_logout
 from rest_framework.authtoken.models import Token
 import logging
 from django.core.paginator import Paginator
@@ -31,7 +28,6 @@ def login_user(request):
     if user is not None:
         login(request, user)
         
-        # Create or get token for authentication
         token, _ = Token.objects.get_or_create(user=user)
         
         print(f"Login successful for {username}, token: {token.key}")
@@ -84,10 +80,8 @@ def autocomplete_profile(request):
     if not query:
         return Response([])
 
-    # Change this to return both title and id as a list of dictionaries
     suggestions = User.objects.filter(username__icontains=query)[:5]
     
-    # Format the results as a list of dictionaries with title and id
     formatted_suggestions = [
         {'id': user.id, 'username': user.username} 
         for user in suggestions
@@ -218,10 +212,6 @@ def random_book(request):
         } 
         for book in books
     ]
-    
-    # if not books_data:
-    #     return Response([], status=200)
-
 
     return Response(books_data[0] if num_books == 1 and books_data else books_data)
 
@@ -331,7 +321,6 @@ def recommended_book(request):
         if len(filtered_books) >= num_books:
             break
     
-    # Format the results
     result_books = [
         {
             "id": book.id,
@@ -346,10 +335,8 @@ def recommended_book(request):
         for book in filtered_books[:num_books]
     ]
     
-    # Cache the result
     cache.set(cache_key, result_books, 300)
     
-    # Return response
     return Response(result_books[0] if num_books == 1 and result_books else result_books)
 
 @api_view(['GET'])
@@ -383,18 +370,16 @@ def retrieve_book_info(request, book_id):
 @api_view(['GET'])
 def get_books_by_author(request):
     author_key = request.GET.get('key', '')
-    # print("author key", author_key)
     if not author_key:
         return Response({"error": "No author key provided"}, status=400)
     
-    # Filter books by author key, excluding the current book if an ID is provided
     current_book_id = request.GET.get('exclude_id')
     books_query = Books.objects.filter(author=author_key)
     
     if current_book_id:
         books_query = books_query.exclude(id=current_book_id)
     
-    books = books_query  # Limit to 10 books
+    books = books_query 
     
     results = [
         {
@@ -425,7 +410,7 @@ def add_review(request, book_id1):
             text=review_text, 
             rating=rating, 
             book_id=book.id,
-            user=user  # Add this line
+            user=user  
         )
 
         return Response({"message": "Review added successfully!"}, status=201)
@@ -434,7 +419,6 @@ def add_review(request, book_id1):
         return Response({"error": "Book not found"}, status=404)
 
     except Exception as e:
-        print(f"Error creating review: {e}")  # Add this line for better debugging
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
@@ -498,21 +482,16 @@ def search_filter(request):
     print("subject filter", subject_filter)
 
     if subject_filter:
-        # Get all matching books
         all_books = Books.objects.filter(subjects__icontains=subject_filter).order_by('id')
         
-        # Set up pagination
         paginator = Paginator(all_books, per_page)
         total_books = paginator.count
         
-        # Handle page number being out of range
         if page > paginator.num_pages and paginator.num_pages > 0:
             page = paginator.num_pages
         
-        # Get current page
         current_page = paginator.get_page(page)
         
-        # Format book data
         results = [
             {
                 "id": book.id,
@@ -524,7 +503,6 @@ def search_filter(request):
             for book in current_page
         ]
         
-        # Return properly structured response
         return Response({
             "results": results,
             "pagination": {
@@ -557,34 +535,28 @@ def getisbn(request,work_key):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile(request, username):
-     # Get the requested user or return a generic "not found" response
     try:
         profile_user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return Response({"error": "User profile not found"}, status=404)  # Generic error to prevent enumeration
+        return Response({"error": "User profile not found"}, status=404)
 
-      # Default values for user info fields
     bio, location, birth_date = "No bio available", "No location available", "No birth date available"
     user_info = UserInfo.objects.filter(user_id=profile_user.id).first()
     if user_info:
         bio, location, birth_date = user_info.bio, user_info.location, user_info.birth_date
 
-    # Check if the request user is viewing their own profile
     is_own_profile = request.user.is_authenticated and request.user.username == username
     
-    # Base profile information that's public
     profile_data = {
         "id": profile_user.id,
         "username": profile_user.username,
         "date_joined": profile_user.date_joined,
-        # Include the bio from profile if it exists
         "bio": bio,
         "location": location,
         "birth_date": birth_date,
     }
     
         
-        # Add private information only if user is viewing their own profile
     if is_own_profile:
         profile_data.update({
             "last_login": profile_user.last_login,
@@ -604,10 +576,8 @@ def update_profile(request):
     birth_date = request.data.get('birth_date')
     
     try:
-        # Try to get existing UserInfo
-        user_info, created = UserInfo.objects.get_or_create(user_id=user)
+        user_info = UserInfo.objects.get_or_create(user_id=user)
         
-        # Update fields
         if bio is not None:
             user_info.bio = bio
         if location is not None:
@@ -636,15 +606,12 @@ def update_username(request):
     if not new_username:
         return Response({"error": "New username is required"}, status=400)
     
-    # Check if username is already taken
     if User.objects.filter(username=new_username).exists():
         return Response({"error": "Username already taken"}, status=400)
     
-    # Update username
     user.username = new_username
     user.save()
     
-    # Create new token (invalidates old one)
     Token.objects.filter(user=user).delete()
     token = Token.objects.create(user=user)
     
@@ -665,15 +632,12 @@ def update_password(request):
     if not current_password or not new_password:
         return Response({"error": "Both current and new passwords are required"}, status=400)
     
-    # Check current password
     if not check_password(current_password, user.password):
         return Response({"error": "Current password is incorrect"}, status=400)
     
-    # Update password
     user.set_password(new_password)
     user.save()
     
-    # Create new token (invalidates old one)
     Token.objects.filter(user=user).delete()
     token = Token.objects.create(user=user)
     
@@ -692,11 +656,9 @@ def update_email(request):
     if not new_email:
         return Response({"error": "New email is required"}, status=400)
     
-    # Check if email is already taken
     if User.objects.filter(email=new_email).exists():
         return Response({"error": "Email already taken"}, status=400)
     
-    # Update email
     user.email = new_email
     user.save()
     
@@ -713,25 +675,20 @@ def delete_account(request):
     user = request.user
     username = user.username
     
-    # Delete the user
     user.delete()
     
     return Response({
         "message": f"Account '{username}' has been deleted successfully"
     })
 
-# will make a list or get a list if it already exists
 def make_list(user, list_name):
     try:
-        # Look for a "Saved Books" list specifically
         book_list = UserBookList.objects.get(user_id=user, name= list_name)
     except UserBookList.DoesNotExist:
-        # Create a new "Saved Books" list if it doesn't exist
         book_list = UserBookList.objects.create(user_id=user, name= list_name)
     return book_list
 
 def add_to_list(book_id, book_list):
-    # Check if the book is already in the list to avoid duplicates
     if int(book_id) not in book_list.book_ids:
         book_list.book_ids.append(int(book_id))
         book_list.save()
@@ -758,12 +715,8 @@ def add_book(request, book_id):
     except Books.DoesNotExist:
         return Response({"error": "Book not found"}, status=404)
     
-    # print("book_id type", type(book))
     user = request.user
     book_list = make_list(user, list_name)
-
-    # print("Book found:", book_list.book_ids)
-    # print("Book ID type:", type(book_list.book_ids))
     
     return add_to_list(book_id, book_list)
 
@@ -871,13 +824,11 @@ def high_score(request):
     user = request.user
 
     if request.method == 'GET':
-        # Retrieve the user's high score
         user_info = UserInfo.objects.filter(user_id=user).first()
         high_score = user_info.high_score_titlegame if user_info else 0
         return Response({"high_score": high_score})
 
     elif request.method == 'POST':
-        # Update the user's high score if the new score is higher
         new_score = request.data.get('high_score', 0)
         try:
             user_info, created = UserInfo.objects.get_or_create(user_id=user)
@@ -894,13 +845,10 @@ def high_score(request):
 @api_view(['GET'])
 def highest_rated_books(request):
     try:
-        # Get parameters
         num_books = int(request.GET.get('num', 5))
         
-        # Ensure we have a reasonable limit
         num_books = min(max(1, num_books), 20)
         
-        # Use raw SQL for better performance with aggregation
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT b.id, b.key, b.title, b.author, b.cover, 
@@ -945,22 +893,17 @@ def highest_rated_books(request):
 @api_view(['GET']) 
 def most_liked_books(request):
     try:
-        # Get parameters
-        num_books = min(int(request.GET.get('num', 5)), 20)  # Limit to max 20 books
+        num_books = min(int(request.GET.get('num', 5)), 20) 
         
-        # Find all lists named "Liked Books"
         liked_lists = UserBookList.objects.filter(name="Liked Books")
         
-        # Count occurrences of each book_id across all liked lists
         book_counts = {}
         for liked_list in liked_lists:
             for book_id in liked_list.book_ids:
                 book_counts[book_id] = book_counts.get(book_id, 0) + 1
         
-        # Sort book_ids by count (most liked first)
         sorted_book_ids = sorted(book_counts.keys(), key=lambda x: book_counts[x], reverse=True)[:num_books]
         
-        # Get book details for the most liked books
         books_data = []
         for book_id in sorted_book_ids:
             try:
@@ -993,10 +936,8 @@ def most_liked_books(request):
 @api_view(['GET'])
 def most_active_users(request):
     try:
-        # Get parameters
-        num_users = min(int(request.GET.get('num', 5)), 20)  # Limit to max 20 users
+        num_users = min(int(request.GET.get('num', 5)), 20)
         
-        # Use raw SQL for better performance with aggregation
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT u.id, u.username, COUNT(r.id) as review_count
@@ -1011,14 +952,12 @@ def most_active_users(request):
             for row in cursor.fetchall():
                 user_id, username, review_count = row
                 
-                # Get user info if available
                 try:
                     user_info = UserInfo.objects.get(user_id=user_id)
                     bio = user_info.bio or "No bio available"
                 except UserInfo.DoesNotExist:
                     bio = "No bio available"
                 
-                # Get user's most recent review
                 try:
                     latest_review = Review.objects.filter(user_id=user_id).order_by('-created_at')[0]
                     latest_book = Books.objects.get(id=latest_review.book_id)

@@ -5,11 +5,8 @@ from .views import login_user, signup_user, random_book, search_books, retrieve_
 
 
 urlpatterns = [
-    # Add the new username-based profile route
     path('api/profile/<str:username>/', views.user_profile, name='user_profile'),
     
-    # Your other existing URL patterns
-    # path('api/settings/', views.settings, name='settings_api'),
     path('api/login/', login_user, name='login_user'),
     path('api/signup/', signup_user, name='signup_user'),
     path('random-book/', random_book, name='random_book'),
