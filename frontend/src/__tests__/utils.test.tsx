@@ -9,6 +9,7 @@ const setupDOM = () => {
     <div id="profile-form" style="opacity: 0; pointer-events: none; top: 40%;">Profile Form</div>
     <div id="welcomeText">Welcome Message</div>
     <div id="welcomeSuccsessLogIn">Success Message</div>
+    <div id="alert-box">Alert Box</div> <!-- Add any missing elements -->
   `;
 };
 

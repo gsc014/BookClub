@@ -35,8 +35,10 @@ const Signin = () => {
             closeTabs();
         } catch (error) {
             if (error.response) {
+                console.error('Signup error:', error.response.data);
                 setError(error.response.data.error || 'An error occurred.');
             } else {
+                console.error('Unexpected error:', error);
                 setError('An unexpected error occurred. Please try again.');
             }
         }

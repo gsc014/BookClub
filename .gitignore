@@ -31,6 +31,6 @@ db.sqlite3
 *.sw?
 
 *.Identifier
-
+frontend/coverage/
 frontend/venv/
 venv/

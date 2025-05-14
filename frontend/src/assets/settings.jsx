@@ -47,6 +47,7 @@ const Settings = () => {
                 setLoading(false);
             })
             .catch(err => {
+                console.error('Error fetching user data:', err);
                 setError('Failed to load your profile data');
                 setLoading(false);
             });
@@ -65,7 +66,9 @@ const Settings = () => {
                     setBlockedGenres(response.data.blocked_genres);
                 }
             })
-            .catch(error => {});
+            .catch(error => {
+                console.error('Error fetching blocked genres:', error);
+            });
     };
 
     const handleLogout = () => {
@@ -78,6 +81,7 @@ const Settings = () => {
         setFormError(null);
         setFormSuccess(null);
         if (!newUsername.trim()) {
+            console.log('Empty username');
             setFormError('Username cannot be empty');
             setError('Username cannot be empty');
             return;
@@ -103,6 +107,7 @@ const Settings = () => {
                 navigate('/');
             }, 3000);
         } catch (err) {
+            console.log('API ERROR:', err.response?.data);
             setFormError(err.response?.data?.error || 'Failed to update username');
         }
     };
@@ -171,14 +176,17 @@ const Settings = () => {
         )
             .then(response => {
                 setFormSuccess('Email updated successfully! Please log in again with your new email.');
+
                 const userData = JSON.parse(localStorage.getItem('user') || '{}');
                 userData.email = newEmail;
                 localStorage.setItem('user', JSON.stringify(userData));
+
                 setTimeout(() => {
                     logout();
                     navigate('/');
                 }, 3000);
             })
+            
             .catch(err => {
                 setFormError(err.response?.data?.error || 'Failed to update email');
             });
@@ -223,7 +231,9 @@ const Settings = () => {
         const updatedBlockedGenres = blockedGenres.filter(g => g !== genre);
         setBlockedGenres(updatedBlockedGenres);
         setGenreUpdateSuccess(`Successfully unblocked "${genre}" genre`);
+
         const authToken = localStorage.getItem('authToken');
+        console.log('Removing genre:', genre);
         axios.post(
             `http://127.0.0.1:8000/api/unblock-genre/`,
             {
@@ -236,8 +246,12 @@ const Settings = () => {
                 }
             }
         )
-            .then(response => {})
-            .catch(error => {});
+            .then(response => {
+                console.log("Genre unblocked:", response.data);
+            })
+            .catch(error => {
+                console.error("Error unblocking genre:", error);
+            });
     };
 
     const updateBlockedGenresOnServer = (genres) => {
@@ -254,8 +268,12 @@ const Settings = () => {
                 }
             }
         )
-            .then(response => {})
-            .catch(error => {});
+            .then(response => {
+                console.log("Genres blocked:", response.data);
+            })
+            .catch(error => {
+                console.error("Error blocking genres:", error);
+            });
     };
 
     const filteredAvailableGenres = availableGenres.filter(

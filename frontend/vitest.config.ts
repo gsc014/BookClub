@@ -15,7 +15,7 @@ export default defineConfig({
       setupFiles: './setupTests.ts', // if you have one
       coverage: {
         reporter: ['text', 'html', 'json-summary'],
-        exclude: ['node_modules/', 'src/main.tsx', 'src/vite-env.d.ts'],
+        exclude: ['node_modules/', 'src/main.tsx', 'src/vite-env.d.ts', '**/eslint.config.js', '**/vite.config.js', '**/vitest.config.ts', '**/main.jsx'],
       },
     },
   });

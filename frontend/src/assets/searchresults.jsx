@@ -57,10 +57,12 @@ const SearchResults = () => {
                         setTotalPages(response.data.pagination.total_pages);
                     }
                 } else {
+                    console.error("Unexpected API response format:", response.data);
                     setError("Invalid data format received from server");
                     setBooks([]);
                 }
             } catch (err) {
+                console.error('Error fetching books:', err);
                 setError('Failed to load books. Please try again.');
                 setBooks([]);
             } finally {
