@@ -1,0 +1,22 @@
+referat 07.04.25
+
+kodestopp fredag 11.04/påsken(?)
+
+tester må være ferdig til kodestopp, front og backend.
+
+rapport er der det teller mest.
+
+line coverage 100%, branch coverage 90%
+
+ikke legg ved tester som ikke kjører/feiler ved testing.
+ved inkludering av coverage rapport, så får vi oversikt over
+hva mer vi trenger.
+
+Denne coverage rapporten kan brukes som fakta for rapporten vår.
+
+trenger ikke si så mye om testene i rapporten.
+
+Total coverage beskrives i rapport.
+
+RAPPORT ER VELDIG VIKTIG!!!!
+Spørsmål svares av Sera, ingen rapport lesning.

@@ -1,0 +1,16 @@
+referat 10.02.25
+
+- ikke mye endring siden sist.
+- blob Storage for bilder(usikker om Django funker)
+
+
+(husk scrumpoker)
+- sprint kan være 2-3 uke
+- scrum master hver sprint, Product owner, planlegge på starten av sprint, møte på slutten av sprint. 
+- rapport er mye arbeid med 4 stk. 
+- features burde bli beskrevet av user stories. 
+- scenario -> user stories -> features
+- lagre dem i egen folder.
+
+- lag tentativ sprint plan (stor del av faget)
+

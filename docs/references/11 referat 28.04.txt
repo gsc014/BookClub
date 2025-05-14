@@ -1,0 +1,35 @@
+referat 28.04
+
+veldig bra kode er ferdig(frontend-testing ikke ferdig)
+
+rapport startet.
+
+sideantall som står er ikke max, er bare estimat.
+kan være en ide å lage en demo video.
+
+tar tid å lage demo, så må avgjøre kjapt.
+lage flere videoer, edit inn i 1(kanskje).
+
+gruppe rapport:
+	- hva vi gjorde
+	- tekniske deler, fagstoff, etc.
+
+individuell rapport:
+	- kritisk og snakke om hva som funket og ikke funket
+	- din opplevelse av faget
+	- hva vi har hatt problemer med.
+	- hva funket, hva funket ikke
+	- hva har du lært som person, hva vi har lært av fagstoff fra boka.
+
+ha med en disclosure om bruk av KI i rapport og kode. må være forsvarlig brukt.
+
+karakter kan bli mindre hvis vi ikke setter poengene likens.
+
+rapport er super viktig, må jobbes hardt med.
+
+papertrail blir veldig stort, uansett hva vi tror.
+personas(?)
+
+referat trail - Alex
+hvis mer enn 1 person har jobbet med noe så må alle skrive om det på individuell rapport.
+

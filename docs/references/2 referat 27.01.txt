@@ -1,0 +1,20 @@
+referat 27.01.25
+
+- sprint 1 mål: inføre react. utført.
+- log inn ikke langt unna. 
+- lagd miro,
+- imdb for bøker.
+- server fra td tar tid.
+- planning poker, fordel sprintene ordentlig.
+- legge til TA i discord gruppa og github
+- storyboards, ca 30 stk per sprint. 
+- personlig egenrapport, teknisk grupperapport
+- hvorfor poeng: enklere å fordele arbeid.
+- agile er viktig!!!!
+- test skriving, viktig shit, backend først, frontend senere.
+- 
+
+-til neste møte:
+hvor lenge skal sprints være, vurdere å legge poeng til oppgaver , legge til storyboards, fordele arbeid mer oversiktlig.
+
+Github: @SeraMadeleine

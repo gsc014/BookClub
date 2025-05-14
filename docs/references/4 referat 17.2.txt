@@ -1,0 +1,8 @@
+referat 17.2.25
+
+standup:
+ - digitalt minst en gang i uka
+ - møte på start for planlegging.
+ - kan være en melding om hva som er gjort.
+ - bøter for å ikke møte opp.
+ - oppmøte til sera-møte er notert.

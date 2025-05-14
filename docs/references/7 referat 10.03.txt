@@ -1,0 +1,28 @@
+referat 10.03.25
+
+personas, backlog, user stories, scenarios, feature list
+
+
+tester før kodeskrivning, ikke gjort, ikke mulig(?)
+
+sett inn poeng på features, vi burde alle ha ca like mange timer på jobben på appen. for eksempel:
+- 5 poeng = 1 time
+
+
+rapport maks 15 sider gruppe
+
+rapport maks 10 sider personlig
+
+
+utred ka vi har og ka vi må gjøre.
+oppgaver MÅ fordeles.
+metrikken for å sjekke hvem som jobba med hva MÅ bli fiksa og sett på.
+
+
+ha møte, gå gjennom backlog, sett opp storypoints(!!!!), sluttmøte for sprint 3, PLANLEGGINGSMØTE for sprint 4
+
+ha agile Development møte(planning Meeting, avluttningsmøte) ha møte referater.
+
+miro, putt inn poeng på backlogen, ha flere mennesker på en feature.
+
+tester for frontend og backend, helvete kor innviklet det var. 

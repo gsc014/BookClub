@@ -1,0 +1,28 @@
+referat 20.1.25
+
+- goodreads klone
+- funnet Database med bøker
+- backend: Django ( må læres mer)
+- frontend: react/html-css
+- sprints: features-map, brukerhistorie-hvordan brukere bruker webapplikasjon, møte start og slutt av sprinten.
+- miro: https://miro.com/nb/ , for å tracke hvem som jobber med hvilke features.
+- code reviews: alle må kunne alt. 
+- branches på features, prod branches må sjekke her om den fungere før den sendes til main branch.
+
+
+spørsmål: 
+- hvor lang ta møte?: varierer.
+- fleksibel ta møtetid.
+
+
+til neste gang:
+- sett opp GitHub repo. ✓
+- 2 uker i ren rapport skrivning.
+- hovedprodukt ferdig før 1.mai helst.
+- møte notater til i GitHub.
+- planer for sprints til neste gang.
+
+scrum master:
+- trenger master for forskjellige sprinter.
+
+ferdige react features kan brukes/ Libraries er lov-ish

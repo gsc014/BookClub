@@ -1,0 +1,23 @@
+referat 24.02.25
+
+server litt fucked
+
+cookies litt fucked
+
+6 møter(!!!) i uka, burde ha stand-up hver dag helst.
+
+for eksempel: skrevet setning for møte istedenfor fysisk
+sist møte kan brukes som sprint planlegging
+
+finne måte kommunikasjon fungerer for oss, må bli bedre på å snakke.
+
+hva fungerte bra: idk
+
+lage protection rules og implementere kode reviews før vi pusher på main.
+
+hva funket i denne sprinten og hva funka ikke.
+
+popups for logout, sikker på XYZ?
+
+hash passord (salt?)
+

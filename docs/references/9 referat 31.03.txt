@@ -1,0 +1,42 @@
+referat 31.03.25
+
+siste mandagsmøter 7.04,
+28.04, 5.05,12.05
+
+hvor langt er vi kommet?
+	- veldig langt
+
+kanskje fikse smtp server for å sende emails, 
+det finnes gratis versjoner
+
+fikse en API tilkobling til Nasjonalbiblioteket, 
+hvis det tar for lang tid drop det.
+
+fiks å søke på andre brukere
+
+se på gdpr i forhold til profiler,
+
+Skriv at bare bøker med latinske bokstaver er med i databasen.
+
+se på serveren, Ikke et krav, men fint å ha
+
+ferdig til påske med kode, MÅ skrive bra rapport,
+etter påske er det bare rapportene som gjelder.
+
+Gå gjennom rapport den 28.04
+
+Må fikse story Points,
+hva er en scenarios, personas, backlog features, time and effort of each team member.
+
+må reflektere over hvordan alle jobbet. 
+Backloggen skal legges med som appendix i rapport,
+eller dokument i mappe
+story Points, user stories, møte referater
+
+sera: 192 Points til sammen
+
+kontinuerlig Development og delivery,
+se på devOps. 
+
+gruppe rapport 16.05, så individuell rapport 26.05
+

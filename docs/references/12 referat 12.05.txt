@@ -1,0 +1,7 @@
+referat 12.05.25 
+
+kan si vi har user tests istedenfor system tester:
+	- bare for frontend
+
+TDD for frontend førte til rewriting og gikk bort fra det for frontend
+

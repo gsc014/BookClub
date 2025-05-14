@@ -1,0 +1,22 @@
+referat 24.03
+
+god på å snakke med hverandre, dårlig med faktiske møter
+
+må fikse standups(?)
+
+vite hva agile Development er, streve for å prøve å oppnå perfekt agile Development
+
+fiks estimation Matrix poengene ut i miroene,
+alle burde få like mye poeng 
+
+ha en del tid i rapport, bilde i appendix, maks 13 sider grupperapport(wow), individuell rapport 10 sider(wow)
+
+slutt med implementasjon av nye features, før påske vær ferdig med selve applikasjonen
+
+sprint 5 blir siste sprint med feature implementasjon, etter dette blir det rapport, bug fixes 
+
+
+non functional attributes, må skrives om i rapport
+
+
+Lukas: liste med bøker fra spill, returneres etter spillet er spillt.

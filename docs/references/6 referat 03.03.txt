@@ -1,0 +1,11 @@
+referat 03.03.25
+
+fiks perspektiv på ka som funker og ikke funker
+
+ - samuel borte
+ - non-functional attributes, security, i rapport (???)
+ - server funker ennå ikke, lukas fikser
+ - ha papertrail om møte(selv om det ikke var et møte)
+ - f.eks.: lag fake møte for en onsdag midt i uka som svarer på hva vi gjør og ikke gjør.
+ - må bare oppdatere hverandre.
+  
