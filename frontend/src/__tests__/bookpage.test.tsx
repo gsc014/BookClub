@@ -90,6 +90,17 @@ const renderWithRouter = (ui: React.ReactElement) => {
     return render(ui, { wrapper: BrowserRouter });
 };
 
+const setupDOM = () => {
+    document.body.innerHTML = `
+    <div id="login-form" style="opacity: 0; pointer-events: none; top: 40%;">Login Form</div>
+    <div id="signin-form" style="opacity: 0; pointer-events: none; top: 40%;">Signin Form</div>
+    <div id="profile-form" style="opacity: 0; pointer-events: none; top: 40%;">Profile Form</div>
+    <div id="welcomeText">Welcome Message</div>
+    <div id="welcomeSuccsessLogIn">Success Message</div>
+    <div id="alert-box">Alert Box</div>
+  `;
+};
+
 describe('Bookpage Component', () => {
     let alertSpy: MockInstance;
     let consoleErrorSpy: MockInstance;
@@ -97,6 +108,7 @@ describe('Bookpage Component', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         mockLocationState.book = null;
+        setupDOM();
         (useLocation as any).mockReturnValue({
             pathname: `/book/${mockParams.id}`,
             search: '',
