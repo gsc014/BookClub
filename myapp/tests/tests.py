@@ -27,6 +27,9 @@ class UserTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
     def test_signup_and_login_successfull(self):
+        '''
+        test to see if the signup and login works
+        '''
         response = self.client.post(self.signup,{
             'username':'newtestuser',
             'password1':'password123',
@@ -46,6 +49,9 @@ class UserTests(APITestCase):
         
 
     def test_logout_successfull(self):
+        '''
+        test to see if the logout works
+        '''
         response = self.client.post(self.logout)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
 
@@ -134,11 +140,17 @@ class BookTests(APITestCase):
 
             
     def test_search_filter_returns_400_when_missing_param(self):
+        '''
+        test to see if the missing filter returns a 400
+        '''
         response = self.client.get(reverse('search_filter'))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['error'], "Filter parameter is required")
 
     def test_search_filter_returns_400_when_param_is_empty(self):
+        '''
+        test to see if the empty filter returns a 400
+        '''
         response = self.client.get(reverse('search_filter') + '?filter=')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['error'], "Filter parameter is required")
@@ -322,6 +334,9 @@ class BookTests(APITestCase):
         
     @patch('myapp.views.NewTable.objects')
     def test_get_isbn_mock(self, mock_objects):
+        '''
+        test to see if the isbn function works
+        '''
         mock_instance = MagicMock()
         mock_instance.isbn_10 = '1234567890'
         mock_objects.filter.return_value.first.return_value = mock_instance
@@ -369,6 +384,9 @@ class ReviewTests(APITestCase):
         
     @patch('myapp.models.Review.objects.filter')
     def test_get_reviews_raises_exception_returns_500(self, mock_filter):
+        '''
+        test to see if the 500 error is returned when the filter raises an exception
+        '''
         mock_filter.side_effect = Exception("DB exploded")
 
         response = self.client.get(reverse('get_reviews', args=[1]))
@@ -408,6 +426,9 @@ class ReviewTests(APITestCase):
         self.assertIn('error', response.data)
         
     def test_get_books_by_author_no_key(self):
+        '''
+        test if the no key returns a 400
+        '''
         url = reverse("books_by_author")
         
         response = self.client.get(url,{
@@ -416,6 +437,9 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         
     def test_get_books_by_author(self):
+        '''
+        test if the books by author function works
+        '''
         url = reverse('books_by_author')
         
         response = self.client.get(url,{
@@ -424,6 +448,9 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         
     def test_get_books_by_author_with_excludeid(self):
+        '''
+        test if the exclude id works
+        '''
         url = reverse('books_by_author')
         
         response = self.client.get(url,{
@@ -433,6 +460,9 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_200_OK)
     
     def test_highest_rated_books(self):
+        '''
+        test if the highest rated books function works
+        '''
         author = Author.objects.create(key='author_key', name='John Doe')
 
         book1 = Books.objects.create(id=201, title='Book One', author=author.key, cover=101, key='b1')
@@ -454,6 +484,9 @@ class ReviewTests(APITestCase):
         self.assertEqual(top_book['avg_rating'], 5.0)
 
     def test_highest_rated_books_missing_author(self):
+        '''
+        test if the missing author returns None
+        '''
         book = Books.objects.create(id=201, key="b201", title="Unknown Author Book", author="nonexistent_author_key", cover=123)
         for _ in range(3):
             Review.objects.create(book_id=book.id, user_id=self.user.id, rating=4, text="Solid book")
@@ -464,6 +497,9 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.data[0]['author'], "nonexistent_author_key")  
 
     def test_highest_rated_books_exception_handling(self):
+        '''
+        test if the exception handling works
+        '''
         url = reverse('highest-rated')
 
         with patch('myapp.views.connection') as mock_connection:
@@ -478,6 +514,9 @@ class ReviewTests(APITestCase):
 
 
     def test_most_liked_books_success(self):
+        '''
+        test if the most liked books function works
+        '''
         user_list = UserBookList.objects.create(name="Liked Books", book_ids=[1, 2, 1, 3])
         
         author = Author.objects.create(key="auth1", name="Author Name")
@@ -493,10 +532,12 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.data[0]['likes_count'], 2)
 
     def test_most_liked_books_limit(self):
+        '''
+        test if the limit works
+        '''
         UserBookList.objects.create(name="Liked Books", book_ids=list(range(1, 30)))
         author = Author.objects.create(key="auth", name="A")
 
-        # Create 30 books
         for i in range(1, 31):
             Books.objects.create(id=i, key=f"bk{i}", title=f"Book {i}", author="auth")
 
@@ -504,9 +545,12 @@ class ReviewTests(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 10)  # Should be limited to 10
+        self.assertEqual(len(response.data), 10)
 
     def test_most_liked_books_error_handling(self):
+        '''
+        test if the error handling works
+        '''
         with patch('myapp.views.UserBookList.objects.filter') as mock_filter:
             mock_filter.side_effect = Exception("forced error")
             url = reverse('most-liked')
@@ -516,14 +560,14 @@ class ReviewTests(APITestCase):
 
 
     def test_most_active_users_success(self):
-        # Create users
+        '''
+        test if the most active users function works
+        '''
         user1 = User.objects.create(username="alice")
         user2 = User.objects.create(username="bob")
 
-        # User info
         UserInfo.objects.create(user_id=user1, bio="Reader 1")
 
-        # Create books and reviews
         book = Books.objects.create(id=1, title="Some Book", key="key1", author="auth")
         Review.objects.create(user=user1, book_id=book.id, rating=5, created_at="2024-05-01")
         Review.objects.create(user=user1, book_id=book.id, rating=4, created_at="2024-05-02")
@@ -534,11 +578,14 @@ class ReviewTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]["username"], "alice")  # 2 reviews
+        self.assertEqual(response.data[0]["username"], "alice")
         self.assertEqual(response.data[0]["review_count"], 2)
         self.assertIn("latest_activity", response.data[0])
 
     def test_most_active_users_limit(self):
+        '''
+        test if the limit works
+        '''
         for i in range(10):
             user = User.objects.create(username=f"user{i}")
             book = Books.objects.create(id=i, title=f"Book {i}", key=f"k{i}", author="auth")
@@ -551,9 +598,11 @@ class ReviewTests(APITestCase):
         self.assertEqual(len(response.data), 5)
 
     def test_most_active_users_missing_info(self):
+        '''
+        test if the missing user info returns None
+        '''
         user = User.objects.create(username="lonely")
         book = Books.objects.create(id=99, title="Ghost Book", key="gk", author="ghost")
-        # Add review but don't add UserInfo
         Review.objects.create(user=user, book_id=book.id, rating=2)
 
         url = reverse('most-active-users')
@@ -563,8 +612,11 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.data[0]["bio"], "No bio available")
 
     def test_most_active_users_missing_book(self):
+        '''
+        test if the missing book returns None
+        '''
         user = User.objects.create(username="broken")
-        Review.objects.create(user=user, book_id=999, rating=4)  # Book does not exist
+        Review.objects.create(user=user, book_id=999, rating=4) 
 
         url = reverse('most-active-users')
         response = self.client.get(url)
@@ -574,7 +626,10 @@ class ReviewTests(APITestCase):
         
             
     def test_most_active_users_exception_handling(self):
-        url = reverse('most-active-users')  # Replace with the actual name of your URL pattern
+        '''
+        test if the exception handling works
+        '''
+        url = reverse('most-active-users') 
 
         with patch('myapp.views.connection') as mock_connection:
             mock_cursor = MagicMock()
@@ -782,6 +837,9 @@ class UserProfileTests(APITestCase):
         self.assertEqual(user.email, new_email)
 
     def test_autocomplete_profile_with_query(self):
+        '''
+        test if the autocomplete returns a list of users matching the query
+        '''
         url = reverse('autocomplete_profile')  
         response = self.client.get(url, {'query': 'al'})
 
@@ -795,6 +853,9 @@ class UserProfileTests(APITestCase):
             self.assertIn('al', item['username'].lower())
 
     def test_autocomplete_profile_without_query(self):
+        '''
+        test if the autocomplete returns empty list when no query is given
+        '''
         url = reverse('autocomplete_profile')
         response = self.client.get(url) 
 
@@ -802,6 +863,9 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.json(), [])
         
     def test_block_genre(self):
+        '''
+        test if the blocked genres are returned correctly
+        '''
         url = reverse('block_genre')
         response = self.client.post(url,{
             'blocked_genres':['']
@@ -810,17 +874,25 @@ class UserProfileTests(APITestCase):
     
 
     def test_no_blocked_genres(self):
+        '''
+        test if the blocked genres are returned correctly
+        '''
         response = self.client.get(reverse('blocked_genres'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"blocked_genres": []})
 
     def test_with_blocked_genres(self):
+        '''
+        test if the blocked genres are returned correctly'''
         UserBookList.objects.create(user_id=self.user, name="Blocked Books", book_ids=["Fantasy", "Sci-Fi"])
         response = self.client.get(reverse('blocked_genres'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"blocked_genres": ["Fantasy", "Sci-Fi"]})
         
     def test_block_genre_success(self):
+        '''
+        test blocking a genre that is not in the blocked list
+        '''
         url = reverse('block_genre')
         genres = ['Horror', 'Romance']
         response = self.client.post(url, data={'blocked_genres': genres}, format='json')
@@ -828,6 +900,8 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.data['blocked_genres'], genres)
         
     def test_unblock_genre(self):
+        '''
+        test unblocking a genre that is in the blocked list'''
         url = reverse('unblock_genre')
         response = self.client.post(url,{
             'blocked_genres':['']
@@ -835,6 +909,9 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         
     def test_unblock_genre_no_blocked_list(self):
+        '''
+        test unblocking a genre when there are no blocked genres
+        '''
         url = reverse('unblock_genre')
         
         response = self.client.post(url, data={'blocked_genre': 'Horror'}, format='json')
@@ -844,7 +921,9 @@ class UserProfileTests(APITestCase):
 
     
     def test_unblock_genre_success(self):
-
+        '''
+        test unblocking a genre that is in the blocked list
+        '''
         UserBookList.objects.create(
             user_id=self.user,
             name="Blocked Books",
@@ -860,6 +939,9 @@ class UserProfileTests(APITestCase):
         self.assertEqual(response.data['message'], "Genre 'Romance' removed from blocked list.")
         
     def test_unblock_genre_not_found(self):
+        '''
+        test unblocking a genre that is not in the blocked list
+        '''
         UserBookList.objects.create(
             user_id=self.user,
             name="Blocked Books",
@@ -923,7 +1005,7 @@ class RecommendedBookTests(APITestCase):
 
     def test_requesting_multiple_books(self):
         '''
-        
+        test that requesting multiple books returns a list
         '''
         response = self.client.get(self.url + "?num=3")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -931,6 +1013,9 @@ class RecommendedBookTests(APITestCase):
         self.assertLessEqual(len(response.data), 3)
 
     def test_recommendation_ignores_blocked_genres(self):
+        '''
+        test that the recommendation ignores blocked genres
+        '''
         UserBookList.objects.create(user_id=self.user, name="Blocked Books", book_ids=["Fiction"])
         response = self.client.get(self.url + "?num=5")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -939,12 +1024,18 @@ class RecommendedBookTests(APITestCase):
                 self.assertNotIn("fiction", book["subjects"].lower())
 
     def test_cache_returns_same_result(self):
+        '''
+        test that the cache returns the same result for multiple requests
+        '''
         response1 = self.client.get(self.url + "?num=2")
         response2 = self.client.get(self.url + "?num=2")
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response1.data, response2.data)
 
     def test_books_with_no_subjects_are_included(self):
+        '''
+        test that books with no subjects are included in recommendations
+        '''
         cache.clear()
         Books.objects.all().delete()
 
