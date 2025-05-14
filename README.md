@@ -30,8 +30,6 @@ Follow these steps to get a local copy of the project up and running:
 
 ### Installation
 
-0. **Database location**:
-    put the openlib database in root folder of /Bookclub
 
 1. **Clone the repository**:
    ```bash
@@ -56,26 +54,28 @@ Follow these steps to get a local copy of the project up and running:
     python manage.py runserver
 
 6. **now go to the frontend server**
-    ```bash
     Go to /frontend/ folder
 
 7. **requirements for running frontend server**
+    <br>Install npm
     ```bash
-    Install npm
     npm install
     
 8. **run the frontend server**
+    <br>write into terminal
     ```bash
-    write into terminal
     npm run dev
-
+    ```
     and press the link that pops up in the terminal:
     http://localhost:5173/
 
 9. **If the Database is not available**
-    you can download the database
+    <br>you can download the database
     from this link:
     https://universitetetitromso-my.sharepoint.com/:u:/g/personal/agu078_uit_no/EWSpiCis85tDulFQM9y2DewBF40NWnsoFe09IiZN38kF1Q?e=vYSEhi
+
+10. **Database location**:
+    <br>put the db.sqlite3 database in root folder of /Bookclub
     
 ## Maintainers 👨‍💻
 * Gard Schive
