@@ -31,37 +31,36 @@ Follow these steps to get a local copy of the project up and running:
 ### Installation
 
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/gsc014/BookClub.git
-   cd BookClub
-
-2. **Set up a virtual environment(optional but recommended)**
+1. **Navigate to folder and set up a virtual environment(optional but recommended)**
+    Navigate to the bookclub folder in the terminal
     ```bash
+    cd /BookClub
     python -m venv venv
     source venv/bin/activate  # Use `venv\Scripts\activate` on Windows
 
-3. **install dependencies**
+2. **install dependencies**
     ```bash
     pip install -r requirements.txt
 
-4. **apply database migrations**
+3. **Apply database migrations**
     ```bash
     python manage.py migrate
 
-5. **run the development server** 
+4. **Run the development server** 
     ```bash
     python manage.py runserver
 
-6. **now go to the frontend server**
-    Go to /frontend/ folder
+5. **Now go to the frontend server**
+    <br>Open a new terminal and navigate to frontend folder
+    ```bash
+    cd BookClub/frontend
 
-7. **requirements for running frontend server**
+6. **Requirements for running frontend server**
     <br>Install npm
     ```bash
     npm install
     
-8. **run the frontend server**
+7. **Run the frontend server**
     <br>write into terminal
     ```bash
     npm run dev
@@ -69,12 +68,12 @@ Follow these steps to get a local copy of the project up and running:
     and press the link that pops up in the terminal:
     http://localhost:5173/
 
-9. **If the Database is not available**
+8. **If the Database is not available**
     <br>you can download the database
     from this link:
     https://universitetetitromso-my.sharepoint.com/:u:/g/personal/agu078_uit_no/EWSpiCis85tDulFQM9y2DewBF40NWnsoFe09IiZN38kF1Q?e=vYSEhi
 
-10. **Database location**:
+9. **Database location**:
     <br>put the db.sqlite3 database in root folder of /Bookclub
     
 ## Maintainers 👨‍💻
