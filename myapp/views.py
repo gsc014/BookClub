@@ -576,7 +576,7 @@ def update_profile(request):
     birth_date = request.data.get('birth_date')
     
     try:
-        user_info = UserInfo.objects.get_or_create(user_id=user)
+        user_info, created = UserInfo.objects.get_or_create(user_id=user)
         
         if bio is not None:
             user_info.bio = bio

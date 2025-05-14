@@ -7,7 +7,6 @@ from myapp.models import  Review, UserInfo, UserBookList, Books, NewTable, Autho
 from rest_framework.authtoken.models import Token
 from django.test import TestCase
 from django.urls import reverse
-from django.db import transaction
 from unittest.mock import patch, MagicMock
 from django.core.cache import cache
 
@@ -119,31 +118,6 @@ class BookTests(APITestCase):
             })
         self.assertEqual(response.status_code, status.HTTP_200_OK) 
         
-    # def test_search_books_out_of_range_page(self):
-    #     """
-    #     Test that search_books falls back to the last available page
-    #     if requested page number is too high.
-    #     """
-    #     for i in range(15):
-    #         Books.objects.create(
-    #             title=f"Test Book {i}",
-    #             author="Author",
-    #             cover=123,
-    #             key=f"key{i}"
-    #         )
-
-    #     url = reverse('search_books')
-    #     response = self.client.get(url, {'q': 'Test Book', 'page': 999, 'per_page': 5})
-        
-    #     self.assertEqual(response.status_code, 200)
-
-    #     data = response.json()
-        
-    #     self.assertEqual(data['pagination']['total_pages'], 3)
-    #     self.assertEqual(data['pagination']['current_page'], 3)
-    #     self.assertLessEqual(len(data['results']), 5)
-
-        
     def test_search_books_invalid_page_and_per_page(self):
         '''Ensure non-integer pagination params are handled gracefully'''
         response = self.client.get('/api/search/', {
@@ -231,7 +205,7 @@ class BookTests(APITestCase):
         '''
         Test random_book returns empty list when no books match criteria
         '''
-        Books.objects.all().delete()  # Ensure no books exist
+        Books.objects.all().delete()
 
         url = reverse('random_book')
         response = self.client.get(url, {'num': 1})
@@ -380,14 +354,12 @@ class ReviewTests(APITestCase):
         uses the add_review and get_reviews functions in views.py
         '''
         
-        #start add review
         add_url = reverse('add_review', kwargs={'book_id1': self.book.id})
         response = self.client.post(add_url, {
             'text': 'Great book!', 'rating': 5
         })
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-        #start get review
         getreview_url = reverse('get_reviews', kwargs={'bid':self.book.id})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
@@ -418,7 +390,6 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_review_from_book_with_no_reviews(self):
-        #start get review
         getreview_url = reverse('get_reviews', kwargs={'bid':2904408})
         response = self.client.get(getreview_url)
         self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
@@ -462,27 +433,22 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_200_OK)
     
     def test_highest_rated_books(self):
-        # Create author
         author = Author.objects.create(key='author_key', name='John Doe')
 
-        # Create books with cover and same author
         book1 = Books.objects.create(id=201, title='Book One', author=author.key, cover=101, key='b1')
         book2 = Books.objects.create(id=202, title='Book Two', author=author.key, cover=102, key='b2')
         book3 = Books.objects.create(id=203, title='Book Three', author=author.key, cover=103, key='b3')
 
-        # Add 3+ reviews for each book
         for book, rating in [(book1, 5), (book2, 4), (book3, 3)]:
             for _ in range(3):
                 Review.objects.create(book_id=book.id, user_id=self.user.id, rating=rating, text=f"{book.title} is good.")
 
-        # Call the view
         url = reverse('highest-rated')
         response = self.client.get(url, {'num': 3})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 3)
 
-        # Check that the first book has the highest rating
         top_book = response.data[0]
         self.assertEqual(top_book['id'], book1.id)
         self.assertEqual(top_book['avg_rating'], 5.0)
@@ -498,9 +464,8 @@ class ReviewTests(APITestCase):
         self.assertEqual(response.data[0]['author'], "nonexistent_author_key")  
 
     def test_highest_rated_books_exception_handling(self):
-        url = reverse('highest-rated')  # Make sure this is the correct route name
+        url = reverse('highest-rated')
 
-        # Patch just the cursor() method on the connection inside the view
         with patch('myapp.views.connection') as mock_connection:
             mock_cursor = MagicMock()
             mock_cursor.execute.side_effect = Exception("Simulated DB failure")
@@ -513,10 +478,8 @@ class ReviewTests(APITestCase):
 
 
     def test_most_liked_books_success(self):
-        # Set up a mock liked list
         user_list = UserBookList.objects.create(name="Liked Books", book_ids=[1, 2, 1, 3])
         
-        # Create books and author
         author = Author.objects.create(key="auth1", name="Author Name")
         Books.objects.create(id=1, key="b1", title="Book 1", author="auth1")
         Books.objects.create(id=2, key="b2", title="Book 2", author="auth1")
@@ -656,11 +619,17 @@ class UserProfileTests(APITestCase):
         '''
         update_profile is used here
         '''
-        response = self.client.post('/api/update-profile/', {
-            'bio': 'Updated bio', 'location': 'UK'
+        response = self.client.post(reverse('update_profile'), {
+            'bio': 'Updated bio',
+            'location': 'UK',
+            'birth_date': '1997-05-29' 
         })
+        if response.status_code == 400:
+            print("API Error:", response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['bio'], 'Updated bio')
+        self.assertEqual(response.data['location'], 'UK')
+        self.assertEqual(str(response.data['birth_date']), '1997-05-29')
         
     def test_update_profile_no_auth(self):
         '''
@@ -746,10 +715,8 @@ class UserProfileTests(APITestCase):
         '''
         update_username should return 400 if new username is already taken
         '''
-        # Create another user with the username you want to test
         User.objects.create_user(username='taken_username', password='somepass')
 
-        # Attempt to change current user's username to the one already taken
         response = self.client.post('/api/update-username/', {
             'new_username': 'taken_username'
         })
@@ -761,10 +728,10 @@ class UserProfileTests(APITestCase):
         '''
         update_password should return 400 if current password is incorrect
         '''
-        url = reverse('update_password')  # make sure the URL name matches your config
+        url = reverse('update_password') 
 
         response = self.client.post(url, {
-            'current_password': 'wrongpassword',  # incorrect current password
+            'current_password': 'wrongpassword',
             'new_password': 'newsecurepassword123'
         })
 
@@ -775,13 +742,12 @@ class UserProfileTests(APITestCase):
         '''
         update_email should return 400 if the email is already taken
         '''
-        # Create another user with a specific email
         User.objects.create_user(username='someoneelse', password='pass123', email='existing@example.com')
 
-        url = reverse('update_email')  # Make sure your URL pattern name matches
+        url = reverse('update_email')  
 
         response = self.client.post(url, {
-            'new_email': 'existing@example.com'  # Attempt to reuse this email
+            'new_email': 'existing@example.com'  
         })
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -791,12 +757,10 @@ class UserProfileTests(APITestCase):
         '''
         update_email should return 400 if new_email is not provided
         '''
-        url = reverse('update_email')  # Adjust to match your URL pattern name
+        url = reverse('update_email') 
         
-        # Send the request without a new_email
         response = self.client.post(url, {})
 
-        # Assert the response status and error message
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['error'], 'New email is required')
 
@@ -804,25 +768,21 @@ class UserProfileTests(APITestCase):
         '''
         update_email should successfully update the user's email if valid
         '''
-        # New email
         new_email = 'newemail@example.com'
 
-        url = reverse('update_email')  # Adjust to match your URL pattern name
+        url = reverse('update_email') 
         
-        # Send the request with a new valid email
         response = self.client.post(url, {'new_email': new_email})
 
-        # Assert the response status and success message
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Email updated successfully')
         self.assertEqual(response.data['email'], new_email)
 
-        # Reload the user from the database to check the updated email
         user = User.objects.get(username=self.user.username)
         self.assertEqual(user.email, new_email)
 
     def test_autocomplete_profile_with_query(self):
-        url = reverse('autocomplete_profile')  # Ensure this name is in your urls.py
+        url = reverse('autocomplete_profile')  
         response = self.client.get(url, {'query': 'al'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -836,7 +796,7 @@ class UserProfileTests(APITestCase):
 
     def test_autocomplete_profile_without_query(self):
         url = reverse('autocomplete_profile')
-        response = self.client.get(url)  # No query param
+        response = self.client.get(url) 
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), [])
@@ -850,7 +810,6 @@ class UserProfileTests(APITestCase):
     
 
     def test_no_blocked_genres(self):
-        # No UserBookList created
         response = self.client.get(reverse('blocked_genres'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"blocked_genres": []})
@@ -920,13 +879,11 @@ class UserProfileTests(APITestCase):
 
 class RecommendedBookTests(APITestCase):
     def setUp(self):
-        # Create user and log in
         self.user = User.objects.create_user(username='profileuser', password='password123')
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         UserInfo.objects.create(user_id=self.user, bio='I love books!', location='USA')
         
-        # Create books with valid data
         for i in range(10):
             Books.objects.create(
                 key=f"book_{i}",
@@ -941,21 +898,33 @@ class RecommendedBookTests(APITestCase):
         self.url = reverse('random_book_api')
 
     def test_authenticated_user_gets_recommendation(self):
+        '''
+        test if the user gets a recommendation
+        '''
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("title", response.data)
 
     def test_unauthenticated_user_gets_denied(self):
+        '''
+        test if the user gets a recommendation
+        '''
         self.client.logout()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invalid_num_defaults_to_one(self):
+        '''
+        Test that invalid num parameter defaults to 1
+        '''
         response = self.client.get(self.url + "?num=invalid")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.data, dict)  # Should return single book
+        self.assertIsInstance(response.data, dict)  
 
     def test_requesting_multiple_books(self):
+        '''
+        
+        '''
         response = self.client.get(self.url + "?num=3")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsInstance(response.data, list)
@@ -976,11 +945,9 @@ class RecommendedBookTests(APITestCase):
         self.assertEqual(response1.data, response2.data)
 
     def test_books_with_no_subjects_are_included(self):
-        # Clear the cache and database state
         cache.clear()
         Books.objects.all().delete()
 
-        # Add a book with no subjects
         book = Books.objects.create(
             key="book_no_subjects",
             title="No Subject Book",
@@ -991,19 +958,14 @@ class RecommendedBookTests(APITestCase):
             cover=99
         )
 
-        # Block a genre so the fallback path is triggered
         UserBookList.objects.create(user_id=self.user, name="Blocked Books", book_ids=["Fiction"])
 
-        # Patch random.sample to ensure our book is selected
         from unittest.mock import patch
         with patch('random.sample', return_value=[book.id]):
             response = self.client.get(self.url + "?num=1")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["id"], book.id)
-
-
-
 
 
 
@@ -1113,7 +1075,9 @@ class UserBookListTests(APITestCase):
         print("Book List after second action:", book_list.book_ids)
         
     def test_get_saved_books_with_invalid_book_ids(self):
-        
+        '''
+        test to see if the invalid book id is filtered out
+        '''
         url = reverse('book_list') + "?name=Saved Books"
         response = self.client.get(url)
 
@@ -1176,17 +1140,26 @@ class GameTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         
     def test_score_get(self):
+        '''
+        test for getting the high score
+        '''
         url = reverse('high_score')
         response = self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         
     
     def test_score_post(self):
+        '''
+        test for posting the high score
+        '''
         url = reverse('high_score')
         response = self.client.post(url)
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         
     def test_score_post_error_handling(self):
+        '''
+        test for posting the high score with error handling
+        '''
         url = reverse('high_score')
         with patch('myapp.views.UserInfo.objects.get_or_create') as mocked_get_or_create:
             mocked_get_or_create.side_effect = Exception("forced error")
@@ -1196,6 +1169,8 @@ class GameTests(APITestCase):
             
             
     def test_score_is_updated_when_higher(self):
+        '''
+        Test to ensure that the high score is updated only if the new score is higher.'''
         UserInfo.objects.create(user_id=self.user, high_score_titlegame=50)
 
         url = reverse('high_score')
@@ -1209,28 +1184,55 @@ class GameTests(APITestCase):
 
 
 class ModelTests(TestCase):
+    """
+    Contains tests for various models within the application to ensure
+    their correct creation, attribute handling, and adherence to constraints.
+    """
     def setUp(self):
+        """
+        Initializes common test data, specifically creating a test user
+        instance available for use in individual test methods.
+        """
         self.user = User.objects.create_user(username='testuser', password='pass123')
 
     def test_newtable_creation(self):
+        """
+        Tests the instantiation of a :class:`~myapp.models.NewTable` object
+        and verifies the initial assignment of its attributes.
+        """
         obj = NewTable(id=1, works_key='abc123', isbn_10='1234567890')
         self.assertEqual(obj.works_key, 'abc123')
 
     def test_userinfo_optional_fields(self):
+        """
+        Tests the creation of a :class:`~myapp.models.UserInfo` instance
+        verifying that optional fields correctly default to ``None`` or their
+        specified default values when not explicitly provided.
+        """
         info = UserInfo.objects.create()
         info.save()
         self.assertIsNone(info.bio)
         self.assertIsNone(info.location)
         self.assertIsNone(info.birth_date)
-        self.assertEqual(info.high_score_titlegame, 0)  # default
+        self.assertEqual(info.high_score_titlegame, 0)
 
     def test_userbooklist_empty_books(self):
+        """
+        Tests the creation of a :class:`~myapp.models.UserBookList` instance
+        and verifies that the ``book_ids`` field is an empty list by default
+        or upon initial creation without specified books.
+        """
         book_list = UserBookList.objects.create(name='Empty List')
         book_list.save()
         self.assertEqual(book_list.book_ids, [])
 
-    
+
     def test_review_creation(self):
+        """
+        Tests the creation of a :class:`~myapp.models.Review` instance
+        and verifies the correct assignment and retrieval of its ``text``
+        and ``rating`` attributes.
+        """
         review = Review.objects.create(
             book_id=1,
             text='Loved it!',
@@ -1242,8 +1244,13 @@ class ModelTests(TestCase):
         self.assertIn('Loved it!', review.text)
 
     def test_userinfo_creation(self):
+        """
+        Tests the creation of a :class:`~myapp.models.UserInfo` instance
+        with specified attributes, including its association with a user,
+        and verifies these attributes.
+        """
         info = UserInfo.objects.create(
-            user_id=self.user,
+            user_id=self.user, 
             bio='Just a test user',
             location='Internet',
             high_score_titlegame=99
@@ -1253,6 +1260,11 @@ class ModelTests(TestCase):
         self.assertEqual(info.high_score_titlegame, 99)
 
     def test_user_book_list(self):
+        """
+        Tests the creation of a :class:`~myapp.models.UserBookList` instance
+        associated with a user and populated with a list of book IDs,
+        verifying the list's attributes.
+        """
         book_list = UserBookList.objects.create(
             user_id=self.user,
             name='Favorites',
@@ -1264,6 +1276,10 @@ class ModelTests(TestCase):
         self.assertListEqual(book_list.book_ids, [1, 2, 3])
 
     def test_books_model(self):
+        """
+        Tests the creation of a :class:`~myapp.models.Books` instance
+        with various attributes populated and verifies their values.
+        """
         book = Books.objects.create(
             key='OL456M',
             title='Another Book',
@@ -1276,8 +1292,13 @@ class ModelTests(TestCase):
         book.save()
         self.assertEqual(book.title, 'Another Book')
         self.assertEqual(book.cover, 42)
-    
+
     def test_books_with_optional_fields(self):
+        """
+        Tests the creation of a :class:`~myapp.models.Books` instance
+        where optional fields are not provided, verifying they default
+        to ``None`` or their specified default values.
+        """
         book = Books.objects.create(
             key='OL789M',
             title='Optional Fields Book',
@@ -1288,47 +1309,20 @@ class ModelTests(TestCase):
         self.assertIsNone(book.description)
 
     def test_author_key_uniqueness(self):
+        """
+        Tests the uniqueness constraint on the ``key`` field of the
+        :class:`~myapp.models.Author` model, ensuring an attempt
+        to create a duplicate key raises an exception.
+        """
         Author.objects.create(key='unique_key', name='Author One')
-        with self.assertRaises(Exception):  # or IntegrityError if you want to be specific
+        with self.assertRaises(Exception):
             Author.objects.create(key='unique_key', name='Author Two')
-            
+
     def test_author_model(self):
+        """
+        Tests the basic creation of an :class:`~myapp.models.Author` instance
+        and verifies its ``key`` and ``name`` attributes.
+        """
         author = Author.objects.create(key='auth_001', name='George Orwell')
         self.assertEqual(author.key, 'auth_001')
         self.assertEqual(author.name, 'George Orwell')
-
-
-
-
-
-'''
-tests done:
-
-
-User:
-    Login
-    Signup
-    Logout
-    delete_account test
-    Update-profile
-    update-username and update-password, i thought update_profile function did the same thing,
-    but no it only updates bio, location, birthdate, and not username or password
-    Add_book to list (in this case 'Saved books' list)
-    get_saved_books (again 'Saved books' list)
-    (for the last two should probably test for 'Liked Books' lists as well, just to cover everything)
-
-Book:
-    retrieve_book_info test
-    Add review
-    get review(s)
-    random book test
-    api/filter test
-
-Search:
-    Search
-    autocomplete test
-    
-
-Game:
-
-'''
