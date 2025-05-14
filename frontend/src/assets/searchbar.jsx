@@ -61,9 +61,15 @@ const Searchbar = () => {
         console.log("Passed filter is", filters);
         let url = `http://127.0.0.1:8000/api/filter/?filter=${filters}`;
         console.log("attempting", url);
-        axios.get(url, { params: { num: 10 } })
+        axios.get(url, { params: { per_page: 10 } })
             .then(response => {
-                navigate('/searchresults', { state: { results: response.data } });
+                navigate('/searchresults', { 
+                    state: { 
+                        initialResults: response.data.results,
+                        initialFilter: filters,
+                        isSearchQuery: false
+                    }
+                });
             })
             .catch(error => console.error('Error fetching search results:', error));
     }, [filters]);

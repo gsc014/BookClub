@@ -92,6 +92,7 @@ def autocomplete_profile(request):
 
 @api_view(['GET'])
 def search_books(request):
+    start_time = time.time()
     print("getting request", request.GET)
     query = request.GET.get('q', '')
     page_str = request.GET.get('page', '1')
@@ -127,7 +128,8 @@ def search_books(request):
         } 
         for book in current_page
     ]
-    
+    execution_time = time.time() - start_time
+    print(f"SEARCH BOOKS: Query execution time: {execution_time:.4f} seconds, Results: {len(results)}")
     return Response({
         "results": results,
         "query": query,
@@ -468,6 +470,7 @@ def autocomplete(request):
 
 @api_view(['GET'])
 def search_filter(request):
+    start_time = time.time()
     subject_filter = request.GET.get('filter', '')
     page_str = request.GET.get('page', '1')
     per_page_str = request.GET.get('per_page', '10')
@@ -502,7 +505,8 @@ def search_filter(request):
             } 
             for book in current_page
         ]
-        
+        execution_time = time.time() - start_time
+        print(f"SEARCH FILTER: Query execution time: {execution_time:.4f} seconds, Results: {len(results)}")
         return Response({
             "results": results,
             "pagination": {
@@ -516,6 +520,7 @@ def search_filter(request):
         })
     else:
         return Response({"error": "Filter parameter is required"}, status=400)
+
 
 
 @api_view(['POST'])
