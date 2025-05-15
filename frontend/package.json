@@ -13,6 +13,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "axios": "^1.9.0",
     "esm": "^3.2.25",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -45,5 +46,10 @@
   "vitest": {
     "globals": true,
     "environment": "jsdom"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
