@@ -25,7 +25,8 @@ Follow these steps to get a local copy of the project up and running:
 
 ### Prerequisites
 - Python 3.10+
-- Node.js (version >= 18) and npm
+- Node.js (version >= 18, check with node -v) 
+- npm
 - Virtual environment manager (optional but recommended)
 
 ### Installation and running the app
