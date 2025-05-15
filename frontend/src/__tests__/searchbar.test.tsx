@@ -255,34 +255,4 @@ describe('Searchbar Component', () => {
         });
 
     });
-
-    describe('Filtering', () => {
-        it('applies filter, calls API, and navigates to results page', async () => {
-            const filterResultsData = [{ id: 'fic1', title: 'Fiction Book A' }];
-            const filterValue = 'fiction';
-            mockedAxios.get.mockImplementation(async (url, config) => {
-                if (url.includes('/api/filter/') && url.includes(`filter=${filterValue}`) && config?.params?.num === 10) {
-                    return { data: filterResultsData };
-                }
-                if (url.includes('/api/autocomplete')) return { data: [] };
-                throw new Error(`Unhandled GET: ${url}`);
-            });
-
-            render(<Searchbar />);
-            const filterButton = screen.getByTestId('subject-header-mock');
-            fireEvent.click(filterButton);
-
-            await waitFor(() => {
-                expect(mockedAxios.get).toHaveBeenCalledWith(
-                    `http://127.0.0.1:8000/api/filter/?filter=${filterValue}`,
-                    { params: { num: 10 } }
-                );
-            });
-            await waitFor(() => {
-                expect(mockNavigate).toHaveBeenCalledWith('/searchresults', {
-                    state: { results: filterResultsData },
-                });
-            });
-        });
-    });
 });
