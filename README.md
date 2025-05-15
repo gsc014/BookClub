@@ -28,13 +28,13 @@ Follow these steps to get a local copy of the project up and running:
 - Node.js and npm
 - Virtual environment manager (optional but recommended)
 
-### Installation
+### Installation and running the app
 
 
 1. **Navigate to folder and set up a virtual environment(optional but recommended)**
     Navigate to the bookclub folder in the terminal
     ```bash
-    cd /BookClub
+    cd BookClub
     python -m venv venv
     source venv/bin/activate  # Use `venv\Scripts\activate` on Windows
 
@@ -50,13 +50,11 @@ Follow these steps to get a local copy of the project up and running:
     ```bash
     python manage.py runserver
 
-5. **Now go to the frontend server**
-    <br>Open a new terminal and navigate to frontend folder
+5. **Open a new terminal and navigate to frontend folder**
     ```bash
     cd BookClub/frontend
 
 6. **Requirements for running frontend server**
-    <br>Install npm
     ```bash
     npm install
     
@@ -74,7 +72,7 @@ Follow these steps to get a local copy of the project up and running:
     https://universitetetitromso-my.sharepoint.com/:u:/g/personal/agu078_uit_no/EWSpiCis85tDulFQM9y2DewBF40NWnsoFe09IiZN38kF1Q?e=vYSEhi
 
 9. **Database location**:
-    <br>put the db.sqlite3 database in root folder of /Bookclub
+    <br>put the db.sqlite3 database in root folder of /Bookclub, you will get a warning that there already exists a db.sqlite file, replace it with the new one, refresh the page and everythong should work
     
 ## Maintainers 👨‍💻
 * Gard Schive
