@@ -58,6 +58,8 @@ Follow these steps to get a local copy of the project up and running:
     ```bash
     npm install
     ```
+    
+    
 7. **Run the frontend server**a
     ```bash
     npm run dev
@@ -73,6 +75,27 @@ Follow these steps to get a local copy of the project up and running:
     <br>
     Put the db.sqlite3 database in root folder of /Bookclub, you will get a warning that there already exists a db.sqlite file, replace it with the new one, refresh the page and everythong should work
     
+    <br>
+
+# Problems while installing frontend requirements
+    If encountering problems at the npm install stage, you might need to check that the node version you are running is correct. 
+
+    ```bash
+    node --v
+    ``` 
+    If you need to update your node version, you might want to run these commands:
+    ```bash
+    sudo apt remove nodejs npm
+    sudo apt purge nodejs npm
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt install -y nodejs
+    node -v
+    npm -v
+    ``` 
+    After this, try rerunning
+    ```bash
+    npm install
+    ``` 
 ## Maintainers
 * Gard Schive
 * Lukas Voldset
